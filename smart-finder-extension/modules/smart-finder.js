@@ -254,8 +254,18 @@ export class SmartFinder {
         }
       }
       
+      // After all processing, check if AI returned results but nothing was highlighted
+      // This handles the case where AI found relevant content but it doesn't exist on the page
+      if (relevantSnippets.length > 0 && this.progressiveMatches.length === 0) {
+        this.ui.updateSmartSearchHint('No results');
+        this.updateUI(0, 0);
+      }
+      
     } catch (error) {
       console.error('AI search failed:', error);
+      
+      // Clear search progress first
+      this.ui.setSearchProgress('', false);
       
       // Handle specific rate limit errors with user-friendly messages
       if (error.message.includes('Rate limit exceeded')) {
@@ -278,6 +288,9 @@ export class SmartFinder {
         this.ui.updateSmartSearchHint('No results');
         this.ui.setSearchProgress('', false);
       }
+      
+      // Update UI with zero results, but preserve the error hint
+      this.updateUI(0, 0);
     }
   }
 
@@ -359,6 +372,14 @@ export class SmartFinder {
     this.navigationManager.reset();
     this.navigationManager.setMatches(matches.length);
     
+    // Handle case where AI returned snippets but none were found on page
+    if (relevantSnippets.length > 0 && matches.length === 0) {
+      this.ui.updateSmartSearchHint('No results');
+      this.ui.setSearchProgress('', false);
+      this.updateUI(0, 0);
+      return;
+    }
+    
     // Highlight matches with AI-specific styling
     this.highlightManager.highlightMatches(
       matches,
@@ -382,10 +403,8 @@ export class SmartFinder {
     const position = this.navigationManager.getCurrentPosition();
     this.updateUI(position.current, position.total);
     
-    // Handle no results case
-    if (matches.length === 0) {
-      this.ui.updateSmartSearchHint('No results');
-    }
+    // Clear search progress
+    this.ui.setSearchProgress('', false);
     
     // Auto-scroll to first match
     if (matches.length > 0) {
@@ -776,7 +795,18 @@ export class SmartFinder {
   updateUI(current, total) {
     this.ui.updateStats(current, total);
     this.ui.updateButtonStates(this.navigationManager.hasMatches());
-    this.ui.updateInputStyling(this.navigationManager.hasMatches());
+    
+    // Only update input styling if we don't have a non-default hint showing
+    // This prevents overriding error messages like "Sign in for smart search"
+    const currentHintText = this.ui.smartSearchHint.textContent;
+    const isDefaultHint = currentHintText === 'Enter to smart search';
+    const hasMatches = this.navigationManager.hasMatches();
+    
+    if (isDefaultHint || hasMatches) {
+      // Safe to update styling - either default hint or we have matches
+      this.ui.updateInputStyling(hasMatches);
+    }
+    // Otherwise, leave hint visibility as-is to preserve error messages
   }
   
   // Public API

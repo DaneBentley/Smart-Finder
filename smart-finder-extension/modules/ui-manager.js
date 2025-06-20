@@ -14,6 +14,7 @@ export class UIManager {
     this.nextButton = null;
     this.shadowHost = null;
     this.shadowRoot = null;
+    this.hintTimeout = null;
     
     // Settings state
     this.caseSensitive = false;
@@ -893,19 +894,31 @@ export class UIManager {
   updateSmartSearchHint(text = 'Enter to smart search') {
     this.smartSearchHint.textContent = text;
     
+    // Clear any existing timeout
+    if (this.hintTimeout) {
+      clearTimeout(this.hintTimeout);
+      this.hintTimeout = null;
+    }
+    
     // If we're setting a non-default hint (like "No results"), show it temporarily
     // but don't show the default hint automatically
     if (text !== 'Enter to smart search') {
       this.smartSearchHint.classList.remove('hidden');
       this.input.classList.remove('ai-ready');
       
-      // Hide the hint after 3 seconds for non-default messages
-      setTimeout(() => {
+      // Determine timeout based on hint type
+      let timeout = 3000; // Default 3 seconds
+      if (text.includes('Sign in') || text.includes('tokens') || text.includes('Rate limit')) {
+        timeout = 5000; // 5 seconds for important error messages
+      }
+      
+      // Hide the hint after timeout for non-default messages
+      this.hintTimeout = setTimeout(() => {
         // Only hide if the text hasn't changed to something else
         if (this.smartSearchHint.textContent === text) {
           this.smartSearchHint.classList.add('hidden');
         }
-      }, 3000);
+      }, timeout);
     } else {
       // For default hint text, let updateInputStyling control visibility
       // Don't automatically show or hide here
@@ -975,8 +988,9 @@ export class UIManager {
         this.statsElement.removeChild(thirdDot);
       }
       
-      // After search completes, update input styling to show appropriate hints
-      this.updateInputStyling(false); // Will be corrected by subsequent updateUI call
+      // Don't automatically update input styling when search completes
+      // This allows error messages and sign-in prompts to remain visible
+      // The calling code should handle hint visibility appropriately
     }
   }
 
@@ -995,8 +1009,8 @@ export class UIManager {
       this.statsElement.removeChild(thirdDot);
     }
     
-    // After search is cancelled, update input styling to show appropriate hints
-    this.updateInputStyling(false);
+    // Don't automatically update input styling when search is cancelled
+    // This allows any existing hints to remain visible
   }
   
   updateButtonStates(hasMatches) {
@@ -1146,12 +1160,18 @@ export class UIManager {
   destroy() {
     this.clearScrollIndicators();
     
+    // Clean up hint timeout
+    if (this.hintTimeout) {
+      clearTimeout(this.hintTimeout);
+      this.hintTimeout = null;
+    }
+    
     // Clean up shadow DOM
     if (this.shadowHost && this.shadowHost.parentNode) {
       this.shadowHost.parentNode.removeChild(this.shadowHost);
     }
     
-    // Clean up injected highlight styles
+    // Clean up highlight styles
     const highlightStyles = document.getElementById('smart-finder-highlight-styles');
     if (highlightStyles && highlightStyles.parentNode) {
       highlightStyles.parentNode.removeChild(highlightStyles);
