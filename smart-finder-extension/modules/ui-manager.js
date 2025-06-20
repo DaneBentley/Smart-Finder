@@ -15,6 +15,7 @@ export class UIManager {
     this.shadowHost = null;
     this.shadowRoot = null;
     this.hintTimeout = null;
+    this.hintDelayTimeout = null;
     
     // Settings state
     this.caseSensitive = false;
@@ -820,9 +821,15 @@ export class UIManager {
     this.clearScrollIndicators();
     this.input.value = '';
     
-    // Clear input styling
+    // Clear input styling and hint timeouts
     this.input.classList.remove('ai-ready');
     this.smartSearchHint.classList.add('hidden');
+    
+    // Clear any pending hint delays
+    if (this.hintDelayTimeout) {
+      clearTimeout(this.hintDelayTimeout);
+      this.hintDelayTimeout = null;
+    }
   }
   
   toggleSettingsDropdown() {
@@ -873,6 +880,12 @@ export class UIManager {
     const isDefaultHintText = this.smartSearchHint.textContent === 'Enter to smart search';
     const isSearching = this.statsElement.classList.contains('searching');
     
+    // Clear any existing hint delay timeout
+    if (this.hintDelayTimeout) {
+      clearTimeout(this.hintDelayTimeout);
+      this.hintDelayTimeout = null;
+    }
+    
     // Don't show hint if search is in progress or if we have matches
     if (isSearching || hasMatches) {
       this.input.classList.remove('ai-ready');
@@ -880,10 +893,25 @@ export class UIManager {
       return;
     }
     
-    // Show hint only in AI mode with input text and no matches, and only default hint text
+    // For AI mode with input text and no matches, delay showing the hint
+    // This prevents the hint from appearing during the search debounce delay
     if (this.aiMode && hasInputText && !hasMatches && isDefaultHintText) {
-      this.input.classList.add('ai-ready');
-      this.smartSearchHint.classList.remove('hidden');
+      // Hide hint immediately
+      this.input.classList.remove('ai-ready');
+      this.smartSearchHint.classList.add('hidden');
+      
+      // Show hint after a delay longer than search debounce (400ms > 300ms heavy delay)
+      this.hintDelayTimeout = setTimeout(() => {
+        // Double-check conditions haven't changed
+        const stillHasInputText = this.input.value.trim().length > 0;
+        const stillIsDefaultHint = this.smartSearchHint.textContent === 'Enter to smart search';
+        const stillSearching = this.statsElement.classList.contains('searching');
+        
+        if (this.aiMode && stillHasInputText && !stillSearching && stillIsDefaultHint) {
+          this.input.classList.add('ai-ready');
+          this.smartSearchHint.classList.remove('hidden');
+        }
+      }, 400); // 400ms delay - longer than the heaviest search debounce (300ms)
     } else {
       this.input.classList.remove('ai-ready');
       this.smartSearchHint.classList.add('hidden');
@@ -1160,10 +1188,14 @@ export class UIManager {
   destroy() {
     this.clearScrollIndicators();
     
-    // Clean up hint timeout
+    // Clean up hint timeouts
     if (this.hintTimeout) {
       clearTimeout(this.hintTimeout);
       this.hintTimeout = null;
+    }
+    if (this.hintDelayTimeout) {
+      clearTimeout(this.hintDelayTimeout);
+      this.hintDelayTimeout = null;
     }
     
     // Clean up shadow DOM
