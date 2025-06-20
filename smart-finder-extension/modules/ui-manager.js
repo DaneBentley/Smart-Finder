@@ -94,13 +94,20 @@ export class UIManager {
     this.smartSearchHint.className = 'smart-finder-smart-search-hint hidden';
     this.smartSearchHint.textContent = 'Enter to smart search';
 
+    // Create toolbar row container
+    const toolbarRow = document.createElement('div');
+    toolbarRow.className = 'smart-finder-toolbar-row';
+
+    // Assemble toolbar row
+    toolbarRow.appendChild(this.input);
+    toolbarRow.appendChild(this.statsElement);
+    toolbarRow.appendChild(this.settingsDropdown);
+    toolbarRow.appendChild(this.prevButton);
+    toolbarRow.appendChild(this.nextButton);
+    toolbarRow.appendChild(closeButton);
+    
     // Assemble find bar
-    this.findBar.appendChild(this.input);
-    this.findBar.appendChild(this.statsElement);
-    this.findBar.appendChild(this.settingsDropdown);
-    this.findBar.appendChild(this.prevButton);
-    this.findBar.appendChild(this.nextButton);
-    this.findBar.appendChild(closeButton);
+    this.findBar.appendChild(toolbarRow);
     this.findBar.appendChild(this.smartSearchHint);
     
     // Add to shadow root instead of document.body
@@ -134,7 +141,7 @@ export class UIManager {
     return `
               /* SmartFinder - Highlight styles for page content */
       .smart-finder-highlight {
-        background: #ffff00 !important;
+        background: #ffff99 !important; /* Lighter yellow */
         color: #000 !important;
         transition: all 0.1s ease !important;
         position: relative !important;
@@ -142,50 +149,50 @@ export class UIManager {
       }
 
       .smart-finder-highlight.current {
-        background: #ff9632 !important;
+        background: #ffb366 !important; /* Lighter orange */
         color: #000 !important;
       }
 
       /* Multi-term highlighting uses alternating colors for visual distinction */
       .smart-finder-highlight.multi-term-1 {
-        background: #ffff00 !important;
+        background: #ffff99 !important; /* Lighter yellow */
       }
 
       .smart-finder-highlight.multi-term-2 {
-        background: #90ee90 !important;
+        background: #b8f4b8 !important; /* Lighter green */
       }
 
       .smart-finder-highlight.multi-term-3 {
-        background: #ffc0cb !important;
+        background: #ffd1d9 !important; /* Lighter pink */
       }
 
       .smart-finder-highlight.multi-term-4 {
-        background: #87ceeb !important;
+        background: #b3e0f2 !important; /* Lighter blue */
       }
 
       .smart-finder-highlight.multi-term-5 {
-        background: #dda0dd !important;
+        background: #e6b3e6 !important; /* Lighter purple */
       }
 
-      /* Focused versions of multi-term colors - darker/more saturated */
+      /* Focused versions of multi-term colors - slightly darker but still pastel */
       .smart-finder-highlight.current.multi-term-1 {
-        background: #ffcc00 !important; /* Darker yellow */
+        background: #ffeb99 !important; /* Focused yellow */
       }
 
       .smart-finder-highlight.current.multi-term-2 {
-        background: #4caf50 !important; /* Darker green */
+        background: #88cc88 !important; /* Focused green */
       }
 
       .smart-finder-highlight.current.multi-term-3 {
-        background: #e91e63 !important; /* Darker pink */
+        background: #ff99b3 !important; /* Focused pink */
       }
 
       .smart-finder-highlight.current.multi-term-4 {
-        background: #2196f3 !important; /* Darker blue */
+        background: #66b3e6 !important; /* Focused blue */
       }
 
       .smart-finder-highlight.current.multi-term-5 {
-        background: #9c27b0 !important; /* Darker purple */
+        background: #cc99cc !important; /* Focused purple */
       }
 
       /* AI Highlight styles */
@@ -308,12 +315,37 @@ export class UIManager {
         font-size: 13px;
         line-height: 16px;
         padding: 8px 8px;
+        display: block;
+        min-width: 320px;
+        max-width: 380px;
+        width: 340px;
+        pointer-events: auto;
+      }
+
+      .smart-finder-toolbar-row {
         display: flex;
         align-items: center;
         gap: 8px;
-        min-width: 240px;
-        max-width: 360px;
-        pointer-events: auto;
+        flex-wrap: nowrap;
+      }
+
+      .smart-finder-smart-search-hint {
+        width: 100%;
+        font-size: 10px;
+        font-weight: 400;
+        padding: 4px 8px 0px;
+        text-align: left;
+        color: #888;
+        margin-top: 2px;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        opacity: 0.8;
+      }
+
+      .smart-finder-smart-search-hint.hidden {
+        display: none;
       }
 
       @media (prefers-color-scheme: dark) {
@@ -323,6 +355,10 @@ export class UIManager {
           box-shadow: 
             0 12px 40px rgba(0, 0, 0, 0.4),
             0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .smart-finder-smart-search-hint {
+          color: #9aa0a6;
         }
       }
 
@@ -389,25 +425,10 @@ export class UIManager {
         border: none;
       }
 
-      .smart-finder-smart-search-hint {
-        position: absolute;
-        top: 100%;
-        left: 16px;
-        right: 16px;
-        background: rgba(66, 133, 244, 0.95);
-        color: white;
-        font-size: 11px;
-        font-weight: 500;
-        padding: 6px 12px;
-        border-radius: 0 0 12px 12px;
-        text-align: center;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-      }
-
-      .smart-finder-smart-search-hint.hidden {
-        display: none;
+      @media (prefers-color-scheme: dark) {
+        .smart-finder-input.ai-ready {
+          background: rgba(66, 133, 244, 0.25);
+        }
       }
 
       .smart-finder-stats {
@@ -455,12 +476,6 @@ export class UIManager {
         }
       }
 
-      .smart-finder-stats.settings-active {
-        background: rgba(66, 133, 244, 0.1);
-        color: #1a73e8;
-      }
-
-      /* Search progress indicator - Three dot animation */
       .smart-finder-stats.searching {
         position: relative;
         display: flex;
@@ -793,6 +808,9 @@ export class UIManager {
     
     this.input.focus();
     this.input.select();
+    
+    // Ensure input styling is properly initialized
+    this.updateInputStyling(false);
   }
   
   hideFindBar() {
@@ -828,7 +846,7 @@ export class UIManager {
   
   updateInputPlaceholder() {
     if (this.aiMode) {
-      this.input.placeholder = 'Ask AI about this page...';
+      this.input.placeholder = 'Search or ask...';
     } else if (this.useRegex && this.multiTermHighlighting) {
       this.input.placeholder = 'Find in page (multiple regex - QUOTE complex patterns with spaces)';
     } else if (this.useRegex) {
@@ -851,7 +869,18 @@ export class UIManager {
     // Apply AI-ready styling when in AI mode, has input text, and no matches exist
     // (meaning Enter would trigger AI search)
     const hasInputText = this.input.value.trim().length > 0;
-    if (this.aiMode && hasInputText && !hasMatches) {
+    const isDefaultHintText = this.smartSearchHint.textContent === 'Enter to smart search';
+    const isSearching = this.statsElement.classList.contains('searching');
+    
+    // Don't show hint if search is in progress or if we have matches
+    if (isSearching || hasMatches) {
+      this.input.classList.remove('ai-ready');
+      this.smartSearchHint.classList.add('hidden');
+      return;
+    }
+    
+    // Show hint only in AI mode with input text and no matches, and only default hint text
+    if (this.aiMode && hasInputText && !hasMatches && isDefaultHintText) {
       this.input.classList.add('ai-ready');
       this.smartSearchHint.classList.remove('hidden');
     } else {
@@ -863,11 +892,23 @@ export class UIManager {
   // Update smart search hint text (for showing "No results" after AI search)
   updateSmartSearchHint(text = 'Enter to smart search') {
     this.smartSearchHint.textContent = text;
-    // Always show the hint when text is provided
-    if (text) {
+    
+    // If we're setting a non-default hint (like "No results"), show it temporarily
+    // but don't show the default hint automatically
+    if (text !== 'Enter to smart search') {
       this.smartSearchHint.classList.remove('hidden');
+      this.input.classList.remove('ai-ready');
+      
+      // Hide the hint after 3 seconds for non-default messages
+      setTimeout(() => {
+        // Only hide if the text hasn't changed to something else
+        if (this.smartSearchHint.textContent === text) {
+          this.smartSearchHint.classList.add('hidden');
+        }
+      }, 3000);
     } else {
-      this.smartSearchHint.classList.add('hidden');
+      // For default hint text, let updateInputStyling control visibility
+      // Don't automatically show or hide here
     }
   }
   
@@ -915,6 +956,10 @@ export class UIManager {
         thirdDot.className = 'third-dot';
         this.statsElement.appendChild(thirdDot);
       }
+      
+      // Hide hints during search
+      this.smartSearchHint.classList.add('hidden');
+      this.input.classList.remove('ai-ready');
     } else {
       // Restore the original text
       if (this.statsElement.dataset.originalText) {
@@ -929,6 +974,9 @@ export class UIManager {
       if (thirdDot) {
         this.statsElement.removeChild(thirdDot);
       }
+      
+      // After search completes, update input styling to show appropriate hints
+      this.updateInputStyling(false); // Will be corrected by subsequent updateUI call
     }
   }
 
@@ -946,6 +994,9 @@ export class UIManager {
     if (thirdDot) {
       this.statsElement.removeChild(thirdDot);
     }
+    
+    // After search is cancelled, update input styling to show appropriate hints
+    this.updateInputStyling(false);
   }
   
   updateButtonStates(hasMatches) {

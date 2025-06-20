@@ -516,6 +516,9 @@ export class SmartFinder {
     // Show prompt to use AI search with minimal UI changes
     this.ui.setSearchProgress('AI ready', true);
     this.ui.updateSmartSearchHint(); // Reset to default hint text
+    
+    // Update input styling to potentially show the hint if appropriate
+    this.ui.updateInputStyling(false);
   }
 
   testSnippetMatch(snippet) {

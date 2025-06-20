@@ -4,7 +4,6 @@ import { AuthManager } from './modules/auth-manager.js';
 class SmartFinderPopup {
   constructor() {
     this.authManager = new AuthManager();
-    this.selectedTokenAmount = null;
     this.init();
   }
 
@@ -12,6 +11,9 @@ class SmartFinderPopup {
     await this.authManager.initialize();
     this.setupEventListeners();
     await this.updateUI();
+    
+    // Initialize theme
+    await this.initializeTheme();
     
     // Platform-specific keyboard shortcut display
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -48,18 +50,23 @@ class SmartFinderPopup {
     document.getElementById('signOutButton')?.addEventListener('click', () => this.handleSignOut());
     document.getElementById('refreshTokens')?.addEventListener('click', () => this.refreshUserData());
 
-    // Token purchase
-    document.getElementById('buyTokens')?.addEventListener('click', () => this.showTokenPurchase());
-    document.getElementById('cancelPurchase')?.addEventListener('click', () => this.hideTokenPurchase());
-    document.getElementById('buyTokensButton')?.addEventListener('click', () => this.handleTokenPurchase());
-
-    // Token selection
-    document.querySelectorAll('.token-option').forEach(option => {
-      option.addEventListener('click', () => this.selectTokenOption(option));
+    // Custom amount purchase
+    document.getElementById('buyCustomAmount')?.addEventListener('click', () => this.handleCustomAmountPurchase());
+    
+    // Custom amount input validation and preview update
+    document.getElementById('customAmount')?.addEventListener('input', (e) => {
+      this.validateCustomAmount(e.target);
+      this.updateTokenPreview(e.target.value);
     });
-
-    // Find bar functionality
-    document.getElementById('openFind')?.addEventListener('click', () => this.openFindBar());
+    
+    // Floating footer collapse/expand functionality
+    document.getElementById('collapseBtn')?.addEventListener('click', () => this.toggleFooterCollapse());
+    
+    // Initialize token preview
+    this.updateTokenPreview(5);
+    
+    // Load footer state from storage
+    this.loadFooterState();
   }
 
   async updateUI() {
@@ -79,11 +86,13 @@ class SmartFinderPopup {
 
       document.getElementById('userName').textContent = user.name || 'User';
       document.getElementById('userEmail').textContent = user.email;
-      document.getElementById('tokenCount').textContent = `${tokens} tokens`;
+      
+      // Update token count with clean formatting
+      document.getElementById('tokenCount').textContent = `${tokens}`;
       
       // Update token breakdown
-      document.getElementById('freeTokens').textContent = `${freeTokens} free`;
-      document.getElementById('paidTokens').textContent = `${paidTokens} paid`;
+      document.getElementById('freeTokens').textContent = `${freeTokens}`;
+      document.getElementById('paidTokens').textContent = `${paidTokens}`;
       
       if (user.profile_picture) {
         document.getElementById('userAvatar').src = user.profile_picture;
@@ -92,6 +101,32 @@ class SmartFinderPopup {
       // Show sign in prompt
       signInPrompt?.classList.remove('hidden');
       userSection?.classList.add('hidden');
+    }
+  }
+
+  // Theme management
+  async initializeTheme() {
+    try {
+      // Check if the system is using dark mode
+      const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.applyTheme(isDarkMode ? 'dark' : 'light');
+      
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        this.applyTheme(e.matches ? 'dark' : 'light');
+      });
+    } catch (error) {
+      console.error('Failed to initialize theme:', error);
+      this.applyTheme('light');
+    }
+  }
+
+  applyTheme(theme) {
+    const body = document.body;
+    if (theme === 'dark') {
+      body.setAttribute('data-theme', 'dark');
+    } else {
+      body.removeAttribute('data-theme');
     }
   }
 
@@ -133,7 +168,7 @@ class SmartFinderPopup {
       
       // Show success feedback briefly
       if (refreshButton) {
-        refreshButton.textContent = '✓';
+        refreshButton.textContent = 'Updated';
         setTimeout(() => {
           refreshButton.textContent = originalText;
           refreshButton.disabled = false;
@@ -145,7 +180,7 @@ class SmartFinderPopup {
       
       // Show error feedback
       if (refreshButton) {
-        refreshButton.textContent = '✗';
+        refreshButton.textContent = 'Error';
         setTimeout(() => {
           refreshButton.textContent = originalText;
           refreshButton.disabled = false;
@@ -162,47 +197,27 @@ class SmartFinderPopup {
     }
   }
 
-  // Token purchase functionality
-  showTokenPurchase() {
-    document.getElementById('tokenPurchase').classList.remove('hidden');
-  }
-
-  hideTokenPurchase() {
-    document.getElementById('tokenPurchase').classList.add('hidden');
-    this.selectedTokenAmount = null;
-    this.updateTokenPurchaseButton();
-  }
-
-  selectTokenOption(option) {
-    // Remove active class from all options
-    document.querySelectorAll('.token-option').forEach(opt => opt.classList.remove('active'));
+  // Custom amount purchase
+  async handleCustomAmountPurchase() {
+    const customInput = document.getElementById('customAmount');
+    const customButton = document.getElementById('buyCustomAmount');
+    const amount = parseFloat(customInput.value);
     
-    // Add active class to selected option
-    option.classList.add('active');
-    
-    // Get token amount from data attribute
-    this.selectedTokenAmount = parseInt(option.dataset.tokens);
-    this.updateTokenPurchaseButton();
-  }
-
-  updateTokenPurchaseButton() {
-    const button = document.getElementById('buyTokensButton');
-    if (this.selectedTokenAmount) {
-      button.textContent = `Buy ${this.selectedTokenAmount} Tokens`;
-      button.disabled = false;
-    } else {
-      button.textContent = 'Select Token Amount';
-      button.disabled = true;
-    }
-  }
-
-  async handleTokenPurchase() {
-    if (!this.selectedTokenAmount) {
+    if (!this.validateCustomAmountValue(amount)) {
+      this.showCustomAmountError('Please enter a valid amount between $1.00 and $300.00');
       return;
     }
 
     try {
-      const paymentUrl = await this.authManager.getPaymentUrl(this.selectedTokenAmount);
+      // Add visual feedback
+      customButton.disabled = true;
+      customButton.textContent = '...';
+      
+      // Calculate tokens (100 tokens per $1)
+      const tokenAmount = Math.floor(amount * 100);
+      
+      // Pass the exact dollar amount to ensure proper Stripe handling
+      const paymentUrl = await this.authManager.getPaymentUrl(tokenAmount, amount);
       
       // Open payment in new tab
       await chrome.tabs.create({ url: paymentUrl });
@@ -210,33 +225,101 @@ class SmartFinderPopup {
       // Close popup after opening payment page
       window.close();
     } catch (error) {
-      console.error('Payment failed:', error);
+      console.error('Custom payment failed:', error);
+      
+      // Show error feedback
+      this.showCustomAmountError('Payment failed. Please try again.');
+      
+      // Reset button
+      customButton.disabled = false;
+      customButton.textContent = 'Buy Tokens';
     }
   }
 
-  // Find bar functionality
-  async openFindBar() {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (!tab || !tab.url || tab.url.startsWith('chrome://')) {
-        return;
+  // Update token preview
+  updateTokenPreview(amount) {
+    const previewElement = document.getElementById('tokensPreview');
+    const numAmount = parseFloat(amount);
+    
+    if (previewElement && !isNaN(numAmount) && numAmount > 0) {
+      const tokens = Math.floor(numAmount * 100);
+      previewElement.textContent = `${tokens} tokens`;
+    } else if (previewElement) {
+      previewElement.textContent = '0 tokens';
+    }
+  }
+
+  // Validate custom amount input
+  validateCustomAmount(input) {
+    const buyButton = document.getElementById('buyCustomAmount');
+    const amount = parseFloat(input.value);
+    
+    if (this.validateCustomAmountValue(amount)) {
+      buyButton.disabled = false;
+      input.style.borderColor = 'var(--border-color)';
+    } else {
+      buyButton.disabled = true;
+      if (input.value && amount) {
+        input.style.borderColor = 'var(--error-color)';
+      } else {
+        input.style.borderColor = 'var(--border-color)';
       }
+    }
+  }
 
-      // Close popup
-      window.close();
+  // Validate custom amount value
+  validateCustomAmountValue(amount) {
+    return !isNaN(amount) && amount >= 1 && amount <= 300;
+  }
 
-      // Inject and execute content script
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      });
+  // Show custom amount error
+  showCustomAmountError(message) {
+    const customInput = document.getElementById('customAmount');
+    const customButton = document.getElementById('buyCustomAmount');
+    
+    // Show error state
+    customInput.style.borderColor = 'var(--error-color)';
+    customButton.textContent = 'Error';
+    customButton.disabled = true;
+    
+    // Reset after delay
+    setTimeout(() => {
+      customInput.style.borderColor = 'var(--border-color)';
+      customButton.textContent = 'Buy Tokens';
+      this.validateCustomAmount(customInput);
+    }, 2000);
+  }
 
-      // Send message to open find bar
-      await chrome.tabs.sendMessage(tab.id, { action: 'openFind' });
+  // Footer collapse/expand functionality
+  toggleFooterCollapse() {
+    const footer = document.getElementById('purchaseFooter');
+    const collapseBtn = document.getElementById('collapseBtn');
+    
+    footer.classList.toggle('collapsed');
+    collapseBtn.textContent = footer.classList.contains('collapsed') ? '+' : '−';
+    
+    // Save state to storage
+    chrome.storage.local.set({
+      footerCollapsed: footer.classList.contains('collapsed')
+    });
+  }
 
+  // Load footer state from storage
+  async loadFooterState() {
+    try {
+      const result = await chrome.storage.local.get(['footerCollapsed']);
+      const footer = document.getElementById('purchaseFooter');
+      const collapseBtn = document.getElementById('collapseBtn');
+      
+      if (result.footerCollapsed) {
+        footer.classList.add('collapsed');
+        collapseBtn.textContent = '+';
+      } else {
+        footer.classList.remove('collapsed');
+        collapseBtn.textContent = '−';
+      }
     } catch (error) {
-      console.error('Failed to open find bar:', error);
+      console.error('Failed to load footer state:', error);
     }
   }
 }

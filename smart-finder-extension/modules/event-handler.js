@@ -32,9 +32,13 @@ export class EventHandler {
     // Real-time search with adaptive debouncing
     ui.input.addEventListener('input', () => {
       this.handleSearchInput(ui, onSearch);
-      // Immediately update styling for empty input in AI mode
-      if (ui.aiMode && ui.input.value.trim().length === 0) {
-        ui.updateInputStyling(false);
+      
+      // Update styling based on current input state in AI mode
+      if (ui.aiMode) {
+        // Update input styling to show/hide hints appropriately
+        // This will be corrected by search results when they come in
+        const hasInputText = ui.input.value.trim().length > 0;
+        ui.updateInputStyling(false); // Assume no matches until search completes
       }
     });
     

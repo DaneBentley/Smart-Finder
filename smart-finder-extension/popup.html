@@ -5,200 +5,336 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Finder</title>
   <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --border-color: #e2e8f0;
+      --border-color-hover: #cbd5e1;
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --success-bg: #f0fdf4;
+      --success-border: #dcfce7;
+      --success-text: #065f46;
+      --green-primary: #10b981;
+      --green-hover: #059669;
+      --button-disabled: #e2e8f0;
+      --button-disabled-text: #94a3b8;
+      --error-color: #dc2626;
+      --surface-hover: #f8fafc;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #202124;
+      --bg-secondary: #292a2d;
+      --bg-tertiary: #35363a;
+      --text-primary: #e8eaed;
+      --text-secondary: #9aa0a6;
+      --border-color: #3c4043;
+      --border-color-hover: #5f6368;
+      --accent-color: #8ab4f8;
+      --accent-hover: #93bbf7;
+      --success-bg: #1e2718;
+      --success-border: #2e4324;
+      --success-text: #81c995;
+      --green-primary: #81c995;
+      --green-hover: #8dd5a0;
+      --button-disabled: #3c4043;
+      --button-disabled-text: #9aa0a6;
+      --error-color: #f28b82;
+      --surface-hover: #35363a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
-      width: 320px;
-      padding: 16px;
+      width: 360px;
+      height: 600px;
+      padding: 0;
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 13px;
-      line-height: 1.4;
-      background: #fff;
-      color: #202124;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      padding-bottom: 120px; /* Space for floating footer */
     }
     
     .header {
       display: flex;
       align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #e8eaed;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
     }
     
     .logo {
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(45deg, #4285f4, #34a853);
-      border-radius: 4px;
+      width: 32px;
+      height: 32px;
+      background: var(--accent-color);
+      border-radius: 10px;
       margin-right: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-weight: bold;
-      font-size: 12px;
+      font-weight: 700;
+      font-size: 14px;
     }
     
     .title {
-      font-size: 16px;
-      font-weight: 500;
-      color: #202124;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
     }
     
     .auth-section {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     
     .user-info {
       display: flex;
       align-items: center;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
     
     .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       margin-right: 12px;
-      background: #e8eaed;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--bg-secondary);
     }
     
     .user-details {
       flex: 1;
+      min-width: 0;
     }
     
     .user-name {
-      font-weight: 500;
+      font-weight: 600;
       margin-bottom: 2px;
+      color: var(--text-primary);
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .user-email {
-      font-size: 11px;
-      color: #5f6368;
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .token-info {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .token-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
-      background: #e8f0fe;
-      border-radius: 6px;
       margin-bottom: 12px;
-      border: 1px solid #d2e3fc;
     }
     
     .token-count {
-      font-weight: 500;
-      color: #1a73e8;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent-color);
+      line-height: 1;
+      letter-spacing: -0.025em;
     }
     
     .token-label {
-      font-size: 11px;
-      color: #5f6368;
-    }
-    
-    .action-button {
-      width: 100%;
-      padding: 12px 16px;
-      background: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
       font-weight: 500;
+    }
+    
+    .refresh-button {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
       cursor: pointer;
-      transition: background-color 0.15s ease;
-      margin-bottom: 8px;
+      transition: all 0.2s ease;
+      font-weight: 500;
     }
     
-    .action-button:hover {
-      background: #3367d6;
+    .refresh-button:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-color-hover);
     }
     
-    .action-button:active {
-      background: #2a56c6;
+    .token-breakdown {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .token-type .amount {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .monthly-info {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--success-text);
+      text-align: center;
+      font-weight: 500;
     }
     
     .secondary-button {
-      background: #f8f9fa;
-      color: #5f6368;
-      border: 1px solid #dadce0;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      width: 100%;
+      cursor: pointer;
     }
     
     .secondary-button:hover {
-      background: #f1f3f4;
-    }
-    
-    .buy-tokens-button {
-      background: #34a853;
-    }
-    
-    .buy-tokens-button:hover {
-      background: #2d9334;
+      background: var(--surface-hover);
+      color: var(--text-primary);
+      border-color: var(--border-color-hover);
     }
     
     .sign-in-prompt {
       text-align: center;
-      padding: 20px 12px;
-      background: #fef7e0;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      border: 1px solid #fce8b2;
+      padding: 24px 20px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
     
     .sign-in-prompt h3 {
       margin: 0 0 8px 0;
-      color: #ea8600;
-      font-size: 14px;
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
     }
     
     .sign-in-prompt p {
-      margin: 0 0 16px 0;
-      color: #5f6368;
-      font-size: 12px;
+      margin: 0 0 20px 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
     }
     
-    .feature-list {
-      margin-bottom: 16px;
+    .action-button {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+      letter-spacing: -0.025em;
     }
     
-    .feature-item {
+    .action-button:hover {
+      background: var(--accent-hover);
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.025em;
+    }
+    
+    .compact-list {
+      margin-bottom: 20px;
+    }
+    
+    .compact-item {
       display: flex;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 12px;
-      color: #5f6368;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
     }
     
-    .feature-item::before {
-      content: '✓';
-      color: #34a853;
-      font-weight: bold;
-      margin-right: 8px;
+    .compact-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .compact-item::before {
+      content: '•';
+      margin-right: 10px;
+      margin-top: 1px;
+      flex-shrink: 0;
     }
     
     .shortcuts {
-      background: #f8f9fa;
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .shortcuts-title {
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: #202124;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
     
     .shortcut {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
-      font-size: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
     }
     
     .shortcut:last-child {
@@ -206,186 +342,272 @@
     }
     
     .shortcut-key {
-      background: #e8eaed;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: monospace;
+      background: var(--bg-tertiary);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, monospace;
       font-size: 11px;
-      color: #5f6368;
-    }
-    
-    .info {
-      color: #5f6368;
-      font-size: 12px;
-      text-align: center;
-      margin-top: 12px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-weight: 500;
     }
     
     .hidden {
       display: none;
     }
     
-    .token-purchase {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 12px;
+    /* Floating Footer for Token Purchase */
+    .floating-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 16px 24px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .purchase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 12px;
     }
     
-    .token-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
+    .purchase-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
     }
     
-    .token-option {
-      padding: 8px;
-      border: 1px solid #dadce0;
-      border-radius: 6px;
-      text-align: center;
+    .collapse-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 18px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
     
-    .token-option:hover {
-      border-color: #4285f4;
-      background: #f8fbff;
+    .collapse-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text-primary);
     }
     
-    .token-option.active {
-      border-color: #4285f4;
-      background: #e8f0fe;
+    .custom-amount {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
     
-    .token-amount {
+    .custom-amount-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .currency-symbol {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    
+    #customAmount {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 15px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    
+    #customAmount:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      background: var(--bg-secondary);
+    }
+    
+    .custom-buy-button {
+      background: var(--green-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .custom-buy-button:hover {
+      background: var(--green-hover);
+    }
+    
+    .custom-buy-button:disabled {
+      background: var(--button-disabled);
+      color: var(--button-disabled-text);
+      cursor: not-allowed;
+    }
+    
+    .tokens-preview {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
       font-weight: 500;
-      margin-bottom: 2px;
     }
     
-    .token-price {
-      font-size: 11px;
-      color: #5f6368;
+    .footer-links {
+      text-align: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .footer-links a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Collapsed state */
+    .floating-footer.collapsed .custom-amount,
+    .floating-footer.collapsed .footer-links {
+      display: none;
+    }
+    
+    .floating-footer.collapsed {
+      padding: 12px 24px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">SF</div>
-    <div class="title">Smart Finder</div>
-  </div>
-  
-  <!-- Authentication Section -->
-  <div class="auth-section">
-    <!-- Sign In Prompt (shown when not authenticated) -->
-    <div id="signInPrompt" class="sign-in-prompt">
-      <h3>🔐 Sign In Required</h3>
-      <p>Sign in with your Google account to access AI-powered search</p>
-      
-      <button class="action-button" id="signInButton">
-        Sign In with Google
-      </button>
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SF</div>
+        <div class="title">Smart Finder</div>
+      </div>
     </div>
     
-    <!-- User Info (shown when authenticated) -->
-    <div id="userSection" class="hidden">
-      <div class="user-info">
-        <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
-        <div class="user-details">
-          <div id="userName" class="user-name"></div>
-          <div id="userEmail" class="user-email"></div>
-        </div>
-      </div>
-      
-      <div class="token-info">
-        <div>
-          <div id="tokenCount" class="token-count">0 tokens</div>
-          <div id="tokenBreakdown" class="token-label" style="font-size: 10px; color: #5f6368; margin-top: 2px;">
-            <span id="freeTokens">0 free</span> + <span id="paidTokens">0 paid</span>
-          </div>
-          <div class="token-label">AI searches available</div>
-        </div>
-        <button id="refreshTokens" class="secondary-button" style="padding: 4px 8px; font-size: 11px;">Refresh</button>
-      </div>
-      
-      <!-- Token Purchase Options -->
-      <div id="tokenPurchase" class="token-purchase hidden">
-        <div style="font-weight: 500; margin-bottom: 8px;">Buy AI Tokens</div>
-        <div class="token-options">
-          <div class="token-option" data-tokens="100">
-            <div class="token-amount">100 tokens</div>
-            <div class="token-price">$1.00</div>
-          </div>
-          <div class="token-option" data-tokens="500">
-            <div class="token-amount">500 tokens</div>
-            <div class="token-price">$5.00</div>
-          </div>
-          <div class="token-option" data-tokens="1000">
-            <div class="token-amount">1000 tokens</div>
-            <div class="token-price">$10.00</div>
-          </div>
-          <div class="token-option" data-tokens="2000">
-            <div class="token-amount">2000 tokens</div>
-            <div class="token-price">$20.00</div>
-          </div>
-        </div>
-        <button id="buyTokensButton" class="action-button buy-tokens-button" disabled>
-          Select Token Amount
-        </button>
-        <button id="cancelPurchase" class="secondary-button">
-          Cancel
+    <!-- Authentication Section -->
+    <div class="auth-section">
+      <!-- Sign In Prompt (shown when not authenticated) -->
+      <div id="signInPrompt" class="sign-in-prompt">
+        <h3>Welcome to Smart Finder</h3>
+        <p>Get 50 free AI searches monthly with Google sign-in</p>
+        
+        <button class="action-button" id="signInButton">
+          Sign In with Google
         </button>
       </div>
       
-      <button id="buyTokens" class="action-button buy-tokens-button">
-        Buy More Tokens
-      </button>
-      
-      <button id="signOutButton" class="secondary-button">
-        Sign Out
-      </button>
+      <!-- User Info (shown when authenticated) -->
+      <div id="userSection" class="hidden">
+        <div class="user-info">
+          <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+          <div class="user-details">
+            <div id="userName" class="user-name"></div>
+            <div id="userEmail" class="user-email"></div>
+          </div>
+        </div>
+        
+        <div class="token-info">
+          <div class="token-header">
+            <div>
+              <div id="tokenCount" class="token-count">0</div>
+              <div class="token-label">AI searches available</div>
+            </div>
+            <button id="refreshTokens" class="refresh-button">Refresh</button>
+          </div>
+          
+          <div class="token-breakdown">
+            <div class="token-type">
+              <span class="amount" id="freeTokens">0</span> free
+            </div>
+            <div class="token-type">
+              <span class="amount" id="paidTokens">0</span> purchased
+            </div>
+          </div>
+          
+          <div class="monthly-info">
+            You receive 50 free tokens every month
+          </div>
+        </div>
+        
+        <button id="signOutButton" class="secondary-button">
+          Sign Out
+        </button>
+      </div>
+    </div>
+    
+    <div class="compact-list">
+      <div class="section-title">Pro Tips</div>
+      <div class="compact-item">Use natural language: "main points" or "most important" or "phone" or "email" or "dates" to search for regular expressions</div>
+      <div class="compact-item">For multiple terms sperate with a space or 'use quotes for phrases'</div>
+      <div class="compact-item">Regular Ctrl+F search is always free and unlimited</div>
+      <div class="compact-item">AI searches use one token per query, but more for longer content</div>
+
+    </div>
+    
+    <div class="shortcuts">
+      <div class="section-title">Keyboard Shortcuts</div>
+      <div class="shortcut">
+        <span>Open find</span>
+        <span class="shortcut-key" id="findKey">Ctrl+F</span>
+      </div>
+      <div class="shortcut">
+        <span>Next match</span>
+        <span class="shortcut-key">Enter</span>
+      </div>
+      <div class="shortcut">
+        <span>Previous</span>
+        <span class="shortcut-key">Shift+Enter</span>
+      </div>
+      <div class="shortcut">
+        <span>Close</span>
+        <span class="shortcut-key">Esc</span>
+      </div>
     </div>
   </div>
   
-  <button class="action-button" id="openFind">
-    Open Find Bar
-  </button>
-  
-  <div class="feature-list">
-    <div class="feature-item">AI-powered semantic search</div>
-                    <div class="feature-item">Native-style highlighting</div>
-    <div class="feature-item">Real-time pattern detection</div>
-    <div class="feature-item">Smart visibility filtering</div>
-  </div>
-  
-  <div class="shortcuts">
-    <div class="shortcuts-title">Keyboard Shortcuts</div>
-    <div class="shortcut">
-      <span>Open find bar</span>
-      <span class="shortcut-key" id="findKey">Ctrl+F</span>
+  <!-- Floating Footer for Token Purchase -->
+  <div class="floating-footer" id="purchaseFooter">
+    <div class="purchase-header">
+      <div class="purchase-title">Buy More Tokens</div>
+      <button class="collapse-btn" id="collapseBtn">−</button>
     </div>
-    <div class="shortcut">
-      <span>Next match</span>
-      <span class="shortcut-key">Enter</span>
+    
+    <div class="custom-amount">
+      <div class="custom-amount-input">
+        <span class="currency-symbol">$</span>
+        <input type="number" id="customAmount" value="5" min="1" max="300" step="0.01" placeholder="5.00">
+        <button id="buyCustomAmount" class="custom-buy-button">Buy Tokens</button>
+      </div>
+      <div class="tokens-preview" id="tokensPreview">500 tokens</div>
     </div>
-    <div class="shortcut">
-      <span>Previous match</span>
-      <span class="shortcut-key">Shift+Enter</span>
+    
+    <div class="footer-links">
+      <a href="privacy-policy.html" target="_blank">Privacy Policy</a>
     </div>
-    <div class="shortcut">
-      <span>Close find bar</span>
-      <span class="shortcut-key">Escape</span>
-    </div>
-  </div>
-  
-  <div class="info">
-    AI-powered search with Chrome's native find behavior using secure OAuth authentication and token-based usage.
-  </div>
-  
-  <div class="footer-links" style="text-align: center; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e8eaed;">
-    <a href="privacy-policy.html" target="_blank" style="color: #1a73e8; text-decoration: none; font-size: 12px;">Privacy Policy</a>
   </div>
   
   <script src="popup.js" type="module"></script>
 </body>
-</html> 
+</html>
