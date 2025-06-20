@@ -1,4 +1,4 @@
-# Chrome Find Clone with AI Search
+# SmartFinder with AI Search
 
 A faithful one-to-one reproduction of Chrome's native "Find on page" functionality as a Chrome extension, enhanced with AI-powered intelligent search capabilities. This extension replicates the exact behavior and appearance of Chrome's built-in find feature while adding the ability to search using natural language queries.
 
@@ -66,7 +66,7 @@ To enable AI search functionality, see the [AI Setup Guide](AI_SETUP_GUIDE.md) f
 
 ### Opening the Find Bar
 - **Keyboard**: Press `Ctrl+F` (Windows/Linux) or `Cmd+F` (Mac)
-- **Extension Icon**: Click the Chrome Find Clone icon in the toolbar
+- **Extension Icon**: Click the SmartFinder icon in the toolbar
 - **Extension Popup**: Click the "Open Find Bar" button
 
 ### Searching
@@ -159,15 +159,15 @@ The extension follows Chrome extension Manifest V3 standards and consists of:
 - **Background Service Worker** (`background.js`): Handles keyboard shortcuts and messaging
 - **Content Script** (`content.js`): Main find functionality injected into web pages
 - **Popup Interface** (`popup.html/js`): Extension popup for manual activation
-- **Styling** (`findbar.css`): Chrome-native appearance and highlighting
+- **Styling** (`findbar.css`): Native-style appearance and highlighting
 
-### Native Chrome Behavior Replication
+### Native Browser Behavior Replication
 
 #### Text Traversal
-Uses `document.createTreeWalker()` with `NodeFilter.SHOW_TEXT` to traverse only text nodes, exactly like Chrome's native implementation.
+Uses `document.createTreeWalker()` with `NodeFilter.SHOW_TEXT` to traverse only text nodes, exactly like browsers' native implementation.
 
 #### Visibility Filtering
-Implements Chrome's visibility checks:
+Implements standard browser visibility checks:
 - `display: none` elements
 - `visibility: hidden` elements  
 - `opacity: 0` elements
@@ -224,7 +224,7 @@ These optimizations ensure SmartFind remains responsive even when searching larg
 ## Limitations
 
 - Cannot search in browser internal pages (`chrome://`, `chrome-extension://`)
-- Does not search in Shadow DOM (matching Chrome's native behavior)
+- Does not search in Shadow DOM (matching browsers' native behavior)
 - Does not search in pseudo-elements or element attributes
 - Limited to visible text content only
 
@@ -232,11 +232,15 @@ These optimizations ensure SmartFind remains responsive even when searching larg
 
 ### File Structure
 ```
-chrome-find-clone/
+smart-finder-extension/
 ├── manifest.json          # Extension manifest
 ├── background.js          # Service worker
 ├── content.js            # Main find functionality
-├── findbar.css          # Styling
+├── modules/               # Core functionality modules
+│   ├── smart-finder.js   # Main controller
+│   ├── ui-manager.js     # UI components
+│   ├── search-engine.js  # Search logic
+│   └── ...               # Other modules
 ├── popup.html           # Extension popup
 ├── popup.js             # Popup functionality
 └── README.md            # Documentation
@@ -270,10 +274,10 @@ This project is open source and available under the MIT License.
 
 ## Acknowledgments
 
-This extension replicates the behavior of Chrome's native find functionality. Implementation details were derived from:
+This extension replicates the behavior of browsers' native find functionality. Implementation details were derived from:
 - Chrome DevTools documentation
 - Chromium source code analysis  
 - DOM API specifications
 - Chrome extension development guidelines
 
-The goal is to provide a faithful reproduction of Chrome's native find experience while demonstrating modern web API usage and extension development best practices. 
+The goal is to provide a faithful reproduction of browsers' native find experience while demonstrating modern web API usage and extension development best practices. 

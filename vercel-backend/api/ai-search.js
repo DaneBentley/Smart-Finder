@@ -1,6 +1,7 @@
-
 import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import { rateLimiter } from '../rate-limiter.js';
+import { extractAndValidateJWT, handleJWTError, JWTSecurityError } from '../jwt-security.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -24,70 +25,81 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authentication required for AI features' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    let userId;
-    
+    // Security: Enhanced JWT validation
+    let decoded;
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.userId;
+      decoded = extractAndValidateJWT(req);
     } catch (error) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+      if (error instanceof JWTSecurityError) {
+        return handleJWTError(error, res);
+      }
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
+    
+    const userId = decoded.userId;
+
+    // Security: Check rate limits before consuming tokens
+    const rateLimitCheck = await rateLimiter.checkRateLimit(userId);
+    if (!rateLimitCheck.allowed) {
+      return res.status(429).json({ 
+        error: rateLimitCheck.message,
+        retryAfter: rateLimitCheck.retryAfter 
+      });
     }
 
-    // Verify user has tokens and check rate limits
-    const { data: userData, error: userError } = await supabase
-      .from('user_data')
-      .select('paid_tokens, last_request_at, request_count_today')
-      .eq('user_id', userId)
-      .single();
+    // ATOMIC TOKEN CONSUMPTION - Fix race condition vulnerability
+    console.log('🔍 AI Search - Atomically consuming token for user:', userId);
+    
+    // Use PostgreSQL's atomic decrement with a check
+    const { data: consumeResult, error: consumeError } = await supabase.rpc('consume_user_token', {
+      p_user_id: userId
+    });
 
-    if (userError || !userData || userData.paid_tokens <= 0) {
+    if (consumeError || !consumeResult || !consumeResult.success) {
+      console.log('🔍 AI Search - Token consumption failed:', { 
+        error: consumeError,
+        result: consumeResult
+      });
       return res.status(403).json({ 
         error: 'Insufficient tokens',
-        tokens: userData?.paid_tokens || 0
+        tokens: consumeResult?.remaining_tokens || 0
+        // Security: Removed debug info that could leak sensitive data
       });
     }
-
-    // Simple server-side rate limiting (100 requests per day)
-    const now = new Date();
-    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const lastRequestDate = userData.last_request_at ? 
-      new Date(userData.last_request_at).toISOString().split('T')[0] : null;
-    
-    let requestCountToday = userData.request_count_today || 0;
-    
-    // Reset counter if it's a new day
-    if (lastRequestDate !== today) {
-      requestCountToday = 0;
-    }
-    
-    // Check daily limit (generous limit to catch only severe abuse)
-    if (requestCountToday >= 200) {
-      return res.status(429).json({ 
-        error: 'Daily rate limit exceeded',
-        message: 'Maximum 200 API calls per day. Please try again tomorrow.'
-      });
-    }
-
-    // Update request tracking
-    await supabase
-      .from('user_data')
-      .update({
-        last_request_at: now.toISOString(),
-        request_count_today: requestCountToday + 1
-      })
-      .eq('user_id', userId);
 
     const { query, content } = req.body;
 
+    // Input validation and sanitization
     if (!query || !content) {
+      // Refund the token if request validation fails
+      await supabase.rpc('refund_user_token', { p_user_id: userId });
       return res.status(400).json({ error: 'Query and content are required' });
+    }
+
+    // Security: Validate input types and lengths
+    if (typeof query !== 'string' || typeof content !== 'string') {
+      await supabase.rpc('refund_user_token', { p_user_id: userId });
+      return res.status(400).json({ error: 'Query and content must be strings' });
+    }
+
+    // Security: Limit input sizes to prevent DoS attacks
+    if (query.length > 1000) {
+      await supabase.rpc('refund_user_token', { p_user_id: userId });
+      return res.status(400).json({ error: 'Query too long (max 1000 characters)' });
+    }
+
+    if (content.length > 500000) { // 500KB limit
+      await supabase.rpc('refund_user_token', { p_user_id: userId });
+      return res.status(400).json({ error: 'Content too large (max 500KB)' });
+    }
+
+    // Security: Basic sanitization
+    const sanitizedQuery = query.trim();
+    const sanitizedContent = content.trim();
+
+    if (!sanitizedQuery || !sanitizedContent) {
+      await supabase.rpc('refund_user_token', { p_user_id: userId });
+      return res.status(400).json({ error: 'Query and content cannot be empty' });
     }
 
     const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
@@ -105,7 +117,7 @@ export default async function handler(req, res) {
           },
           {
             role: 'user',
-            content: `Query: ${query}\n\nPage text: ${content}\n\nExtract exact phrases, sentinces or paragraphs that satisfy the query based on what you think the user might be searching for. Return format: ["exact text from page", "another exact text"]`
+            content: `Query: ${sanitizedQuery}\n\nPage text: ${sanitizedContent}\n\nExtract exact phrases, sentinces or paragraphs that satisfy the query based on what you think the user might be searching for. Return format: ["exact text from page", "another exact text"]`
           }
         ],
         temperature: 0.1,
@@ -140,6 +152,13 @@ export default async function handler(req, res) {
     }
 
     console.log('🤖 Raw AI Response:', aiResponse);
+
+    // Security: Record the successful request for rate limiting
+    await rateLimiter.recordRequest(userId, 'ai-search', {
+      queryLength: sanitizedQuery.length,
+      contentLength: sanitizedContent.length,
+      success: true
+    });
 
     // Return the raw AI response to let the frontend handle cleaning
     return res.status(200).json({ 

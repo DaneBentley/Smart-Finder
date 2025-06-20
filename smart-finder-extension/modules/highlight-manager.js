@@ -44,7 +44,7 @@ export class HighlightManager {
   
   createHighlightElement(range, index, currentIndex, termToColorMap, caseSensitive, useRegex, text = null) {
     const highlight = document.createElement('span');
-    highlight.className = 'chrome-find-clone-highlight';
+          highlight.className = 'smart-finder-highlight';
     
     // Add multi-term color class if applicable
     const colorIndex = this.getColorIndex(range, termToColorMap, caseSensitive, useRegex, text);

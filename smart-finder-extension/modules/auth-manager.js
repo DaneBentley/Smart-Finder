@@ -5,7 +5,7 @@
 
 class AuthManager {
   constructor() {
-    this.apiBaseUrl = 'https://findr-backend-clean-iwy5l8aq7.vercel.app/api';
+    this.apiBaseUrl = 'https://findr-api-backend.vercel.app/api';
     this.currentUser = null;
     this.userTokens = 0;
     this.isInitialized = false;
@@ -180,23 +180,31 @@ class AuthManager {
         throw new Error('No user signed in');
       }
 
-      const token = await this.getValidAccessToken();
-      if (!token) {
-        throw new Error('Failed to get access token');
+      // Get the stored JWT token (not the OAuth access token)
+      const { jwt } = await chrome.storage.local.get(['jwt']);
+      if (!jwt) {
+        throw new Error('No JWT token found - please sign in again');
       }
 
       const response = await fetch(`${this.apiBaseUrl}/user/profile`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${jwt}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to refresh user data');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to refresh user data');
       }
 
       const userData = await response.json();
-      await this.storeUserData(userData);
+      
+      // Update the stored data with the new values but keep the same JWT
+      await this.storeUserData({
+        user: userData.user,
+        tokens: userData.tokens,
+        jwt: jwt  // Keep the existing JWT
+      });
       return userData;
       
     } catch (error) {
@@ -254,12 +262,12 @@ class AuthManager {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create payment session');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create payment session');
       }
 
       const result = await response.json();
-      return result.url;
+      return result.paymentUrl;  // Use 'paymentUrl' instead of 'url'
       
     } catch (error) {
       console.error('Payment URL creation failed:', error);
@@ -281,6 +289,68 @@ class AuthManager {
 
   hasTokens() {
     return this.userTokens > 0;
+  }
+
+  async debugJWT() {
+    try {
+      const { jwt } = await chrome.storage.local.get(['jwt']);
+      
+      const response = await fetch(`${this.apiBaseUrl}/debug/jwt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
+        }
+      });
+
+      const result = await response.json();
+      console.log('🔍 JWT Debug Result:', result);
+      return result;
+      
+    } catch (error) {
+      console.error('JWT debug failed:', error);
+      throw error;
+    }
+  }
+
+  async syncUser() {
+    try {
+      const { jwt } = await chrome.storage.local.get(['jwt']);
+      if (!jwt) {
+        throw new Error('No JWT token found');
+      }
+      
+      const response = await fetch(`${this.apiBaseUrl}/user/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to sync user');
+      }
+
+      const result = await response.json();
+      console.log('🔄 User sync result:', result);
+      
+      // Update local user data if sync was successful
+      if (result.synced) {
+        await this.storeUserData({
+          user: result.user,
+          tokens: result.tokens,
+          jwt: jwt
+        });
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('User sync failed:', error);
+      throw error;
+    }
   }
 }
 

@@ -14,7 +14,7 @@ smart-finder-extension/
 └── modules/              # Modular JavaScript components
     ├── auth-manager.js   # Modern OAuth authentication (2024)
     ├── ai-service.js     # AI-powered search service
-    ├── chrome-find-clone.js # Main find functionality
+    ├── smart-finder.js # Main find functionality
     ├── event-handler.js  # Event management
     ├── highlight-manager.js # Text highlighting
     ├── navigation-manager.js # Search navigation

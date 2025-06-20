@@ -8,7 +8,7 @@ export class EventHandler {
     this.isVisible = false;
     this.typingTimer = null;
     this.searchDelay = {
-      normal: 100,  // Chrome-like delay for normal searches
+      normal: 100,  // Browser-like delay for normal searches
       heavy: 300,   // Longer delay for heavy searches (many results)
       typing: 50    // Very short delay while actively typing
     };

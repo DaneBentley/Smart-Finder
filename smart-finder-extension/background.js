@@ -1,4 +1,4 @@
-// Background service worker for Chrome Find Clone
+// Background service worker for SmartFinder
 // Handles keyboard shortcuts, browser action, and messaging
 
 console.log('Smart Finder background script loaded');
@@ -71,7 +71,7 @@ async function handleFindToggle() {
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: () => window.chromeFindClone !== undefined
+        func: () => window.smartFinder !== undefined
       });
     } catch (error) {
       // Content script not loaded, inject it

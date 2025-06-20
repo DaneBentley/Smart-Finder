@@ -6,7 +6,7 @@ import { AuthManager } from './auth-manager.js';
 
 export class AIService {
   constructor() {
-    this.apiEndpoint = 'https://findr-backend-clean-jtl89857e.vercel.app/api/ai-search';
+    this.apiEndpoint = 'https://findr-backend-clean-ky64yo3es.vercel.app/api/ai-search';
     this.maxContextLength = 6000; // Conservative limit for AI context window
     this.batchOverlapSize = 200; // Overlap between batches to avoid splitting sentences
     this.authManager = new AuthManager();
@@ -69,10 +69,7 @@ export class AIService {
         return await this.progressiveParallelSearch(query, pageContent, onBatchComplete);
       }
       
-      // Consume a token before making the request
-      await this.authManager.consumeToken();
-      
-      // Get JWT token for authenticated request
+      // Get JWT token for authenticated request  
       const tokenData = await chrome.storage.local.get(['jwt']);
       
       // Single search for shorter content
@@ -93,6 +90,26 @@ export class AIService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ API Error:', response.status, errorText);
+        
+        // If it's a token error, run debug to see what's wrong
+        if (response.status === 403 && errorText.includes('tokens')) {
+          console.log('🔍 Token error detected, running debug...');
+          try {
+            const debugResult = await this.authManager.debugJWT();
+            console.log('🔍 Debug result:', debugResult);
+            console.log('🔍 User data from debug:', debugResult.userData);
+            console.log('🔍 Token count in DB:', debugResult.userData?.data?.paid_tokens);
+            
+            // Also try syncing user data in case it's a sync issue
+            console.log('🔄 Attempting user sync...');
+            const syncResult = await this.authManager.syncUser();
+            console.log('🔄 Sync result:', syncResult);
+            
+          } catch (debugError) {
+            console.error('🔍 Debug/sync failed:', debugError);
+          }
+        }
+        
         throw new Error(`AI API error: ${response.status}`);
       }
 
@@ -321,9 +338,6 @@ export class AIService {
     try {
       console.log(`🔍 Searching batch ${batchIndex + 1} (${batchContent.length} chars)...`);
       
-      // Consume a token before making the request
-      await this.authManager.consumeToken();
-      
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);
       
@@ -364,9 +378,6 @@ export class AIService {
   async searchBatchWithCallback(query, batchContent, batchIndex, onBatchComplete, processedSnippets) {
     try {
       console.log(`🔍 Searching batch ${batchIndex + 1} (${batchContent.length} chars)...`);
-      
-      // Consume a token before making the request
-      await this.authManager.consumeToken();
       
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);

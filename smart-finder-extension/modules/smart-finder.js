@@ -1,6 +1,6 @@
 /**
- * Chrome Find Clone - Main Controller
- * Orchestrates all modules to provide Chrome's native find functionality
+ * SmartFinder - Main Controller
+ * Orchestrates all modules to provide intelligent find functionality
  */
 
 import { UIManager } from './ui-manager.js';
@@ -12,7 +12,7 @@ import { AIService } from './ai-service.js';
 import { PatternDetector } from './pattern-detector.js';
 import { StorageManager } from './storage-manager.js';
 
-export class ChromeFindClone {
+export class SmartFinder {
   constructor() {
     this.ui = new UIManager();
     this.searchEngine = new SearchEngine();
@@ -34,7 +34,7 @@ export class ChromeFindClone {
     
     // Initialize asynchronously
     this.init().catch(error => {
-      console.error('Failed to initialize ChromeFindClone:', error);
+              console.error('Failed to initialize SmartFinder:', error);
     });
   }
   
@@ -775,7 +775,7 @@ export class ChromeFindClone {
       copyButton.textContent = message;
       copyButton.style.color = isError ? '#ea4335' : '#34a853';
       
-      setTimeout(() => {
+      setTimeout(() => {  
         copyButton.textContent = originalText;
         copyButton.style.color = '';
       }, 2000);

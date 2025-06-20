@@ -38,12 +38,27 @@ export default async function handler(req, res) {
 
     const { tokenAmount } = req.body;
 
-    if (!tokenAmount || tokenAmount < 100) {
+    // Security: Input validation and sanitization
+    if (!tokenAmount) {
+      return res.status(400).json({ error: 'Token amount is required' });
+    }
+
+    // Security: Validate input type and range
+    const validatedTokenAmount = parseInt(tokenAmount);
+    if (isNaN(validatedTokenAmount) || validatedTokenAmount !== Number(tokenAmount)) {
+      return res.status(400).json({ error: 'Token amount must be a valid integer' });
+    }
+
+    if (validatedTokenAmount < 100) {
       return res.status(400).json({ error: 'Minimum token purchase is 100 tokens ($1)' });
     }
 
+    if (validatedTokenAmount > 100000) { // Max $1000 per transaction
+      return res.status(400).json({ error: 'Maximum token purchase is 100,000 tokens ($1000)' });
+    }
+
     // Calculate price (100 tokens = $1.00)
-    const priceInCents = tokenAmount; // 1 token = 1 cent
+    const priceInCents = validatedTokenAmount; // 1 token = 1 cent
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -54,7 +69,7 @@ export default async function handler(req, res) {
             currency: 'usd',
             product_data: {
               name: 'Smart Finder AI Tokens',
-              description: `${tokenAmount} AI search tokens`,
+              description: `${validatedTokenAmount} AI search tokens`,
             },
             unit_amount: priceInCents,
           },
@@ -62,11 +77,11 @@ export default async function handler(req, res) {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.origin || 'chrome-extension://'}?payment=success`,
-      cancel_url: `${req.headers.origin || 'chrome-extension://'}?payment=cancelled`,
+      success_url: `https://findr-api-backend.vercel.app/api/payments/success`,
+      cancel_url: `https://findr-api-backend.vercel.app/api/payments/cancelled`,
       metadata: {
         userId: userId,
-        tokenAmount: tokenAmount.toString()
+        tokenAmount: validatedTokenAmount.toString()
       }
     });
 
@@ -77,7 +92,7 @@ export default async function handler(req, res) {
         user_id: userId,
         stripe_session_id: session.id,
         amount_cents: priceInCents,
-        tokens_purchased: tokenAmount,
+        tokens_purchased: validatedTokenAmount,
         status: 'pending',
         metadata: {
           stripe_session_id: session.id,

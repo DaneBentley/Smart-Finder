@@ -39,7 +39,7 @@
         }
         
         /* Try to override common extension classes */
-        .chrome-find-clone-bar {
+        .smart-finder-bar {
             background: pink !important;
             color: purple !important;
             position: static !important;
@@ -48,13 +48,13 @@
             z-index: 1 !important;
         }
         
-        .chrome-find-clone-input {
+        .smart-finder-input {
             background: lime !important;
             color: red !important;
             font-size: 30px !important;
         }
         
-        .chrome-find-clone-button {
+        .smart-finder-button {
             background: cyan !important;
             color: magenta !important;
         }
@@ -100,7 +100,7 @@
             
             // Try to interfere with extension programmatically
             setTimeout(() => {
-                const extensionElements = document.querySelectorAll('[class*="chrome-find-clone"]');
+                const extensionElements = document.querySelectorAll('[class*="smart-finder"]');
                 console.log('Found extension elements in main DOM:', extensionElements.length);
                 console.log('(Should be 0 if Shadow DOM is working correctly)');
             }, 2000);

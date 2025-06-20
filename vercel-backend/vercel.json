@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "alias": ["findr-api-backend.vercel.app"],
   "public": true,
   "headers": [
     {

@@ -9,9 +9,7 @@ const supabase = createClient(
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
+    bodyParser: false,
   },
 };
 
@@ -24,8 +22,15 @@ export default async function handler(req, res) {
   let event;
 
   try {
+    // Read the raw body
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks);
+
     event = stripe.webhooks.constructEvent(
-      req.body,
+      body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
@@ -75,33 +80,18 @@ async function handlePaymentSuccess(session) {
       console.error('Error updating purchase:', purchaseError);
     }
 
-    // Add tokens to user account
-    const { data: currentData, error: fetchError } = await supabase
-      .from('user_data')
-      .select('paid_tokens')
-      .eq('user_id', userId)
-      .single();
+    // Use atomic token addition function to prevent race conditions
+    const { data: tokenResult, error: tokenError } = await supabase.rpc('add_user_tokens', {
+      p_user_id: userId,
+      p_token_amount: tokenAmount
+    });
 
-    if (fetchError) {
-      console.error('Error fetching user data:', fetchError);
+    if (tokenError || !tokenResult || !tokenResult.success) {
+      console.error('Error adding tokens:', tokenError || 'Token addition failed');
       return;
     }
 
-    const newTokenBalance = (currentData.paid_tokens || 0) + tokenAmount;
-
-    const { error: updateError } = await supabase
-      .from('user_data')
-      .update({
-        paid_tokens: newTokenBalance,
-        last_sync_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
-
-    if (updateError) {
-      console.error('Error updating user tokens:', updateError);
-    } else {
-      console.log(`Successfully added ${tokenAmount} tokens to user ${userId}. New balance: ${newTokenBalance}`);
-    }
+    console.log(`Successfully added ${tokenAmount} tokens to user ${userId}. New balance: ${tokenResult.new_token_count}`);
 
   } catch (error) {
     console.error('Error processing payment success:', error);

@@ -26,7 +26,7 @@ cd vercel-backend
 
 # Or manually:
 vercel --prod
-vercel alias <new-deployment-url> findr-api.vercel.app
+vercel alias <new-deployment-url> findr-api-backend.vercel.app
 ```
 
 ## Environment Variables
@@ -44,7 +44,7 @@ vercel env add CEREBRAS_API_KEY
 
 The API is available at a stable URL:
 ```
-https://findr-api.vercel.app/api/ai-search
+https://findr-api-backend.vercel.app/api/ai-search
 ```
 
 This URL uses Vercel aliases and will automatically point to the latest deployment.

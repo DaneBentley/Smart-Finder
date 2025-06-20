@@ -24,25 +24,35 @@ your_supabase_service_role_key_here
 your_secure_random_jwt_secret_here
 ```
 
-## How to Set Environment Variables in Vercel
-
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click on your project (`findr-backend-clean`)
-3. Go to **Settings** > **Environment Variables**
-4. Add each variable with:
-   - **Name**: Variable name (e.g., `GOOGLE_CLIENT_ID`)
-   - **Value**: The corresponding value
-   - **Environment**: Select all (Production, Preview, Development)
-5. Click **Save**
-6. Redeploy your project
-
-## Testing the Setup
-
-After setting environment variables, test the auth endpoint:
-```bash
-curl -X POST https://findr-backend-clean-n4cmdjees.vercel.app/api/auth/google \
-  -H "Content-Type: application/json" \
-  -d '{"token":"test_token"}'
+### 5. STRIPE_SECRET_KEY
+```
+sk_test_... (or sk_live_... for production)
 ```
 
-You should see detailed error logs that help identify the issue. 
+### 6. STRIPE_WEBHOOK_SECRET
+```
+whsec_... (from Stripe Dashboard > Webhooks > Signing secret)
+```
+
+### 7. STRIPE_PUBLISHABLE_KEY
+```
+pk_test_... (or pk_live_... for production)
+```
+
+## Setup Steps
+
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click on your project → **Settings** → **Environment Variables**
+3. Add each variable above
+4. Select all environments (Production, Preview, Development)
+5. Redeploy your project
+
+## Stripe Webhook Setup
+
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
+2. Click **Add endpoint**
+3. Set endpoint URL to: `https://findr-api-backend.vercel.app/api/payments/webhook`
+4. Select events:
+   - `checkout.session.completed`
+   - `checkout.session.expired`
+5. Copy the **Signing secret** and add it as `STRIPE_WEBHOOK_SECRET` 

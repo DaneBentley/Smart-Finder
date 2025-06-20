@@ -49,7 +49,7 @@ export class UIManager {
     
     // Create main container inside shadow root
     this.findBar = document.createElement('div');
-    this.findBar.className = 'chrome-find-clone-bar hidden';
+    this.findBar.className = 'smart-finder-bar hidden';
     
     // AI mode (no longer in main bar, only in settings)
     this.aiMode = true;
@@ -57,14 +57,14 @@ export class UIManager {
     // Search input
     this.input = document.createElement('input');
     this.input.type = 'text';
-    this.input.className = 'chrome-find-clone-input';
+    this.input.className = 'smart-finder-input';
     this.input.placeholder = 'Find in page';
     this.input.autocomplete = 'off';
     this.input.spellcheck = false;
     
     // Match statistics (now clickable)
     this.statsElement = document.createElement('button');
-    this.statsElement.className = 'chrome-find-clone-stats';
+    this.statsElement.className = 'smart-finder-stats';
     this.statsElement.textContent = '0/0';
     this.statsElement.title = 'Settings';
     
@@ -73,25 +73,25 @@ export class UIManager {
     
     // Previous button
     this.prevButton = document.createElement('button');
-    this.prevButton.className = 'chrome-find-clone-button';
+    this.prevButton.className = 'smart-finder-button';
     this.prevButton.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>';
     this.prevButton.title = 'Previous (Shift+Enter)';
     
     // Next button
     this.nextButton = document.createElement('button');
-    this.nextButton.className = 'chrome-find-clone-button';
+    this.nextButton.className = 'smart-finder-button';
     this.nextButton.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>';
     this.nextButton.title = 'Next (Enter)';
     
     // Close button
     const closeButton = document.createElement('button');
-    closeButton.className = 'chrome-find-clone-button chrome-find-clone-close';
+    closeButton.className = 'smart-finder-button smart-finder-close';
     closeButton.innerHTML = '✕';
     closeButton.title = 'Close (Escape)';
     
     // Smart search hint
     this.smartSearchHint = document.createElement('div');
-    this.smartSearchHint.className = 'chrome-find-clone-smart-search-hint hidden';
+    this.smartSearchHint.className = 'smart-finder-smart-search-hint hidden';
     this.smartSearchHint.textContent = 'Enter to smart search';
 
     // Assemble find bar
@@ -120,20 +120,20 @@ export class UIManager {
 
   injectHighlightStyles() {
     // Check if highlight styles are already injected
-    if (document.getElementById('chrome-find-clone-highlight-styles')) {
+    if (document.getElementById('smart-finder-highlight-styles')) {
       return;
     }
     
     const style = document.createElement('style');
-    style.id = 'chrome-find-clone-highlight-styles';
+    style.id = 'smart-finder-highlight-styles';
     style.textContent = this.getHighlightCSS();
     document.head.appendChild(style);
   }
 
   getHighlightCSS() {
     return `
-      /* Chrome Find Clone - Highlight styles for page content */
-      .chrome-find-clone-highlight {
+              /* SmartFinder - Highlight styles for page content */
+      .smart-finder-highlight {
         background: #ffff00 !important;
         color: #000 !important;
         transition: all 0.1s ease !important;
@@ -141,69 +141,69 @@ export class UIManager {
         z-index: 1 !important;
       }
 
-      .chrome-find-clone-highlight.current {
+      .smart-finder-highlight.current {
         background: #ff9632 !important;
         color: #000 !important;
       }
 
       /* Multi-term highlighting uses alternating colors for visual distinction */
-      .chrome-find-clone-highlight.multi-term-1 {
+      .smart-finder-highlight.multi-term-1 {
         background: #ffff00 !important;
       }
 
-      .chrome-find-clone-highlight.multi-term-2 {
+      .smart-finder-highlight.multi-term-2 {
         background: #90ee90 !important;
       }
 
-      .chrome-find-clone-highlight.multi-term-3 {
+      .smart-finder-highlight.multi-term-3 {
         background: #ffc0cb !important;
       }
 
-      .chrome-find-clone-highlight.multi-term-4 {
+      .smart-finder-highlight.multi-term-4 {
         background: #87ceeb !important;
       }
 
-      .chrome-find-clone-highlight.multi-term-5 {
+      .smart-finder-highlight.multi-term-5 {
         background: #dda0dd !important;
       }
 
       /* Focused versions of multi-term colors - darker/more saturated */
-      .chrome-find-clone-highlight.current.multi-term-1 {
+      .smart-finder-highlight.current.multi-term-1 {
         background: #ffcc00 !important; /* Darker yellow */
       }
 
-      .chrome-find-clone-highlight.current.multi-term-2 {
+      .smart-finder-highlight.current.multi-term-2 {
         background: #4caf50 !important; /* Darker green */
       }
 
-      .chrome-find-clone-highlight.current.multi-term-3 {
+      .smart-finder-highlight.current.multi-term-3 {
         background: #e91e63 !important; /* Darker pink */
       }
 
-      .chrome-find-clone-highlight.current.multi-term-4 {
+      .smart-finder-highlight.current.multi-term-4 {
         background: #2196f3 !important; /* Darker blue */
       }
 
-      .chrome-find-clone-highlight.current.multi-term-5 {
+      .smart-finder-highlight.current.multi-term-5 {
         background: #9c27b0 !important; /* Darker purple */
       }
 
       /* AI Highlight styles */
-      .chrome-find-clone-highlight.ai-highlight {
+      .smart-finder-highlight.ai-highlight {
         background: #e8f0fe !important;
         color: #1a73e8 !important;
         border: 1px solid #4285f4 !important;
         padding: 1px 2px !important;
       }
 
-      .chrome-find-clone-highlight.ai-highlight.current {
+      .smart-finder-highlight.ai-highlight.current {
         background: #4285f4 !important;
         color: white !important;
         border-color: #1a73e8 !important;
       }
 
       /* Scroll indicators styles (also applied to main page) */
-      .chrome-find-clone-scroll-indicators {
+      .smart-finder-scroll-indicators {
         position: fixed !important;
         top: 0 !important;
         right: 0 !important;
@@ -213,11 +213,11 @@ export class UIManager {
         pointer-events: auto !important;
       }
 
-      .chrome-find-clone-scroll-indicators.hidden {
+      .smart-finder-scroll-indicators.hidden {
         display: none !important;
       }
 
-      .chrome-find-clone-indicator {
+      .smart-finder-indicator {
         position: absolute !important;
         right: 0 !important;
         width: 12px !important;
@@ -229,13 +229,13 @@ export class UIManager {
         cursor: pointer !important;
       }
 
-      .chrome-find-clone-indicator:hover {
+      .smart-finder-indicator:hover {
         opacity: 1 !important;
         transform: translateY(-50%) scale(2) !important;
         background: #ff9800 !important;
       }
 
-      .chrome-find-clone-indicator.current {
+      .smart-finder-indicator.current {
         background: #ff9800 !important;
         width: 32px !important;
         height: 3px !important;
@@ -244,40 +244,40 @@ export class UIManager {
       }
 
       /* Multi-term indicator colors - using the darker focused colors */
-      .chrome-find-clone-indicator.multi-term-1 {
+      .smart-finder-indicator.multi-term-1 {
         background: #ffcc00 !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-2 {
+      .smart-finder-indicator.multi-term-2 {
         background: #4caf50 !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-3 {
+      .smart-finder-indicator.multi-term-3 {
         background: #e91e63 !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-4 {
+      .smart-finder-indicator.multi-term-4 {
         background: #2196f3 !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-5 {
+      .smart-finder-indicator.multi-term-5 {
         background: #9c27b0 !important;
       }
 
       /* AI search indicator styles */
-      .chrome-find-clone-indicator.multi-term-ai {
+      .smart-finder-indicator.multi-term-ai {
         background: #4285f4 !important;
         width: 14px !important;
         height: 3px !important;
         border-radius: 0px !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-ai:hover {
+      .smart-finder-indicator.multi-term-ai:hover {
         background: #1a73e8 !important;
         transform: translateY(-50%) scale(1.5) !important;
       }
 
-      .chrome-find-clone-indicator.multi-term-ai.current {
+      .smart-finder-indicator.multi-term-ai.current {
         background: #1a73e8 !important;
         width: 36px !important;
         height: 4px !important;
@@ -289,8 +289,8 @@ export class UIManager {
   getIsolatedCSS() {
     // Return CSS without !important declarations since we're in Shadow DOM
     return `
-      /* Chrome Find Clone - Shadow DOM Isolated Styles */
-      .chrome-find-clone-bar {
+              /* SmartFinder - Shadow DOM Isolated Styles */
+      .smart-finder-bar {
         position: fixed;
         top: 5px;
         right: 5px;
@@ -315,7 +315,7 @@ export class UIManager {
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-bar {
+        .smart-finder-bar {
           background: rgba(30, 30, 30, 0.95);
           border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow: 
@@ -324,7 +324,7 @@ export class UIManager {
         }
       }
 
-      .chrome-find-clone-bar.settings-open {
+      .smart-finder-bar.settings-open {
         border-radius: 18px 18px 0 0;
         box-shadow: 
           0 4px 16px rgba(0, 0, 0, 0.08),
@@ -332,20 +332,20 @@ export class UIManager {
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-bar.settings-open {
+        .smart-finder-bar.settings-open {
           box-shadow: 
             0 4px 16px rgba(0, 0, 0, 0.3),
             0 1px 4px rgba(0, 0, 0, 0.15);
         }
       }
 
-      .chrome-find-clone-bar.hidden {
+      .smart-finder-bar.hidden {
         transform: translateY(-120%);
         opacity: 0;
         pointer-events: none;
       }
 
-      .chrome-find-clone-input {
+      .smart-finder-input {
         flex: 1;
         border: none;
         border-radius: 10px;
@@ -358,36 +358,36 @@ export class UIManager {
         min-width: 120px;
       }
 
-      .chrome-find-clone-input:focus {
+      .smart-finder-input:focus {
         background: rgb(239, 239, 239);
       }
 
-      .chrome-find-clone-input::placeholder {
+      .smart-finder-input::placeholder {
         color: #666;
         font-weight: 400;
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-input {
+        .smart-finder-input {
           background: rgba(50, 50, 50, 0.8);
           color: #e8eaed;
         }
 
-        .chrome-find-clone-input:focus {
+        .smart-finder-input:focus {
           background: rgba(60, 60, 60, 0.9);
         }
 
-        .chrome-find-clone-input::placeholder {
+        .smart-finder-input::placeholder {
           color: #9aa0a6;
         }
       }
 
-      .chrome-find-clone-input.ai-ready {
+      .smart-finder-input.ai-ready {
         background: rgba(66, 133, 244, 0.15);
         border: none;
       }
 
-      .chrome-find-clone-smart-search-hint {
+      .smart-finder-smart-search-hint {
         position: absolute;
         top: 100%;
         left: 16px;
@@ -404,11 +404,11 @@ export class UIManager {
         box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
       }
 
-      .chrome-find-clone-smart-search-hint.hidden {
+      .smart-finder-smart-search-hint.hidden {
         display: none;
       }
 
-      .chrome-find-clone-stats {
+      .smart-finder-stats {
         color: #666;
         font-size: 12px;
         font-weight: 500;
@@ -428,45 +428,45 @@ export class UIManager {
         text-overflow: ellipsis;
       }
 
-      .chrome-find-clone-stats:hover {
+      .smart-finder-stats:hover {
         background: rgba(0, 0, 0, 0.04);
         color: #1a1a1a;
       }
 
-      .chrome-find-clone-stats:active {
+      .smart-finder-stats:active {
         background: rgba(0, 0, 0, 0.08);
         transform: scale(0.96);
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-stats {
+        .smart-finder-stats {
           color: #9aa0a6;
         }
 
-        .chrome-find-clone-stats:hover {
+        .smart-finder-stats:hover {
           background: rgba(255, 255, 255, 0.08);
           color: #e8eaed;
         }
 
-        .chrome-find-clone-stats:active {
+        .smart-finder-stats:active {
           background: rgba(255, 255, 255, 0.12);
         }
       }
 
-      .chrome-find-clone-stats.settings-active {
+      .smart-finder-stats.settings-active {
         background: rgba(66, 133, 244, 0.1);
         color: #1a73e8;
       }
 
       /* Search progress indicator - Three dot animation */
-      .chrome-find-clone-stats.searching {
+      .smart-finder-stats.searching {
         position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
       }
 
-      .chrome-find-clone-stats.searching::before {
+      .smart-finder-stats.searching::before {
         content: '';
         position: absolute;
         right: auto;
@@ -478,10 +478,10 @@ export class UIManager {
         border-radius: 50%;
         background-color: #666;
         opacity: 0.4;
-        animation: chrome-find-clone-dots 1.4s infinite;
+        animation: smart-finder-dots 1.4s infinite;
       }
 
-      .chrome-find-clone-stats.searching::after {
+      .smart-finder-stats.searching::after {
         content: '';
         position: absolute;
         right: auto;
@@ -493,12 +493,12 @@ export class UIManager {
         border-radius: 50%;
         background-color: #666;
         opacity: 0.4;
-        animation: chrome-find-clone-dots 1.4s infinite;
+        animation: smart-finder-dots 1.4s infinite;
         animation-delay: 0.2s;
         box-shadow: none;
       }
 
-      .chrome-find-clone-stats.searching span.third-dot {
+      .smart-finder-stats.searching span.third-dot {
         position: absolute;
         right: auto;
         left: calc(50% + 8px);
@@ -509,16 +509,16 @@ export class UIManager {
         border-radius: 50%;
         background-color: #666;
         opacity: 0.4;
-        animation: chrome-find-clone-dots 1.4s infinite;
+        animation: smart-finder-dots 1.4s infinite;
         animation-delay: 0.4s;
       }
 
-      @keyframes chrome-find-clone-dots {
+      @keyframes smart-finder-dots {
         0%, 80%, 100% { opacity: 0.4; }
         40% { opacity: 1; }
       }
 
-      .chrome-find-clone-settings-dropdown {
+      .smart-finder-settings-dropdown {
         position: absolute;
         top: 100%;
         left: -1px;
@@ -538,7 +538,7 @@ export class UIManager {
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-settings-dropdown {
+        .smart-finder-settings-dropdown {
           background: rgba(30, 30, 30, 0.95);
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-top: none;
@@ -548,13 +548,13 @@ export class UIManager {
         }
       }
 
-      .chrome-find-clone-settings-dropdown.hidden {
+      .smart-finder-settings-dropdown.hidden {
         display: none;
         pointer-events: none;
         visibility: hidden;
       }
 
-      .chrome-find-clone-setting-option {
+      .smart-finder-setting-option {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -566,19 +566,19 @@ export class UIManager {
         margin-bottom: 6px;
       }
 
-      .chrome-find-clone-setting-option:last-of-type {
+      .smart-finder-setting-option:last-of-type {
         border-bottom: none;
         margin-bottom: 0;
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-setting-option {
+        .smart-finder-setting-option {
           color: #e8eaed;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
       }
 
-      .chrome-find-clone-checkbox {
+      .smart-finder-checkbox {
         position: relative;
         width: 32px;
         height: 16px;
@@ -590,11 +590,11 @@ export class UIManager {
         margin: 0;
       }
 
-      .chrome-find-clone-checkbox:checked {
+      .smart-finder-checkbox:checked {
         background: #1a73e8;
       }
 
-      .chrome-find-clone-checkbox::before {
+      .smart-finder-checkbox::before {
         content: '';
         position: absolute;
         width: 12px;
@@ -606,11 +606,11 @@ export class UIManager {
         transform: translateX(0);
       }
 
-      .chrome-find-clone-checkbox:checked::before {
+      .smart-finder-checkbox:checked::before {
         transform: translateX(16px);
       }
 
-      .chrome-find-clone-copy-all-button {
+      .smart-finder-copy-all-button {
         display: block;
         width: 100%;
         padding: 6px;
@@ -626,19 +626,19 @@ export class UIManager {
         text-align: center;
       }
 
-      .chrome-find-clone-copy-all-button:hover:not(:disabled) {
+      .smart-finder-copy-all-button:hover:not(:disabled) {
         background: rgba(26, 115, 232, 0.08);
         border-color: rgba(26, 115, 232, 0.3);
         transform: translateY(-1px);
       }
 
-      .chrome-find-clone-copy-all-button:active:not(:disabled) {
+      .smart-finder-copy-all-button:active:not(:disabled) {
         background: rgba(26, 115, 232, 0.12);
         border-color: rgba(26, 115, 232, 0.4);
         transform: translateY(0);
       }
 
-      .chrome-find-clone-copy-all-button:disabled {
+      .smart-finder-copy-all-button:disabled {
         background: rgba(0, 0, 0, 0.03);
         color: #ccc;
         cursor: default;
@@ -646,7 +646,7 @@ export class UIManager {
         transform: none;
       }
 
-      .chrome-find-clone-button {
+      .smart-finder-button {
         background: transparent;
         border: none;
         color: #666;
@@ -664,53 +664,53 @@ export class UIManager {
         margin: 0 1px;
       }
 
-      .chrome-find-clone-button:hover {
+      .smart-finder-button:hover {
         background: rgba(0, 0, 0, 0.06);
         color: #1a1a1a;
         transform: scale(1.05);
       }
 
-      .chrome-find-clone-button:active {
+      .smart-finder-button:active {
         background: rgba(0, 0, 0, 0.1);
         transform: scale(0.95);
       }
 
-      .chrome-find-clone-button:disabled {
+      .smart-finder-button:disabled {
         color: #ccc;
         cursor: default;
         transform: none;
       }
 
-      .chrome-find-clone-button:disabled:hover {
+      .smart-finder-button:disabled:hover {
         background: transparent;
         transform: none;
       }
 
       @media (prefers-color-scheme: dark) {
-        .chrome-find-clone-button {
+        .smart-finder-button {
           color: #9aa0a6;
         }
 
-        .chrome-find-clone-button:hover {
+        .smart-finder-button:hover {
           background: rgba(255, 255, 255, 0.08);
           color: #e8eaed;
         }
 
-        .chrome-find-clone-button:active {
+        .smart-finder-button:active {
           background: rgba(255, 255, 255, 0.12);
         }
 
-        .chrome-find-clone-button:disabled {
+        .smart-finder-button:disabled {
           color: #5f6368;
         }
       }
 
-      .chrome-find-clone-close {
+      .smart-finder-close {
         color: #666;
         font-size: 14px;
       }
 
-      .chrome-find-clone-close:hover {
+      .smart-finder-close:hover {
         background: rgba(234, 67, 53, 0.1);
         color: #ea4335;
       }
@@ -719,7 +719,7 @@ export class UIManager {
   
   createSettingsDropdown() {
     this.settingsDropdown = document.createElement('div');
-    this.settingsDropdown.className = 'chrome-find-clone-settings-dropdown hidden';
+    this.settingsDropdown.className = 'smart-finder-settings-dropdown hidden';
     
     // Case sensitivity option
     const caseSensitiveOption = this.createSettingOption('Match case', this.caseSensitive);
@@ -752,11 +752,11 @@ export class UIManager {
   
   createSettingOption(labelText, checked) {
     const option = document.createElement('label');
-    option.className = 'chrome-find-clone-setting-option';
+    option.className = 'smart-finder-setting-option';
     
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.className = 'chrome-find-clone-checkbox';
+    checkbox.className = 'smart-finder-checkbox';
     checkbox.checked = checked;
     
     const label = document.createElement('span');
@@ -770,7 +770,7 @@ export class UIManager {
   
   createCopyAllOption() {
     const button = document.createElement('button');
-    button.className = 'chrome-find-clone-copy-all-button';
+    button.className = 'smart-finder-copy-all-button';
     button.textContent = 'Copy all results';
     button.title = 'Copy all highlighted results to clipboard';
     button.disabled = true; // Initially disabled
@@ -780,7 +780,7 @@ export class UIManager {
   
   createScrollIndicators() {
     this.scrollIndicators = document.createElement('div');
-    this.scrollIndicators.className = 'chrome-find-clone-scroll-indicators hidden';
+    this.scrollIndicators.className = 'smart-finder-scroll-indicators hidden';
     document.body.appendChild(this.scrollIndicators);
   }
   
@@ -980,7 +980,7 @@ export class UIManager {
         const percentage = (elementTop / documentHeight) * 100;
         
         const indicator = document.createElement('div');
-        indicator.className = 'chrome-find-clone-indicator';
+        indicator.className = 'smart-finder-indicator';
         
         // Add multi-term color class if applicable
         if (termToColorMap) {
@@ -1094,7 +1094,7 @@ export class UIManager {
     }
     
     // Clean up injected highlight styles
-    const highlightStyles = document.getElementById('chrome-find-clone-highlight-styles');
+    const highlightStyles = document.getElementById('smart-finder-highlight-styles');
     if (highlightStyles && highlightStyles.parentNode) {
       highlightStyles.parentNode.removeChild(highlightStyles);
     }

@@ -6,13 +6,13 @@ The **Copy All Results** functionality was not working properly in AI mode. Prev
 
 ### Technical Details
 
-- **Problem**: In AI mode, search results are stored in `this.progressiveMatches` in the `ChromeFindClone` class
+- **Problem**: In AI mode, search results are stored in `this.progressiveMatches` in the `SmartFinder` class
 - **Issue**: The `copyAllResults()` method was only calling `this.searchEngine.getAllResultsText()`, which only returns results from regular searches stored in `this.searchEngine.matches`
 - **Solution**: Modified `copyAllResults()` to check if we're in AI mode and have AI results, then extract text from the correct storage location
 
 ### Code Changes Made
 
-Modified `modules/chrome-find-clone.js` in the `copyAllResults()` method:
+Modified `modules/smart-finder.js` in the `copyAllResults()` method:
 
 ```javascript
 // Before: Only used regular search results

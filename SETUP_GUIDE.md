@@ -85,7 +85,7 @@ CREATE POLICY "Users can view their own purchases" ON purchases
 ### Webhook Configuration
 
 1. In Stripe Dashboard, go to Developers → Webhooks
-2. Add endpoint: `https://your-vercel-app.vercel.app/api/payments/webhook`
+2. Add endpoint: `https://findr-api-backend.vercel.app/api/payments/webhook`
 3. Select these events:
    - `checkout.session.completed`
    - `checkout.session.expired`
@@ -136,7 +136,7 @@ CEREBRAS_API_KEY=your_cerebras_key
 Update the API endpoint in `modules/auth-manager.js` and `modules/ai-service.js`:
 
 ```javascript
-this.apiBaseUrl = 'https://your-app-name.vercel.app/api';
+this.apiBaseUrl = 'https://findr-api-backend.vercel.app/api';
 ```
 
 ### Upload to Chrome Web Store

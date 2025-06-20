@@ -70,12 +70,12 @@ vercel --prod
 
 ## Step 3: Update Extension Configuration
 
-1. Note your Vercel deployment URL (e.g., `https://findr-ai-backend.vercel.app`)
+1. Note your Vercel deployment URL: `https://findr-api-backend.vercel.app`
 
 2. Update the API endpoint in `modules/ai-service.js`:
 ```javascript
 constructor() {
-  this.apiEndpoint = 'https://YOUR-PROJECT-NAME.vercel.app/api/ai-search';
+  this.apiEndpoint = 'https://findr-api-backend.vercel.app/api/ai-search';
 }
 ```
 
@@ -108,7 +108,7 @@ Replace `YOUR-PROJECT-NAME` with your actual Vercel project name.
 3. **Check Environment Variable**: Verify `CEREBRAS_API_KEY` is set in Vercel dashboard
 4. **Test API Directly**: 
 ```bash
-curl -X POST https://your-project.vercel.app/api/ai-search \
+curl -X POST https://findr-api-backend.vercel.app/api/ai-search \
   -H "Content-Type: application/json" \
   -d '{"query": "test", "content": "This is test content for AI analysis."}'
 ```
