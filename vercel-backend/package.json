@@ -1,0 +1,21 @@
+{
+  "name": "smart-finder-backend",
+  "version": "1.0.0",
+  "description": "AI-powered search backend for Smart Finder Chrome extension",
+  "main": "api/ai-search.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.5",
+    "stripe": "^14.8.0",
+    "jsonwebtoken": "^9.0.2",
+    "google-auth-library": "^9.4.1",
+    "bcryptjs": "^2.4.3",
+    "nodemailer": "^6.9.7"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  }
+} 

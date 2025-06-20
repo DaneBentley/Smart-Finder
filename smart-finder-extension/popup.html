@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Finder</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 16px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      background: #fff;
+      color: #202124;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e8eaed;
+    }
+    
+    .logo {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(45deg, #4285f4, #34a853);
+      border-radius: 4px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+    }
+    
+    .auth-section {
+      margin-bottom: 16px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background: #e8eaed;
+    }
+    
+    .user-details {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    
+    .user-email {
+      font-size: 11px;
+      color: #5f6368;
+    }
+    
+    .token-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #e8f0fe;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #d2e3fc;
+    }
+    
+    .token-count {
+      font-weight: 500;
+      color: #1a73e8;
+    }
+    
+    .token-label {
+      font-size: 11px;
+      color: #5f6368;
+    }
+    
+    .action-button {
+      width: 100%;
+      padding: 12px 16px;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      margin-bottom: 8px;
+    }
+    
+    .action-button:hover {
+      background: #3367d6;
+    }
+    
+    .action-button:active {
+      background: #2a56c6;
+    }
+    
+    .secondary-button {
+      background: #f8f9fa;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+    }
+    
+    .secondary-button:hover {
+      background: #f1f3f4;
+    }
+    
+    .buy-tokens-button {
+      background: #34a853;
+    }
+    
+    .buy-tokens-button:hover {
+      background: #2d9334;
+    }
+    
+    .sign-in-prompt {
+      text-align: center;
+      padding: 20px 12px;
+      background: #fef7e0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #fce8b2;
+    }
+    
+    .sign-in-prompt h3 {
+      margin: 0 0 8px 0;
+      color: #ea8600;
+      font-size: 14px;
+    }
+    
+    .sign-in-prompt p {
+      margin: 0 0 16px 0;
+      color: #5f6368;
+      font-size: 12px;
+    }
+    
+    .feature-list {
+      margin-bottom: 16px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #5f6368;
+    }
+    
+    .feature-item::before {
+      content: '✓';
+      color: #34a853;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .shortcuts {
+      background: #f8f9fa;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .shortcuts-title {
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #202124;
+    }
+    
+    .shortcut {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    
+    .shortcut:last-child {
+      margin-bottom: 0;
+    }
+    
+    .shortcut-key {
+      background: #e8eaed;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #5f6368;
+    }
+    
+    .info {
+      color: #5f6368;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 12px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .token-purchase {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .token-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .token-option {
+      padding: 8px;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .token-option:hover {
+      border-color: #4285f4;
+      background: #f8fbff;
+    }
+    
+    .token-option.active {
+      border-color: #4285f4;
+      background: #e8f0fe;
+    }
+    
+    .token-amount {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    
+    .token-price {
+      font-size: 11px;
+      color: #5f6368;
+    }
+
+    .message {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .message.info {
+      background: #e8f0fe;
+      color: #1a73e8;
+      border: 1px solid #d2e3fc;
+    }
+
+    .message.success {
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+    }
+
+    .message.error {
+      background: #fce8e6;
+      color: #d93025;
+      border: 1px solid #f9c7c1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">SF</div>
+    <div class="title">Smart Finder</div>
+  </div>
+  
+  <!-- Messages -->
+  <div id="message" class="message hidden"></div>
+  
+  <!-- Authentication Section -->
+  <div class="auth-section">
+    <!-- Sign In Prompt (shown when not authenticated) -->
+    <div id="signInPrompt" class="sign-in-prompt">
+      <h3>🔐 Sign In Required</h3>
+      <p>Sign in with your Google account to access AI-powered search</p>
+      
+      <button class="action-button" id="signInButton">
+        Sign In with Google
+      </button>
+    </div>
+    
+    <!-- User Info (shown when authenticated) -->
+    <div id="userSection" class="hidden">
+      <div class="user-info">
+        <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+        <div class="user-details">
+          <div id="userName" class="user-name"></div>
+          <div id="userEmail" class="user-email"></div>
+        </div>
+      </div>
+      
+      <div class="token-info">
+        <div>
+          <div id="tokenCount" class="token-count">0 tokens</div>
+          <div class="token-label">AI searches available</div>
+        </div>
+        <button id="refreshTokens" class="secondary-button" style="padding: 4px 8px; font-size: 11px;">Refresh</button>
+      </div>
+      
+      <!-- Token Purchase Options -->
+      <div id="tokenPurchase" class="token-purchase hidden">
+        <div style="font-weight: 500; margin-bottom: 8px;">Buy AI Tokens</div>
+        <div class="token-options">
+          <div class="token-option" data-tokens="100">
+            <div class="token-amount">100 tokens</div>
+            <div class="token-price">$1.00</div>
+          </div>
+          <div class="token-option" data-tokens="500">
+            <div class="token-amount">500 tokens</div>
+            <div class="token-price">$5.00</div>
+          </div>
+          <div class="token-option" data-tokens="1000">
+            <div class="token-amount">1000 tokens</div>
+            <div class="token-price">$10.00</div>
+          </div>
+          <div class="token-option" data-tokens="2000">
+            <div class="token-amount">2000 tokens</div>
+            <div class="token-price">$20.00</div>
+          </div>
+        </div>
+        <button id="buyTokensButton" class="action-button buy-tokens-button" disabled>
+          Select Token Amount
+        </button>
+        <button id="cancelPurchase" class="secondary-button">
+          Cancel
+        </button>
+      </div>
+      
+      <button id="buyTokens" class="action-button buy-tokens-button">
+        Buy More Tokens
+      </button>
+      
+      <button id="signOutButton" class="secondary-button">
+        Sign Out
+      </button>
+    </div>
+  </div>
+  
+  <button class="action-button" id="openFind">
+    Open Find Bar
+  </button>
+  
+  <div class="feature-list">
+    <div class="feature-item">AI-powered semantic search</div>
+    <div class="feature-item">Chrome-native highlighting</div>
+    <div class="feature-item">Real-time pattern detection</div>
+    <div class="feature-item">Smart visibility filtering</div>
+  </div>
+  
+  <div class="shortcuts">
+    <div class="shortcuts-title">Keyboard Shortcuts</div>
+    <div class="shortcut">
+      <span>Open find bar</span>
+      <span class="shortcut-key" id="findKey">Ctrl+F</span>
+    </div>
+    <div class="shortcut">
+      <span>Next match</span>
+      <span class="shortcut-key">Enter</span>
+    </div>
+    <div class="shortcut">
+      <span>Previous match</span>
+      <span class="shortcut-key">Shift+Enter</span>
+    </div>
+    <div class="shortcut">
+      <span>Close find bar</span>
+      <span class="shortcut-key">Escape</span>
+    </div>
+  </div>
+  
+  <div class="info">
+    AI-powered search with Chrome's native find behavior using secure OAuth authentication and token-based usage.
+  </div>
+  
+  <script src="modules/auth-manager.js" type="module"></script>
+  <script src="popup.js" type="module"></script>
+</body>
+</html> 

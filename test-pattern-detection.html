@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Detection Test - Findr Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4285f4;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            border-radius: 4px;
+        }
+        .test-section h2 {
+            color: #1967d2;
+            margin-top: 0;
+        }
+        .pattern-examples {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
+        .instructions {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c8e6c9;
+        }
+        .instructions h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            background: yellow;
+            padding: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Pattern Detection Test Page</h1>
+        
+        <div class="instructions">
+            <h3>How to Test Pattern Detection</h3>
+            <ol>
+                <li>Open the Findr extension (Ctrl+F or Cmd+F)</li>
+                <li>Make sure <strong>AI mode is enabled</strong> (should be enabled by default)</li>
+                <li>Try searching for pattern keywords like <code>email</code>, <code>phone</code>, <code>date</code>, etc.</li>
+                <li><strong>Multi-Pattern Search:</strong> Try <code>phone email</code> or <code>date time</code> to find multiple patterns at once!</li>
+                <li>The extension should automatically detect these patterns and search using regex</li>
+                <li>You should see messages like "Searching for phone numbers and email addresses using pattern detection"</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>📧 Email Addresses</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "email", "e-mail", "mail", "@"</p>
+                <p>Contact us at: support@example.com</p>
+                <p>Sales inquiries: sales@company.org</p>
+                <p>Personal email: john.doe+newsletter@gmail.com</p>
+                <p>Admin contact: admin@subdomain.example.co.uk</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📞 Phone Numbers</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "phone", "telephone", "mobile", "cell"</p>
+                <p>Call us at: (555) 123-4567</p>
+                <p>Mobile: 555.987.6543</p>
+                <p>International: +1-800-555-0199</p>
+                <p>Direct line: 555 246 8135</p>
+                <p>Toll-free: 8005551234</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 URLs and Links</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "url", "link", "website", "http"</p>
+                <p>Visit our website: https://www.example.com</p>
+                <p>Documentation: http://docs.example.org/api</p>
+                <p>Support portal: https://support.company.com/help</p>
+                <p>GitHub repo: https://github.com/user/repo</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📅 Dates</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "date", "birthday", "created"</p>
+                <p>Meeting scheduled for: 12/25/2023</p>
+                <p>Born on: 03/15/1990</p>
+                <p>Project deadline: 2024-01-15</p>
+                <p>Updated: 11-30-2023</p>
+                <p>Event date: 2/14/24</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🕐 Times</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "time", "clock", "hour"</p>
+                <p>Meeting at: 2:30 PM</p>
+                <p>Starts: 09:15 AM</p>
+                <p>Server restart: 23:45</p>
+                <p>Call scheduled: 10:00</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🏠 Addresses and Codes</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "zip", "postal code", "ip address"</p>
+                <p>ZIP Code: 90210</p>
+                <p>Extended ZIP: 10001-1234</p>
+                <p>Server IP: 192.168.1.1</p>
+                <p>Public IP: 203.0.113.42</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>💳 Credit Cards</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "credit card", "card number", "visa"</p>
+                <p>Card ending in: 4532 1234 5678 9012</p>
+                <p>Account: 5555-4444-3333-2222</p>
+                <p>Payment method: 4111111111111111</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔢 Social Security Numbers</h2>
+            <div class="pattern-examples">
+                <p><strong>Test searches:</strong> "ssn", "social security"</p>
+                <p>SSN: 123-45-6789</p>
+                <p>Social Security: 987654321</p>
+                <p>ID: 555-12-3456</p>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>💡 Expected Behavior</h3>
+            <ul>
+                <li>When you search for pattern keywords, the extension should show: <em>"Searching for [pattern type] using pattern detection"</em></li>
+                <li>The search should automatically use regex to find all matching patterns on the page</li>
+                <li>You should see multiple highlights for each pattern type</li>
+                <li>Navigation should work normally through all found matches</li>
+                <li>This only works in <strong>AI mode</strong> - regular mode searches for literal text</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Multi-Pattern Search Tests</h2>
+            <div class="pattern-examples">
+                <p><strong>Try these multi-pattern searches:</strong></p>
+                <ul>
+                    <li><code>phone email</code> - Find both phone numbers and email addresses</li>
+                    <li><code>date time</code> - Find both dates and times</li>
+                    <li><code>url ip</code> - Find both URLs and IP addresses</li>
+                    <li><code>zip ssn</code> - Find both ZIP codes and social security numbers</li>
+                </ul>
+                <p><strong>Expected behavior:</strong></p>
+                <ul>
+                    <li>Should show "Searching for [pattern1] and [pattern2] using pattern detection"</li>
+                    <li>Each pattern type should be highlighted in a different color</li>
+                    <li>Phone numbers might be yellow, emails might be blue, etc.</li>
+                    <li>Navigate through all matches with Enter/Shift+Enter</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Additional Test Content</h2>
+            <div class="pattern-examples">
+                <p>Mixed content for comprehensive testing:</p>
+                <p>Contact John at john@email.com or call (555) 123-4567 after 2:30 PM.</p>
+                <p>Visit https://example.com for more info. Updated on 12/15/2023.</p>
+                <p>Server 192.168.0.1 in ZIP 12345 processes card 4444-5555-6666-7777.</p>
+                <p>Meeting scheduled for 2024-03-20 at 14:30. SSN: 123-45-6789.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

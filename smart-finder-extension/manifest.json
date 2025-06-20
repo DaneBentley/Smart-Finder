@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Smart Finder",
+  "version": "1.0",
+  "description": "AI-powered search extension with smart finding capabilities",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.vercel.app/*",
+    "https://*.supabase.co/*"
+  ],
+  "oauth2": {
+    "client_id": "148916188620-l2pn60pdkqr8c0dkbe42g1u1sft7ugg5.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Smart Finder"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "commands": {
+    "toggle-find": {
+      "suggested_key": {
+        "default": "Ctrl+F",
+        "mac": "Command+F"
+      },
+      "description": "Toggle find bar"
+    }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "modules/*.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+} 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Styling - Chrome Find Clone</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .highlight {
+            background: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test AI Styling - Chrome Find Clone</h1>
+    
+    <div class="test-instructions">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Press <strong>Ctrl+F</strong> (or Cmd+F on Mac) to open the find bar</li>
+            <li><strong>AI Mode is now enabled by default!</strong> Notice the placeholder text says "Ask AI about this page..."</li>
+            <li>Type some text in the search box</li>
+            <li><strong>Expected behavior:</strong> The input should have a more apparent blue background and show "Enter to smart search" message underneath when Enter would trigger AI search (when there are no existing matches)</li>
+            <li>Try searching for text that exists on this page first, then text that doesn't exist</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>Sample Content for Testing</h2>
+        <p>This is some sample text that you can search for. Try searching for words like <span class="highlight">sample</span>, <span class="highlight">testing</span>, or <span class="highlight">content</span>.</p>
+        
+        <p>When you search for text that exists on the page, the input should NOT have the blue styling or message because Enter would navigate to the next match, not trigger AI search.</p>
+        
+        <p>When you search for text that does NOT exist on the page (like "nonexistent" or "randomword"), the input SHOULD have the blue styling and show the "Enter to smart search" message because Enter would trigger AI search.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>More Test Content</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+        
+        <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Testing Scenarios</h2>
+        <ul>
+            <li><strong>Scenario 1:</strong> Search for "Lorem" - should find matches, no blue styling or message</li>
+            <li><strong>Scenario 2:</strong> Search for "xyznomatch" - should find no matches, blue styling and "Enter to smart search" message appear</li>
+            <li><strong>Scenario 3:</strong> Toggle AI mode off (should see placeholder change to "Find in page"), then back on - styling and message should update correctly</li>
+            <li><strong>Scenario 4:</strong> Type text that doesn't match, see blue styling and message appear, then clear the search box - styling and message should disappear immediately</li>
+            <li><strong>Scenario 5:</strong> In AI mode with empty input - no blue styling or message should appear</li>
+        </ul>
+    </div>
+</body>
+</html> 

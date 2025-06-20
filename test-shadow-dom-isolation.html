@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow DOM Isolation Test</title>
+    <style>
+        /* Aggressive host page styles that would interfere with our extension */
+        * {
+            box-sizing: content-box !important;
+            font-family: 'Comic Sans MS' !important;
+            color: red !important;
+            background: yellow !important;
+            border: 3px solid purple !important;
+            margin: 10px !important;
+            padding: 20px !important;
+        }
+        
+        div {
+            position: static !important;
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+        
+        input {
+            font-size: 24px !important;
+            color: green !important;
+            background: orange !important;
+            border: 5px dashed blue !important;
+        }
+        
+        button {
+            font-size: 20px !important;
+            color: white !important;
+            background: black !important;
+            border: 2px solid red !important;
+            border-radius: 0 !important;
+        }
+        
+        /* Try to override common extension classes */
+        .chrome-find-clone-bar {
+            background: pink !important;
+            color: purple !important;
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            z-index: 1 !important;
+        }
+        
+        .chrome-find-clone-input {
+            background: lime !important;
+            color: red !important;
+            font-size: 30px !important;
+        }
+        
+        .chrome-find-clone-button {
+            background: cyan !important;
+            color: magenta !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shadow DOM CSS Isolation Test</h1>
+    <p>This page has aggressive CSS that tries to interfere with the extension UI.</p>
+    <p>If the Shadow DOM implementation is working correctly:</p>
+    <ul>
+        <li>The extension's search bar should appear with clean, modern styling</li>
+        <li>The search bar should NOT be affected by the host page's purple borders, Comic Sans font, or garish colors</li>
+        <li>The search bar should be positioned correctly in the top-right corner</li>
+        <li>All buttons and inputs should maintain their intended appearance</li>
+    </ul>
+    
+    <div class="test-content">
+        <p>Some searchable content here for testing the extension functionality.</p>
+        <p>You can search for: <strong>test</strong>, <strong>extension</strong>, <strong>shadow</strong>, or <strong>isolation</strong>.</p>
+        <p>The highlighting should work normally on this page content while the UI remains isolated.</p>
+        <p>Test multiple highlighting: search for "test extension" to see multi-term highlighting.</p>
+        <p>Try AI search functionality with queries like "What is this page about?"</p>
+    </div>
+    
+    <div style="margin-top: 50px;">
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Load this page in Chrome</li>
+            <li>Press Ctrl+F (or Cmd+F on Mac) to activate the extension</li>
+            <li>Verify the search bar appears with clean styling (not affected by host CSS)</li>
+            <li>Test searching for words like "test" or "extension"</li>
+            <li>Verify highlighting works on page content (should show yellow highlights)</li>
+            <li>Test multi-term search like "test extension" (should show different colored highlights)</li>
+            <li>Check that the search UI is completely isolated from host page styles</li>
+            <li>Verify scroll indicators appear on the right side of the page</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Add some dynamic content for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded - extension should provide isolated UI');
+            
+            // Try to interfere with extension programmatically
+            setTimeout(() => {
+                const extensionElements = document.querySelectorAll('[class*="chrome-find-clone"]');
+                console.log('Found extension elements in main DOM:', extensionElements.length);
+                console.log('(Should be 0 if Shadow DOM is working correctly)');
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 
