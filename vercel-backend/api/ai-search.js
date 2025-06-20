@@ -55,15 +55,11 @@ export default async function handler(req, res) {
       p_user_id: userId
     });
 
-    if (consumeError || !consumeResult || !consumeResult.success) {
-      console.log('🔍 AI Search - Token consumption failed:', { 
-        error: consumeError,
-        result: consumeResult
-      });
+    if (consumeError || !consumeResult || !consumeResult[0]?.success) {
+      console.log('🔍 AI Search - Token consumption failed for user:', userId, consumeResult?.[0]?.message);
       return res.status(403).json({ 
         error: 'Insufficient tokens',
-        tokens: consumeResult?.remaining_tokens || 0
-        // Security: Removed debug info that could leak sensitive data
+        tokens: consumeResult?.[0]?.total_remaining || 0
       });
     }
 

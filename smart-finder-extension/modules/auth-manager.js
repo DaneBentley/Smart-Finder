@@ -8,6 +8,9 @@ class AuthManager {
     this.apiBaseUrl = 'https://findr-api-backend.vercel.app/api';
     this.currentUser = null;
     this.userTokens = 0;
+    this.freeTokens = 0;
+    this.paidTokens = 0;
+    this.lastTokenRefresh = 0;
     this.isInitialized = false;
     this.cachedToken = null;
     this.tokenExpiry = null;
@@ -18,21 +21,32 @@ class AuthManager {
     
     try {
       // Load user session from storage
-      const userData = await chrome.storage.local.get(['user', 'tokens', 'jwt']);
+      const userData = await chrome.storage.local.get(['user', 'tokens', 'freeTokens', 'paidTokens', 'jwt', 'lastTokenRefresh']);
+      
       if (userData.user) {
         this.currentUser = userData.user;
         this.userTokens = userData.tokens || 0;
+        this.freeTokens = userData.freeTokens || 0;
+        this.paidTokens = userData.paidTokens || 0;
+        this.lastTokenRefresh = userData.lastTokenRefresh || 0;
       }
       this.isInitialized = true;
+      
+      // Auto-refresh if data is stale (older than 30 seconds)
+      const now = Date.now();
+      if (this.currentUser && (!this.lastTokenRefresh || now - this.lastTokenRefresh > 30000)) {
+        try {
+          await this.refreshUserData();
+        } catch (error) {
+          // Ignore refresh errors during initialization
+        }
+      }
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
     }
   }
 
   async signInWithGoogle() {
     try {
-      console.log('Starting modern Chrome OAuth flow...');
-      
       // Clear any existing cached token first
       await this.clearCachedToken();
       
@@ -43,8 +57,6 @@ class AuthManager {
         throw new Error('Failed to obtain access token');
       }
 
-      console.log('Got access token, sending to backend...');
-      
       // Send token to backend for validation and user creation
       const response = await fetch(`${this.apiBaseUrl}/auth/google`, {
         method: 'POST',
@@ -56,23 +68,18 @@ class AuthManager {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Backend authentication failed:', errorText);
-        
         // If token is invalid, clear it and throw error
         await this.clearCachedToken();
         throw new Error(`Authentication failed: ${errorText}`);
       }
 
       const userData = await response.json();
-      console.log('Authentication successful:', userData);
-      
       // Store user data
       await this.storeUserData(userData);
       
       return userData;
       
     } catch (error) {
-      console.error('Google sign-in failed:', error);
       await this.clearCachedToken();
       throw error;
     }
@@ -82,12 +89,9 @@ class AuthManager {
     try {
       // Check if we have a cached token that's still valid
       if (this.cachedToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
-        console.log('Using cached access token');
         return this.cachedToken;
       }
 
-      console.log('Requesting new access token...');
-      
       // Get new token from Chrome identity API
       const token = await new Promise((resolve, reject) => {
         chrome.identity.getAuthToken({ 
@@ -105,13 +109,11 @@ class AuthManager {
         // Cache the token with a reasonable expiry (55 minutes, tokens usually last 1 hour)
         this.cachedToken = token;
         this.tokenExpiry = Date.now() + (55 * 60 * 1000);
-        console.log('New access token obtained and cached');
       }
 
       return token;
       
     } catch (error) {
-      console.error('Failed to get access token:', error);
       throw error;
     }
   }
@@ -130,7 +132,6 @@ class AuthManager {
       });
       
       if (existingToken) {
-        console.log('Clearing cached Chrome token...');
         await new Promise((resolve) => {
           chrome.identity.removeCachedAuthToken({ token: existingToken }, () => {
             resolve();
@@ -138,19 +139,25 @@ class AuthManager {
         });
       }
     } catch (error) {
-      console.log('Error clearing cached token:', error.message);
     }
   }
 
   async storeUserData(userData) {
     this.currentUser = userData.user;
     this.userTokens = userData.tokens;
+    this.freeTokens = userData.freeTokens || 0;
+    this.paidTokens = userData.paidTokens || 0;
     
-    await chrome.storage.local.set({
+    const storageData = {
       user: this.currentUser,
       tokens: this.userTokens,
-      jwt: userData.jwt
-    });
+      freeTokens: this.freeTokens,
+      paidTokens: this.paidTokens,
+      jwt: userData.jwt,
+      lastTokenRefresh: this.lastTokenRefresh || Date.now()
+    };
+    
+    await chrome.storage.local.set(storageData);
   }
 
   // Email authentication methods removed - OAuth-only implementation
@@ -166,11 +173,11 @@ class AuthManager {
       // Reset state
       this.currentUser = null;
       this.userTokens = 0;
-      
-      console.log('Successfully signed out');
+      this.freeTokens = 0;
+      this.paidTokens = 0;
+      this.lastTokenRefresh = 0;
       
     } catch (error) {
-      console.error('Sign out error:', error);
     }
   }
 
@@ -186,6 +193,7 @@ class AuthManager {
         throw new Error('No JWT token found - please sign in again');
       }
 
+      console.log('Refreshing user data...');
       const response = await fetch(`${this.apiBaseUrl}/user/profile`, {
         headers: {
           'Authorization': `Bearer ${jwt}`
@@ -194,21 +202,33 @@ class AuthManager {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Refresh failed with status:', response.status, errorData);
         throw new Error(errorData.error || 'Failed to refresh user data');
       }
 
       const userData = await response.json();
+      console.log('Received fresh user data:', userData);
       
       // Update the stored data with the new values but keep the same JWT
+      this.lastTokenRefresh = Date.now();
       await this.storeUserData({
         user: userData.user,
         tokens: userData.tokens,
+        freeTokens: userData.freeTokens,
+        paidTokens: userData.paidTokens,
         jwt: jwt  // Keep the existing JWT
       });
+      
+      console.log('User data refreshed successfully. New tokens:', {
+        total: this.userTokens,
+        free: this.freeTokens,
+        paid: this.paidTokens
+      });
+      
       return userData;
       
     } catch (error) {
-      console.error('Failed to refresh user data:', error);
+      console.error('refreshUserData error:', error);
       throw error;
     }
   }
@@ -236,14 +256,19 @@ class AuthManager {
 
       const result = await response.json();
       
-      // Update local token count
+      // Update local token counts
       this.userTokens = result.remainingTokens;
-      await chrome.storage.local.set({ tokens: this.userTokens });
+      this.freeTokens = result.freeTokens || 0;
+      this.paidTokens = result.paidTokens || 0;
+      await chrome.storage.local.set({ 
+        tokens: this.userTokens,
+        freeTokens: this.freeTokens,
+        paidTokens: this.paidTokens
+      });
       
       return result;
       
     } catch (error) {
-      console.error('Token consumption failed:', error);
       throw error;
     }
   }
@@ -270,7 +295,6 @@ class AuthManager {
       return result.paymentUrl;  // Use 'paymentUrl' instead of 'url'
       
     } catch (error) {
-      console.error('Payment URL creation failed:', error);
       throw error;
     }
   }
@@ -287,30 +311,31 @@ class AuthManager {
     return this.userTokens;
   }
 
+  getFreeTokens() {
+    return this.freeTokens;
+  }
+
+  getPaidTokens() {
+    return this.paidTokens;
+  }
+
   hasTokens() {
-    return this.userTokens > 0;
+    // Calculate actual total from free + paid tokens for accuracy
+    const actualTotal = this.freeTokens + this.paidTokens;
+    
+    // Update userTokens if it's out of sync
+    if (this.userTokens !== actualTotal) {
+      this.userTokens = actualTotal;
+      // Update storage asynchronously
+      chrome.storage.local.set({ tokens: this.userTokens }).catch(() => {});
+    }
+    
+    return actualTotal > 0;
   }
 
   async debugJWT() {
-    try {
-      const { jwt } = await chrome.storage.local.get(['jwt']);
-      
-      const response = await fetch(`${this.apiBaseUrl}/debug/jwt`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwt}`
-        }
-      });
-
-      const result = await response.json();
-      console.log('🔍 JWT Debug Result:', result);
-      return result;
-      
-    } catch (error) {
-      console.error('JWT debug failed:', error);
-      throw error;
-    }
+    // Debug functionality removed
+    return { debug: 'not_available' };
   }
 
   async syncUser() {
@@ -334,8 +359,6 @@ class AuthManager {
       }
 
       const result = await response.json();
-      console.log('🔄 User sync result:', result);
-      
       // Update local user data if sync was successful
       if (result.synced) {
         await this.storeUserData({
@@ -348,7 +371,6 @@ class AuthManager {
       return result;
       
     } catch (error) {
-      console.error('User sync failed:', error);
       throw error;
     }
   }

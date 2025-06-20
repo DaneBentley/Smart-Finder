@@ -89,9 +89,7 @@ export class SearchEngine {
   parseRegexPatterns(searchText) {
     return this.parseTerms(searchText, false); // Only quotes, no ? delimiter
   }
-  
 
-  
   createTextWalker() {
     return document.createTreeWalker(
       document.body,
@@ -157,7 +155,6 @@ export class SearchEngine {
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('Search cancelled');
         return [];
       }
       throw error;
@@ -215,7 +212,6 @@ export class SearchEngine {
         while ((match = regex.exec(text)) !== null) {
           // Stop if we've reached the maximum number of matches
           if (totalMatches >= this.maxMatches) {
-            console.warn(`Search stopped at ${this.maxMatches} matches to maintain performance`);
             return this.matches;
           }
           
@@ -237,8 +233,7 @@ export class SearchEngine {
     } catch (error) {
       if (error.name !== 'AbortError') {
         // Invalid regex - return empty matches
-        console.warn('Invalid regex:', error);
-      }
+        }
     }
     
     return this.matches;
@@ -279,7 +274,6 @@ export class SearchEngine {
           while ((match = regex.exec(text)) !== null) {
             // Stop if we've reached the maximum number of matches
             if (totalMatches >= this.maxMatches) {
-              console.warn(`Search stopped at ${this.maxMatches} matches to maintain performance`);
               return this.matches;
             }
             
@@ -305,8 +299,7 @@ export class SearchEngine {
       } catch (error) {
         if (error.name !== 'AbortError') {
           // Invalid regex pattern - skip it
-          console.warn(`Invalid regex pattern "${pattern}":`, error);
-        }
+          }
       }
     }
     
@@ -342,7 +335,6 @@ export class SearchEngine {
         while ((index = textToSearch.indexOf(searchTerm, index)) !== -1) {
           // Stop if we've reached the maximum number of matches
           if (totalMatches >= this.maxMatches) {
-            console.warn(`Search stopped at ${this.maxMatches} matches to maintain performance`);
             return this.matches;
           }
           
@@ -387,7 +379,6 @@ export class SearchEngine {
       while ((index = textToSearch.indexOf(searchTerm, index)) !== -1) {
         // Stop if we've reached the maximum number of matches
         if (totalMatches >= this.maxMatches) {
-          console.warn(`Search stopped at ${this.maxMatches} matches to maintain performance`);
           return this.matches;
         }
         
@@ -520,11 +511,9 @@ export class SearchEngine {
       // Add new matches to our main matches array
       this.matches.push(...newMatches);
       
-      console.log(`🔍 Incremental search found ${newMatches.length} new matches`);
       return newMatches;
       
     } catch (error) {
-      console.warn('Incremental search error:', error);
       return [];
     }
   }
@@ -609,7 +598,6 @@ export class SearchEngine {
       
       // Only trigger if we found substantial new content
       if (newTextLength >= this.minContentChangeThreshold) {
-        console.log(`📝 Detected ${newTextLength} characters of new content`);
         this.handleContentChange();
       }
     });
@@ -644,7 +632,6 @@ export class SearchEngine {
     
     this.mutationDebounceTimer = setTimeout(() => {
       if (this.contentChangeCallback && this.searchTerm && !this.isSearching) {
-        console.log('🔄 Triggering incremental search due to new content');
         this.contentChangeCallback(this.searchTerm);
       }
     }, this.mutationDebounceDelay);
@@ -662,8 +649,7 @@ export class SearchEngine {
       this.contentSnapshot.add(contentId);
     }
     
-    console.log(`📸 Created content snapshot with ${this.contentSnapshot.size} text nodes`);
-  }
+    }
   
   getNodeContentId(node) {
     // Create a unique identifier for this text content based on its position and content

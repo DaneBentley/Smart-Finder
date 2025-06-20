@@ -1,26 +1,23 @@
 // Background service worker for SmartFinder
 // Handles keyboard shortcuts, browser action, and messaging
 
-console.log('Smart Finder background script loaded');
-
 // Handle extension installation
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Smart Finder extension installed');
+  // Extension installed
 });
 
 // Handle extension startup
 chrome.runtime.onStartup.addListener(() => {
-  console.log('Smart Finder extension started');
+  // Extension started
 });
 
 // Handle authentication state changes
 chrome.identity.onSignInChanged.addListener((account, signedIn) => {
-  console.log('Chrome identity sign-in changed:', { account, signedIn });
+  // Authentication state changed
 });
 
 // Handle messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Background received message:', request);
   
   if (request.action === 'checkAuth') {
     // Check authentication status
@@ -51,7 +48,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Handle keyboard shortcuts
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'toggle-find') {
-    console.log('Toggle find command triggered');
     handleFindToggle();
   }
 });
@@ -125,16 +121,14 @@ let authInProgress = false;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startAuth') {
     authInProgress = true;
-    console.log('Authentication flow started');
   } else if (request.action === 'endAuth') {
     authInProgress = false;
-    console.log('Authentication flow ended');
   }
 });
 
 // Prevent service worker from sleeping during auth
 setInterval(() => {
   if (authInProgress) {
-    console.log('Keeping service worker alive during auth');
+    // Keep service worker alive during authentication
   }
 }, 20000); // Every 20 seconds 

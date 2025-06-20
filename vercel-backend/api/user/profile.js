@@ -45,22 +45,45 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get user token data
-    const { data: userData, error: userDataError } = await supabase
-      .from('user_data')
-      .select('paid_tokens, usage_count')
-      .eq('user_id', userId)
-      .single();
+    // Get user token data using the new function that handles monthly allocation
+    const { data: tokenSummary, error: tokenError } = await supabase.rpc('get_user_token_summary', {
+      p_user_id: userId
+    });
 
-    if (userDataError) {
-      console.error('Error fetching user data:', userDataError);
+    if (tokenError) {
+      console.error('Error fetching user token data:', tokenError);
       return res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+
+    const summary = tokenSummary && tokenSummary.length > 0 ? tokenSummary[0] : {
+      free_tokens: 0,
+      paid_tokens: 0,
+      total_tokens: 0,
+      usage_count: 0
+    };
+
+    // If the database function didn't return proper breakdown, try direct query
+    if (!summary.free_tokens && !summary.paid_tokens && summary.total_tokens === 0) {
+      const { data: directData, error: directError } = await supabase
+        .from('user_data')
+        .select('free_tokens, paid_tokens, usage_count')
+        .eq('user_id', userId)
+        .single();
+        
+      if (!directError && directData) {
+        summary.free_tokens = directData.free_tokens || 0;
+        summary.paid_tokens = directData.paid_tokens || 0;
+        summary.total_tokens = (directData.free_tokens || 0) + (directData.paid_tokens || 0);
+        summary.usage_count = directData.usage_count || 0;
+      }
     }
 
     res.status(200).json({
       user,
-      tokens: userData.paid_tokens || 0,
-      usageCount: userData.usage_count || 0
+      tokens: summary.total_tokens,
+      freeTokens: summary.free_tokens,
+      paidTokens: summary.paid_tokens,
+      usageCount: summary.usage_count
     });
 
   } catch (error) {

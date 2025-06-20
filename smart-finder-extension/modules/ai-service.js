@@ -6,7 +6,7 @@ import { AuthManager } from './auth-manager.js';
 
 export class AIService {
   constructor() {
-    this.apiEndpoint = 'https://findr-backend-clean-ky64yo3es.vercel.app/api/ai-search';
+    this.apiEndpoint = 'https://findr-api-backend.vercel.app/api/ai-search';
     this.maxContextLength = 6000; // Conservative limit for AI context window
     this.batchOverlapSize = 200; // Overlap between batches to avoid splitting sentences
     this.authManager = new AuthManager();
@@ -31,9 +31,19 @@ export class AIService {
       if (!this.authManager.isSignedIn()) {
         throw new Error('User must be signed in to use AI features');
       }
+      
+
 
       if (!this.authManager.hasTokens()) {
-        throw new Error('No tokens available. Please purchase tokens to use AI features.');
+        // Try refreshing user data first in case it's a sync issue
+        try {
+          await this.authManager.refreshUserData();
+          if (!this.authManager.hasTokens()) {
+            throw new Error('No tokens available. Please purchase tokens to use AI features.');
+          }
+        } catch (refreshError) {
+          throw new Error('No tokens available. Please purchase tokens to use AI features.');
+        }
       }
 
       // Pre-flight checks: content length and estimated API calls
@@ -52,20 +62,12 @@ export class AIService {
       if (!rateLimitCheck.allowed) {
         throw new Error(`Rate limit exceeded. ${rateLimitCheck.message}`);
       }
-
-      console.log('🚀 Making AI API request...');
-      console.log('📤 Request payload:', { 
-        query, 
-        contentLength: pageContent.length,
-        contentPreview: pageContent.substring(0, 100) + '...'
-      });
       
       // Record this request for rate limiting (with actual API call count)
       this.recordRequest(estimatedBatches);
       
       // Use progressive parallel search for longer content
       if (pageContent.length > this.maxContextLength) {
-        console.log('📚 Content too long, using progressive parallel search...');
         return await this.progressiveParallelSearch(query, pageContent, onBatchComplete);
       }
       
@@ -85,59 +87,42 @@ export class AIService {
         })
       });
 
-      console.log('📡 API Response status:', response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ API Error:', response.status, errorText);
-        
-        // If it's a token error, run debug to see what's wrong
+        // If it's a token error, try syncing user data in case it's a sync issue
         if (response.status === 403 && errorText.includes('tokens')) {
-          console.log('🔍 Token error detected, running debug...');
           try {
-            const debugResult = await this.authManager.debugJWT();
-            console.log('🔍 Debug result:', debugResult);
-            console.log('🔍 User data from debug:', debugResult.userData);
-            console.log('🔍 Token count in DB:', debugResult.userData?.data?.paid_tokens);
-            
-            // Also try syncing user data in case it's a sync issue
-            console.log('🔄 Attempting user sync...');
-            const syncResult = await this.authManager.syncUser();
-            console.log('🔄 Sync result:', syncResult);
-            
-          } catch (debugError) {
-            console.error('🔍 Debug/sync failed:', debugError);
+            await this.authManager.syncUser();
+          } catch (syncError) {
+            // Ignore sync errors
           }
         }
         
-        throw new Error(`AI API error: ${response.status}`);
+        throw new Error(`AI API error: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('📥 API Response:', result);
-      console.log('📥 Has rawResponse?', !!result.rawResponse);
-      console.log('📥 Has relevantSnippets?', !!result.relevantSnippets);
+      
+      // Update client-side token counts after successful AI search
+      try {
+        await this.authManager.refreshUserData();
+      } catch (refreshError) {
+        // Don't fail the search if refresh fails
+      }
       
       // Handle both old format (relevantSnippets) and new format (rawResponse)
       let snippets = [];
       
       if (result.rawResponse) {
-        console.log('🔄 Processing raw AI response:', result.rawResponse);
         snippets = this.parseAndCleanAIResponse(result.rawResponse);
       } else if (result.relevantSnippets) {
-        console.log('⚠️ Using legacy relevantSnippets format');
         snippets = result.relevantSnippets || [];
       } else {
-        console.log('❌ No snippets found in response');
         snippets = [];
       }
       
-      console.log('🎯 Final processed snippets:', snippets);
-      
       return snippets;
     } catch (error) {
-      console.error('AI search failed:', error);
-      
       // Always rethrow authentication, token, rate limit, and content size errors
       if (error.message.includes('must be signed in') || 
           error.message.includes('tokens') ||
@@ -230,21 +215,11 @@ export class AIService {
     
     // Save to storage
     await chrome.storage.local.set({ aiApiCallHistory: this.apiCallHistory });
-    
-    console.log(`📊 Rate limit tracking: Recorded ${apiCalls} API calls. Recent usage:`, {
-      lastMinute: this.apiCallHistory.filter(r => now - r.timestamp < 60 * 1000).reduce((s, r) => s + r.apiCalls, 0),
-      lastHour: this.apiCallHistory.filter(r => now - r.timestamp < 60 * 60 * 1000).reduce((s, r) => s + r.apiCalls, 0),
-      lastDay: this.apiCallHistory.reduce((s, r) => s + r.apiCalls, 0)
-    });
   }
 
   async progressiveParallelSearch(query, pageContent, onBatchComplete = null) {
-    console.log('🔄 Starting progressive parallel search...');
-    
     // Split content into batches with overlap
     const batches = this.createContentBatches(pageContent);
-    console.log(`📦 Created ${batches.length} content batches`);
-    
     // Process batches in smaller parallel groups to avoid rate limits
     const batchSize = 3; // Process 3 batches at a time
     const allResults = [];
@@ -252,7 +227,6 @@ export class AIService {
     
     for (let i = 0; i < batches.length; i += batchSize) {
       const batchGroup = batches.slice(i, i + batchSize);
-      console.log(`⚡ Processing batch group ${Math.floor(i/batchSize) + 1}/${Math.ceil(batches.length/batchSize)} (${batchGroup.length} batches)`);
       
       try {
         const groupPromises = batchGroup.map((batch, index) => 
@@ -267,7 +241,7 @@ export class AIService {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       } catch (error) {
-        console.error(`❌ Batch group ${Math.floor(i/batchSize) + 1} failed:`, error);
+        console.error(`Batch group ${Math.floor(i/batchSize) + 1} failed:`, error);
       }
     }
     
@@ -276,11 +250,15 @@ export class AIService {
       const allSnippets = allResults.flat();
       const uniqueSnippets = this.deduplicateSnippets(allSnippets);
       
-      console.log(`🎯 Progressive search complete: ${uniqueSnippets.length} unique snippets from ${allSnippets.length} total`);
+      // Update client-side token counts after all batches complete
+      try {
+        await this.authManager.refreshUserData();
+      } catch (refreshError) {
+        // Don't fail the search if refresh fails
+      }
       
       return uniqueSnippets.slice(0, 8); // Limit to 8 best results
     } catch (error) {
-      console.error('❌ Progressive parallel search failed:', error);
       return [];
     }
   }
@@ -323,12 +301,10 @@ export class AIService {
       if (startIndex >= content.length) break;
     }
     
-    console.log(`📦 Created ${batches.length} batches from ${content.length} characters`);
-    
     // Log warning if content was truncated due to batch limits
     if (batches.length >= maxBatches && startIndex < content.length) {
       const truncatedChars = content.length - startIndex;
-      console.warn(`⚠️ Content truncated: ${truncatedChars} characters not processed due to ${maxBatches} batch limit`);
+      console.warn(`Content truncated: ${truncatedChars} characters skipped due to batch limit`);
     }
     
     return batches;
@@ -336,8 +312,6 @@ export class AIService {
 
   async searchBatch(query, batchContent, batchIndex) {
     try {
-      console.log(`🔍 Searching batch ${batchIndex + 1} (${batchContent.length} chars)...`);
-      
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);
       
@@ -354,7 +328,6 @@ export class AIService {
       });
 
       if (!response.ok) {
-        console.error(`❌ Batch ${batchIndex + 1} failed:`, response.status);
         return [];
       }
 
@@ -367,18 +340,14 @@ export class AIService {
         snippets = result.relevantSnippets || [];
       }
       
-      console.log(`✅ Batch ${batchIndex + 1} returned ${snippets.length} snippets`);
       return snippets;
     } catch (error) {
-      console.error(`❌ Batch ${batchIndex + 1} error:`, error);
       return [];
     }
   }
 
   async searchBatchWithCallback(query, batchContent, batchIndex, onBatchComplete, processedSnippets) {
     try {
-      console.log(`🔍 Searching batch ${batchIndex + 1} (${batchContent.length} chars)...`);
-      
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);
       
@@ -395,7 +364,6 @@ export class AIService {
       });
 
       if (!response.ok) {
-        console.error(`❌ Batch ${batchIndex + 1} failed:`, response.status);
         return [];
       }
 
@@ -407,8 +375,6 @@ export class AIService {
       } else if (result.relevantSnippets) {
         snippets = result.relevantSnippets || [];
       }
-      
-      console.log(`✅ Batch ${batchIndex + 1} returned ${snippets.length} snippets`);
       
       // Process new snippets immediately if callback provided
       if (onBatchComplete && snippets.length > 0) {
@@ -422,14 +388,12 @@ export class AIService {
         });
         
         if (newSnippets.length > 0) {
-          console.log(`🔄 Processing ${newSnippets.length} new snippets from batch ${batchIndex + 1}`);
           onBatchComplete(newSnippets, batchIndex + 1);
         }
       }
       
       return snippets;
     } catch (error) {
-      console.error(`❌ Batch ${batchIndex + 1} error:`, error);
       return [];
     }
   }
@@ -482,27 +446,20 @@ export class AIService {
   }
 
   parseAndCleanAIResponse(rawResponse) {
-    console.log('🧹 Starting AI response parsing and cleaning...');
-    
     let snippets = [];
     
     try {
       // Try to parse as JSON first
       const parsedSnippets = JSON.parse(rawResponse);
-      console.log('✅ Successfully parsed as JSON:', parsedSnippets);
-      
       if (Array.isArray(parsedSnippets)) {
         snippets = parsedSnippets;
       }
     } catch (parseError) {
-      console.log('❌ JSON parsing failed, trying text extraction...');
-      
       // Fallback: extract lines that look like content
       const lines = rawResponse.split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 20 && !line.startsWith('*') && !line.startsWith('-'));
       
-      console.log('📝 Extracted lines:', lines);
       snippets = lines;
     }
     
@@ -510,13 +467,11 @@ export class AIService {
     const cleanedSnippets = snippets
       .map((snippet, index) => {
         const cleaned = this.cleanSnippet(snippet);
-        console.log(`🧽 Cleaning snippet ${index + 1}: "${snippet}" -> "${cleaned}"`);
         return cleaned;
       })
       .filter(snippet => snippet && snippet.length > 0)
       .slice(0, 5); // Limit to 5 snippets per batch
     
-    console.log('✨ Final cleaned snippets:', cleanedSnippets);
     return cleanedSnippets;
   }
 

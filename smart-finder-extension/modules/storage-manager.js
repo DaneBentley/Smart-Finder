@@ -13,8 +13,7 @@ export class StorageManager {
         [this.storageKeys.LAST_SEARCH]: query || ''
       });
     } catch (error) {
-      console.warn('Failed to save last search:', error);
-    }
+      }
   }
 
   // Get the last search query
@@ -23,7 +22,6 @@ export class StorageManager {
       const result = await chrome.storage.local.get(this.storageKeys.LAST_SEARCH);
       return result[this.storageKeys.LAST_SEARCH] || '';
     } catch (error) {
-      console.warn('Failed to get last search:', error);
       return '';
     }
   }
@@ -35,8 +33,7 @@ export class StorageManager {
         [this.storageKeys.USER_SETTINGS]: settings
       });
     } catch (error) {
-      console.warn('Failed to save settings:', error);
-    }
+      }
   }
 
   // Get user settings with defaults
@@ -51,7 +48,6 @@ export class StorageManager {
       };
       return { ...defaultSettings, ...result[this.storageKeys.USER_SETTINGS] };
     } catch (error) {
-      console.warn('Failed to get settings:', error);
       return {
         caseSensitive: false,
         wholeWords: false,
@@ -69,7 +65,6 @@ export class StorageManager {
         this.storageKeys.USER_SETTINGS
       ]);
     } catch (error) {
-      console.warn('Failed to clear storage:', error);
-    }
+      }
   }
 } 

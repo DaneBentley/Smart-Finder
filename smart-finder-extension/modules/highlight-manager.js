@@ -69,8 +69,7 @@ export class HighlightManager {
     // Limit the number of highlights for performance
     const limitedMatches = matches.slice(0, this.maxVisibleHighlights);
     if (matches.length > this.maxVisibleHighlights) {
-      console.warn(`Limited highlights to ${this.maxVisibleHighlights} out of ${matches.length} matches for performance`);
-    }
+      }
     
     // Process highlights in batches to prevent freezing
     for (let i = 0; i < limitedMatches.length; i += this.batchSize) {
@@ -104,8 +103,7 @@ export class HighlightManager {
           range.insertNode(highlight);
           this.highlightElements.push(highlight);
         } catch (fallbackError) {
-          console.warn('Could not highlight range:', fallbackError);
-        }
+          }
       }
     });
   }
@@ -119,13 +117,11 @@ export class HighlightManager {
     const limitedMatches = newMatches.slice(0, Math.max(0, remainingSlots));
     
     if (remainingSlots <= 0) {
-      console.warn('Cannot add more highlights - maximum limit reached for performance');
       return;
     }
     
     if (newMatches.length > limitedMatches.length) {
-      console.warn(`Limited new highlights to ${limitedMatches.length} out of ${newMatches.length} for performance`);
-    }
+      }
     
     // Process in batches
     for (let i = 0; i < limitedMatches.length; i += this.batchSize) {
@@ -164,8 +160,7 @@ export class HighlightManager {
           range.insertNode(highlight);
           this.highlightElements.push(highlight);
         } catch (fallbackError) {
-          console.warn('Could not highlight range:', fallbackError);
-        }
+          }
       }
     });
   }

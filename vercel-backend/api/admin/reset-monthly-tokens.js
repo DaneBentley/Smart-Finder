@@ -34,33 +34,28 @@ export default async function handler(req, res) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Use the new atomic consume_user_token function
-    const { data: consumeResult, error: consumeError } = await supabase.rpc('consume_user_token', {
-      p_user_id: userId
-    });
-
-    if (consumeError) {
-      console.error('Error consuming token:', consumeError);
-      return res.status(500).json({ error: 'Failed to consume token' });
+    // For security: only allow specific admin users (you can add email check here)
+    // For now, just add a simple admin key check
+    const { adminKey } = req.body;
+    if (adminKey !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).json({ error: 'Admin access required' });
     }
 
-    // consumeResult is an array, get the first result
-    const result = consumeResult && consumeResult.length > 0 ? consumeResult[0] : null;
+    console.log(`Admin ${userId} requesting monthly token reset`);
 
-    if (!result || !result.success) {
-      return res.status(400).json({ 
-        error: result?.message || 'Insufficient tokens',
-        remainingTokens: result?.total_remaining || 0,
-        freeTokens: result?.remaining_free_tokens || 0,
-        paidTokens: result?.remaining_paid_tokens || 0
-      });
+    // Call the monthly reset function
+    const { data: resetResult, error: resetError } = await supabase.rpc('reset_monthly_tokens_for_all_users');
+
+    if (resetError) {
+      console.error('Error resetting monthly tokens:', resetError);
+      return res.status(500).json({ error: 'Failed to reset monthly tokens' });
     }
+
+    const result = resetResult && resetResult.length > 0 ? resetResult[0] : { users_updated: 0, message: 'No users updated' };
 
     res.status(200).json({
       success: true,
-      remainingTokens: result.total_remaining,
-      freeTokens: result.remaining_free_tokens,
-      paidTokens: result.remaining_paid_tokens,
+      usersUpdated: result.users_updated,
       message: result.message
     });
 
@@ -72,7 +67,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token expired' });
     }
     
-    console.error('Token consumption error:', error);
-    res.status(500).json({ error: 'Failed to consume token' });
+    console.error('Monthly token reset error:', error);
+    res.status(500).json({ error: 'Failed to reset monthly tokens' });
   }
 } 

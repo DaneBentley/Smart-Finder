@@ -20,9 +20,8 @@
       // Initialize the extension
       window.smartFinder = new SmartFinder();
       
-              console.log('SmartFinder initialized successfully');
     } catch (error) {
-              console.error('Failed to load SmartFinder modules:', error);
+      console.error('Failed to load SmartFinder modules:', error);
       
       // Fallback: Load a simplified version if modules fail
       initializeFallback();
@@ -31,12 +30,10 @@
   
   // Simplified fallback implementation
   function initializeFallback() {
-    console.warn('Using fallback implementation');
-    
     window.smartFinder = {
       isVisible: false,
       toggle: function() {
-        console.log('Find functionality not available - module loading failed');
+        // Find functionality not available - module loading failed
       }
     };
   }

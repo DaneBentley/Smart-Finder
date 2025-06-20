@@ -48,7 +48,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "modules/*.js"
+        "modules/*.js",
+        "privacy-policy.html"
       ],
       "matches": ["<all_urls>"]
     }

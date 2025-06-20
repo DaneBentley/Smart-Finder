@@ -34,7 +34,7 @@ export class SmartFinder {
     
     // Initialize asynchronously
     this.init().catch(error => {
-              console.error('Failed to initialize SmartFinder:', error);
+      console.error('Failed to initialize SmartFinder:', error);
     });
   }
   
@@ -226,12 +226,8 @@ export class SmartFinder {
     this.isUserNavigating = false;
     
     try {
-      console.log('🔍 AI Search Query:', query);
-      
       // Extract page content and query AI
       const pageContent = this.aiService.extractPageContent();
-      console.log('📄 Page Content Length:', pageContent.length, 'characters');
-      console.log('📄 Page Content Preview:', pageContent.substring(0, 200) + '...');
       
       // Define callback for progressive results
       const onBatchComplete = (newSnippets, batchNumber) => {
@@ -239,13 +235,10 @@ export class SmartFinder {
       };
       
       const relevantSnippets = await this.aiService.searchWithAI(query, pageContent, onBatchComplete);
-      console.log('🤖 AI Final Response:', relevantSnippets);
-      console.log('📊 Number of AI snippets returned:', relevantSnippets.length);
       
       // Final processing if no progressive results were shown
       if (this.progressiveMatches.length === 0) {
         if (relevantSnippets.length === 0) {
-          console.log('❌ No AI snippets returned');
           this.ui.updateSmartSearchHint('No results');
           this.updateUI(0, 0);
           return;
@@ -254,7 +247,6 @@ export class SmartFinder {
         // Process all results at once (fallback for single batch)
         this.processFinalResults(relevantSnippets);
       } else {
-        console.log('✅ Progressive search completed with', this.progressiveMatches.length, 'total matches');
         // Final completion - handle no results case for progressive search
         if (this.progressiveMatches.length === 0) {
           this.ui.updateSmartSearchHint('No results');
@@ -290,16 +282,8 @@ export class SmartFinder {
   }
 
   processBatchResults(newSnippets, batchNumber) {
-    console.log(`🔄 Processing batch ${batchNumber} with ${newSnippets.length} new snippets`);
-    
-    // Log each snippet
-    newSnippets.forEach((snippet, index) => {
-      console.log(`📝 Batch ${batchNumber} Snippet ${index + 1}:`, `"${snippet}"`);
-    });
-    
     // Find matches for new snippets only
     const newMatches = this.findSnippetsOnPage(newSnippets, batchNumber);
-    console.log(`🎯 Batch ${batchNumber} found ${newMatches.length} matches on page`);
     
     // Add to progressive matches only if we have new matches
     if (newMatches.length > 0) {
@@ -365,24 +349,11 @@ export class SmartFinder {
   }
 
   processFinalResults(relevantSnippets) {
-    // Log each snippet
-    relevantSnippets.forEach((snippet, index) => {
-      console.log(`📝 Snippet ${index + 1}:`, `"${snippet}"`);
-    });
-    
     // Find and highlight the relevant snippets on the page
     const matches = this.findSnippetsOnPage(relevantSnippets);
-    console.log('🎯 Matches found on page:', matches.length);
-    
-    // Log which snippets were found/not found
-    relevantSnippets.forEach((snippet, index) => {
-      const found = this.testSnippetMatch(snippet);
-      console.log(`${found ? '✅' : '❌'} Snippet ${index + 1} ${found ? 'FOUND' : 'NOT FOUND'} on page:`, `"${snippet}"`);
-    });
     
     // Store matches in progressiveMatches for copy functionality
     this.progressiveMatches = [...matches];
-    console.log(`📋 Stored ${this.progressiveMatches.length} matches in progressiveMatches for copying`);
     
     // Reset navigation state
     this.navigationManager.reset();
@@ -566,8 +537,6 @@ export class SmartFinder {
     const walker = this.searchEngine.createTextWalker();
     let node;
     
-    console.log('🔎 Searching for snippets in page text...');
-    
     while (node = walker.nextNode()) {
       const text = node.textContent;
       
@@ -579,7 +548,6 @@ export class SmartFinder {
         // Try exact match first (case-insensitive)
         let index = text.toLowerCase().indexOf(snippetText.toLowerCase());
         if (index !== -1) {
-          console.log(`✅ Found exact match for snippet ${i + 1} in text node:`, `"${snippetText}"`);
           const range = document.createRange();
           range.setStart(node, index);
           range.setEnd(node, index + snippetText.length);
@@ -601,7 +569,6 @@ export class SmartFinder {
               
               const phraseIndex = text.toLowerCase().indexOf(phrase.toLowerCase());
               if (phraseIndex !== -1) {
-                console.log(`✅ Found partial match for snippet ${i + 1} (${wordCount}/${words.length} words):`, `"${phrase}"`);
                 const range = document.createRange();
                 range.setStart(node, phraseIndex);
                 range.setEnd(node, phraseIndex + phrase.length);
@@ -615,8 +582,6 @@ export class SmartFinder {
         }
       }
     }
-    
-    console.log(`🎯 Total matches found: ${matches.length}`);
     
     // Sort matches by document order (TreeWalker already gives document order, but ensure consistency)
     matches.sort((a, b) => {
@@ -692,42 +657,27 @@ export class SmartFinder {
     try {
       let results = [];
       
-      // Debug current state
-      console.log('🔍 Copy All Results Debug Info:');
-      console.log('  - AI Mode:', this.ui.aiMode);
-      console.log('  - Progressive Matches Length:', this.progressiveMatches.length);
-      console.log('  - Regular Search Matches:', this.searchEngine.getMatches().length);
-      console.log('  - Navigation Manager Has Matches:', this.navigationManager.hasMatches());
-      
       // Check if we're in AI mode and have AI results, otherwise fall back to regular results
       if (this.ui.aiMode && this.progressiveMatches.length > 0) {
         // Extract text from AI mode matches (progressiveMatches)
-        console.log('📋 Extracting from AI mode progressiveMatches...');
         const seen = new Set();
         this.progressiveMatches.forEach((range, index) => {
           try {
             const text = range.toString().trim();
-            console.log(`  - Range ${index + 1}: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
             if (text && !seen.has(text.toLowerCase())) {
               results.push(text);
               seen.add(text.toLowerCase());
             }
           } catch (error) {
-            console.warn(`  - Error extracting range ${index + 1}:`, error);
+            console.warn(`Error extracting range ${index + 1}:`, error);
           }
         });
-        console.log(`📋 Copying ${results.length} AI search results`);
       } else {
         // Use regular search engine results (works in both AI mode and regular mode)
-        console.log('📋 Using regular search engine results...');
         results = this.searchEngine.getAllResultsText();
-        console.log(`📋 Copying ${results.length} regular search results`);
       }
       
-      console.log('📋 Final results array:', results);
-      
       if (results.length === 0) {
-        console.log('❌ No results found - showing "No results to copy" message');
         this.showCopyFeedback('No results to copy');
         return;
       }
@@ -851,7 +801,6 @@ export class SmartFinder {
     
     // In AI mode, don't auto-update - AI results are contextual and shouldn't change
     if (this.ui.aiMode) {
-      console.log('🤖 Skipping incremental search in AI mode');
       return;
     }
     
@@ -860,7 +809,6 @@ export class SmartFinder {
       const newMatches = await this.searchEngine.findIncrementalMatches(term, this.ui.settings);
       
       if (newMatches.length > 0) {
-        console.log(`✨ Found ${newMatches.length} new matches in dynamic content`);
         
         // Add new matches to existing ones
         const allMatches = [...this.searchEngine.getMatches(), ...newMatches];

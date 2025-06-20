@@ -102,13 +102,15 @@ async function processUserData(userInfo, res) {
 
       user = newUser;
 
-      // Create user_data record with initial tokens
+      // Create user_data record with monthly free tokens
       const { error: userDataError } = await supabase
         .from('user_data')
         .insert({
           user_id: user.id,
-          paid_tokens: 10, // Give new users 10 free tokens
-          usage_count: 0
+          paid_tokens: 0,
+          free_tokens: 50, // Give new users 50 monthly free tokens
+          usage_count: 0,
+          monthly_reset_date: new Date().toISOString().split('T')[0] // Current date
         });
 
       if (userDataError) {
@@ -138,12 +140,17 @@ async function processUserData(userInfo, res) {
       }
     }
 
-    // Get user token data
-    const { data: userData } = await supabase
-      .from('user_data')
-      .select('paid_tokens, usage_count')
-      .eq('user_id', user.id)
-      .single();
+    // Get user token data using the new function that handles monthly allocation
+    const { data: tokenSummary, error: tokenError } = await supabase.rpc('get_user_token_summary', {
+      p_user_id: user.id
+    });
+
+    const summary = tokenSummary && tokenSummary.length > 0 ? tokenSummary[0] : {
+      free_tokens: 0,
+      paid_tokens: 0,
+      total_tokens: 0,
+      usage_count: 0
+    };
 
     // Generate JWT token for API authentication
     const jwtToken = jwt.sign(
@@ -160,7 +167,9 @@ async function processUserData(userInfo, res) {
         name: user.name,
         profile_picture: user.profile_picture
       },
-      tokens: userData?.paid_tokens || 0,
+      tokens: summary.total_tokens,
+      freeTokens: summary.free_tokens,
+      paidTokens: summary.paid_tokens,
       jwt: jwtToken
     });
 

@@ -267,32 +267,6 @@
       font-size: 11px;
       color: #5f6368;
     }
-
-    .message {
-      padding: 8px 12px;
-      border-radius: 4px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .message.info {
-      background: #e8f0fe;
-      color: #1a73e8;
-      border: 1px solid #d2e3fc;
-    }
-
-    .message.success {
-      background: #e6f4ea;
-      color: #137333;
-      border: 1px solid #ceead6;
-    }
-
-    .message.error {
-      background: #fce8e6;
-      color: #d93025;
-      border: 1px solid #f9c7c1;
-    }
   </style>
 </head>
 <body>
@@ -300,9 +274,6 @@
     <div class="logo">SF</div>
     <div class="title">Smart Finder</div>
   </div>
-  
-  <!-- Messages -->
-  <div id="message" class="message hidden"></div>
   
   <!-- Authentication Section -->
   <div class="auth-section">
@@ -329,6 +300,9 @@
       <div class="token-info">
         <div>
           <div id="tokenCount" class="token-count">0 tokens</div>
+          <div id="tokenBreakdown" class="token-label" style="font-size: 10px; color: #5f6368; margin-top: 2px;">
+            <span id="freeTokens">0 free</span> + <span id="paidTokens">0 paid</span>
+          </div>
           <div class="token-label">AI searches available</div>
         </div>
         <button id="refreshTokens" class="secondary-button" style="padding: 4px 8px; font-size: 11px;">Refresh</button>
@@ -408,7 +382,10 @@
     AI-powered search with Chrome's native find behavior using secure OAuth authentication and token-based usage.
   </div>
   
-  <script src="modules/auth-manager.js" type="module"></script>
+  <div class="footer-links" style="text-align: center; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e8eaed;">
+    <a href="privacy-policy.html" target="_blank" style="color: #1a73e8; text-decoration: none; font-size: 12px;">Privacy Policy</a>
+  </div>
+  
   <script src="popup.js" type="module"></script>
 </body>
 </html> 

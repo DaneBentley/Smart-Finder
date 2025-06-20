@@ -86,12 +86,13 @@ async function handlePaymentSuccess(session) {
       p_token_amount: tokenAmount
     });
 
-    if (tokenError || !tokenResult || !tokenResult.success) {
+    if (tokenError || !tokenResult || !tokenResult.length || !tokenResult[0].success) {
       console.error('Error adding tokens:', tokenError || 'Token addition failed');
       return;
     }
 
-    console.log(`Successfully added ${tokenAmount} tokens to user ${userId}. New balance: ${tokenResult.new_token_count}`);
+    const result = tokenResult[0];
+    console.log(`Successfully added ${tokenAmount} paid tokens to user ${userId}. New balance: ${result.total_tokens} (Free: ${result.new_free_tokens}, Paid: ${result.new_paid_tokens})`);
 
   } catch (error) {
     console.error('Error processing payment success:', error);

@@ -11,7 +11,7 @@ class SmartFinderPopup {
   async init() {
     await this.authManager.initialize();
     this.setupEventListeners();
-    this.updateUI();
+    await this.updateUI();
     
     // Platform-specific keyboard shortcut display
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -19,6 +19,25 @@ class SmartFinderPopup {
     if (findKeyElement) {
       findKeyElement.textContent = isMac ? 'Cmd+F' : 'Ctrl+F';
     }
+    
+    // Auto-refresh token counts every 10 seconds while popup is open
+    this.refreshInterval = setInterval(async () => {
+      if (this.authManager.isSignedIn()) {
+        try {
+          await this.authManager.refreshUserData();
+          await this.updateUI();
+        } catch (error) {
+          // Ignore refresh errors
+        }
+      }
+    }, 10000);
+    
+    // Clean up interval when popup is closed
+    window.addEventListener('beforeunload', () => {
+      if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+      }
+    });
   }
 
   setupEventListeners() {
@@ -55,10 +74,16 @@ class SmartFinderPopup {
       // Update user info
       const user = this.authManager.getCurrentUser();
       const tokens = this.authManager.getTokenCount();
+      const freeTokens = this.authManager.getFreeTokens();
+      const paidTokens = this.authManager.getPaidTokens();
 
       document.getElementById('userName').textContent = user.name || 'User';
       document.getElementById('userEmail').textContent = user.email;
       document.getElementById('tokenCount').textContent = `${tokens} tokens`;
+      
+      // Update token breakdown
+      document.getElementById('freeTokens').textContent = `${freeTokens} free`;
+      document.getElementById('paidTokens').textContent = `${paidTokens} paid`;
       
       if (user.profile_picture) {
         document.getElementById('userAvatar').src = user.profile_picture;
@@ -73,38 +98,67 @@ class SmartFinderPopup {
   // Google authentication
   async handleGoogleSignIn() {
     try {
-      this.showMessage('Signing in...', 'info');
       await this.authManager.signInWithGoogle();
       await this.updateUI();
-      this.showMessage('Successfully signed in!', 'success');
     } catch (error) {
       console.error('Google sign in failed:', error);
-      this.showMessage('Sign in failed: ' + error.message, 'error');
     }
   }
 
   // General authentication
   async handleSignOut() {
     try {
-      this.showMessage('Signing out...', 'info');
       await this.authManager.signOut();
       await this.updateUI();
-      this.showMessage('Successfully signed out', 'success');
     } catch (error) {
       console.error('Sign out failed:', error);
-      this.showMessage('Sign out failed: ' + error.message, 'error');
     }
   }
 
   async refreshUserData() {
+    const refreshButton = document.getElementById('refreshTokens');
+    const originalText = refreshButton?.textContent || 'Refresh';
+    
     try {
-      this.showMessage('Refreshing...', 'info');
+      // Show loading state
+      if (refreshButton) {
+        refreshButton.textContent = '...';
+        refreshButton.disabled = true;
+      }
+      
+      console.log('Starting manual refresh...');
       await this.authManager.refreshUserData();
       await this.updateUI();
-      this.showMessage('Refreshed successfully', 'success');
+      console.log('Manual refresh completed successfully');
+      
+      // Show success feedback briefly
+      if (refreshButton) {
+        refreshButton.textContent = '✓';
+        setTimeout(() => {
+          refreshButton.textContent = originalText;
+          refreshButton.disabled = false;
+        }, 1000);
+      }
+      
     } catch (error) {
       console.error('Refresh failed:', error);
-      this.showMessage('Refresh failed: ' + error.message, 'error');
+      
+      // Show error feedback
+      if (refreshButton) {
+        refreshButton.textContent = '✗';
+        setTimeout(() => {
+          refreshButton.textContent = originalText;
+          refreshButton.disabled = false;
+        }, 2000);
+      }
+      
+      // Show user-friendly error if needed
+      if (error.message.includes('JWT token') || error.message.includes('sign in')) {
+        // JWT expired or invalid - user needs to sign in again
+        console.log('JWT expired, signing out...');
+        await this.authManager.signOut();
+        await this.updateUI();
+      }
     }
   }
 
@@ -144,12 +198,10 @@ class SmartFinderPopup {
 
   async handleTokenPurchase() {
     if (!this.selectedTokenAmount) {
-      this.showMessage('Please select a token amount', 'error');
       return;
     }
 
     try {
-      this.showMessage('Redirecting to payment...', 'info');
       const paymentUrl = await this.authManager.getPaymentUrl(this.selectedTokenAmount);
       
       // Open payment in new tab
@@ -159,7 +211,6 @@ class SmartFinderPopup {
       window.close();
     } catch (error) {
       console.error('Payment failed:', error);
-      this.showMessage('Payment failed: ' + error.message, 'error');
     }
   }
 
@@ -169,7 +220,6 @@ class SmartFinderPopup {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
       if (!tab || !tab.url || tab.url.startsWith('chrome://')) {
-        this.showMessage('Cannot open find on this page', 'error');
         return;
       }
 
@@ -187,24 +237,6 @@ class SmartFinderPopup {
 
     } catch (error) {
       console.error('Failed to open find bar:', error);
-      this.showMessage('Failed to open find bar: ' + error.message, 'error');
-    }
-  }
-
-  // Utility functions
-  showMessage(message, type = 'info') {
-    const messageDiv = document.getElementById('message');
-    if (!messageDiv) return;
-
-    messageDiv.textContent = message;
-    messageDiv.className = `message ${type}`;
-    messageDiv.classList.remove('hidden');
-
-    // Auto-hide success and info messages
-    if (type === 'success' || type === 'info') {
-      setTimeout(() => {
-        messageDiv.classList.add('hidden');
-      }, 3000);
     }
   }
 }

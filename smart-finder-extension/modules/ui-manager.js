@@ -997,7 +997,7 @@ export class UIManager {
           // Handle AI search case
           if (termToColorMap.ai) {
             colorIndex = 'ai';
-            console.log('🎯 Creating AI scroll indicator at', percentage.toFixed(1) + '%');
+            + '%';
           } else if (useRegex && range._regexPattern !== undefined) {
             // For regex patterns, use the pattern index
             colorIndex = (range._patternIndex % 5) + 1;
@@ -1028,8 +1028,7 @@ export class UIManager {
         this.scrollIndicators.appendChild(indicator);
         this.indicatorElements.push(indicator);
       } catch (error) {
-        console.warn('Could not create scroll indicator:', error);
-      }
+        }
     });
   }
   
