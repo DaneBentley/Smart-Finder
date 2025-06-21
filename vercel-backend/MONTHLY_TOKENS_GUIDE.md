@@ -1,11 +1,11 @@
-# Monthly Token Allocation System
+# 30-Day Token Allocation System
 
-This document explains the implementation of the 50 free tokens per month system for Smart Finder.
+This document explains the implementation of the 50 free tokens per 30-day cycle system for Smart Finder.
 
 ## Overview
 
-All users (both free and paid) receive 50 free tokens each month. These tokens:
-- Reset to 50 on the 1st of each month
+All users (both free and paid) receive 50 free tokens every 30 days from their signup date. These tokens:
+- Reset to 50 every 30 days from the user's signup date
 - Do not accumulate (unused tokens are lost)
 - Are consumed before paid tokens
 - Are separate from purchased tokens
@@ -13,13 +13,15 @@ All users (both free and paid) receive 50 free tokens each month. These tokens:
 ## Database Schema Changes
 
 ### New Columns in `user_data` table:
-- `free_tokens` (INTEGER): Monthly free token balance (0-50)
-- `monthly_reset_date` (DATE): Last date when monthly tokens were reset
+- `free_tokens` (INTEGER): 30-day free token balance (0-50)
+- `monthly_reset_date` (DATE): Last date when 30-day tokens were reset
+- `signup_date` (DATE): User's signup date for calculating 30-day cycles
 
 ### Updated Functions:
-- `allocate_monthly_tokens()`: Checks and allocates monthly tokens if needed
+- `allocate_monthly_tokens()`: Checks and allocates 30-day tokens if needed
 - `consume_user_token()`: Consumes free tokens first, then paid tokens
 - `get_user_token_summary()`: Returns comprehensive token information
+- `get_days_until_next_reset()`: Returns days until next free token reset
 - `reset_monthly_tokens_for_all_users()`: Bulk reset function for cron jobs
 
 ## API Changes
@@ -46,7 +48,9 @@ All users (both free and paid) receive 50 free tokens each month. These tokens:
   "tokens": 85,
   "freeTokens": 45,
   "paidTokens": 40,
-  "usageCount": 15
+  "usageCount": 15,
+  "daysUntilReset": 12,
+  "nextResetDate": "2024-02-15"
 }
 ```
 
@@ -65,7 +69,7 @@ All users (both free and paid) receive 50 free tokens each month. These tokens:
 ### New Admin Endpoint:
 
 #### `/api/admin/reset-monthly-tokens` (POST)
-Manually trigger monthly token reset for all users.
+Manually trigger 30-day token reset for all users.
 
 **Request:**
 ```json
@@ -79,34 +83,36 @@ Manually trigger monthly token reset for all users.
 {
   "success": true,
   "usersUpdated": 1250,
-  "message": "Reset monthly tokens for 1250 users"
+  "message": "Reset 30-day tokens for 1250 users"
 }
 ```
 
 ## Frontend Changes
 
 ### Extension Updates:
-- Updated `AuthManager` to track `freeTokens` and `paidTokens`
-- Modified popup UI to show token breakdown
-- Enhanced local storage to include token breakdown
+- Updated `AuthManager` to track `freeTokens`, `paidTokens`, `daysUntilReset`, and `nextResetDate`
+- Modified popup UI to show token breakdown and days until next reset
+- Enhanced local storage to include reset information
 
 ### Storage Structure:
 ```javascript
 {
   user: { ... },
   tokens: 85,        // Total tokens
-  freeTokens: 45,    // Monthly free tokens
+  freeTokens: 45,    // 30-day free tokens
   paidTokens: 40,    // Purchased tokens
+  daysUntilReset: 12, // Days until next free token reset
+  nextResetDate: "2024-02-15", // Next reset date
   jwt: "..."
 }
 ```
 
-## Automated Monthly Reset
+## Automated 30-Day Reset
 
 ### Cron Job Setup:
 ```bash
-# Run on 1st of every month at 2 AM UTC
-0 2 1 * * /usr/bin/node /path/to/reset-monthly-tokens.js
+# Run daily at 2 AM UTC to check for users whose 30-day cycle has completed
+0 2 * * * /usr/bin/node /path/to/reset-monthly-tokens.js
 ```
 
 ### Manual Script:
@@ -117,7 +123,7 @@ node scripts/reset-monthly-tokens.js
 
 ## Token Consumption Logic
 
-1. **Check for monthly allocation**: Automatically allocates 50 tokens if it's a new month
+1. **Check for 30-day allocation**: Automatically allocates 50 tokens if 30 days have passed since signup
 2. **Consume free tokens first**: Free tokens are used before paid tokens
 3. **Fallback to paid tokens**: When free tokens are exhausted
 4. **Atomic operations**: All token operations use database functions to prevent race conditions
@@ -133,10 +139,9 @@ ADMIN_SECRET_KEY=your_secure_admin_key_here
 
 1. **Deploy database schema**:
    ```sql
-   -- Run the database-schema.sql updates
+   -- Run the 30-day-cycle-migration.sql
    ALTER TABLE user_data 
-   ADD COLUMN IF NOT EXISTS free_tokens INTEGER DEFAULT 50,
-   ADD COLUMN IF NOT EXISTS monthly_reset_date DATE DEFAULT CURRENT_DATE;
+   ADD COLUMN IF NOT EXISTS signup_date DATE DEFAULT CURRENT_DATE;
    ```
 
 2. **Deploy functions**:
@@ -147,12 +152,13 @@ ADMIN_SECRET_KEY=your_secure_admin_key_here
 
 3. **Update existing users**:
    ```sql
-   -- Give existing users their monthly tokens
+   -- Give existing users their signup date and 30-day tokens
    UPDATE user_data 
    SET 
+       signup_date = COALESCE(created_at::DATE, CURRENT_DATE),
        free_tokens = 50,
        monthly_reset_date = CURRENT_DATE
-   WHERE free_tokens IS NULL;
+   WHERE signup_date IS NULL;
    ```
 
 4. **Deploy API updates**: Deploy all updated API endpoints
@@ -162,23 +168,33 @@ ADMIN_SECRET_KEY=your_secure_admin_key_here
 ## Monitoring
 
 ### Key Metrics to Track:
-- Monthly active users receiving free tokens
+- Users receiving 30-day free tokens
 - Token consumption patterns (free vs paid)
-- Monthly reset execution success
+- 30-day reset execution success
 - Token purchase conversion rates
 
 ### Queries:
 ```sql
--- Users with active monthly tokens
+-- Users with active 30-day tokens
 SELECT COUNT(*) FROM user_data 
-WHERE free_tokens > 0 AND monthly_reset_date >= date_trunc('month', CURRENT_DATE);
+WHERE free_tokens > 0;
 
--- Monthly token usage statistics
+-- 30-day token usage statistics
 SELECT 
   COUNT(*) as total_users,
   AVG(free_tokens) as avg_free_tokens,
-  AVG(paid_tokens) as avg_paid_tokens
+  AVG(paid_tokens) as avg_paid_tokens,
+  AVG(CURRENT_DATE - signup_date) as avg_days_since_signup
 FROM user_data;
+
+-- Users due for reset in next 7 days
+SELECT 
+  u.email,
+  ud.signup_date,
+  (SELECT days_remaining FROM get_days_until_next_reset(ud.user_id)) as days_until_reset
+FROM users u
+JOIN user_data ud ON u.id = ud.user_id
+WHERE (SELECT days_remaining FROM get_days_until_next_reset(ud.user_id)) <= 7;
 ```
 
 ## Troubleshooting
@@ -188,23 +204,17 @@ FROM user_data;
 1. **Tokens not resetting**: Check cron job execution and script logs
 2. **Incorrect token counts**: Verify database function execution
 3. **Race conditions**: All operations use atomic database functions
+4. **Incorrect days calculation**: Verify signup_date is properly set
 
 ### Debug Commands:
 ```bash
-# Test monthly reset
+# Test 30-day reset
 curl -X POST https://your-domain/api/admin/reset-monthly-tokens \
   -H "Authorization: Bearer YOUR_JWT" \
   -H "Content-Type: application/json" \
   -d '{"adminKey": "your_admin_key"}'
 
-# Check user token status
-SELECT user_id, free_tokens, paid_tokens, monthly_reset_date 
-FROM user_data WHERE user_id = 'specific_user_id';
+# Check user token status and reset information
+curl -X GET https://your-domain/api/user/profile \
+  -H "Authorization: Bearer YOUR_JWT"
 ```
-
-## Security Considerations
-
-- Monthly reset function requires admin authentication
-- All token operations are atomic and secure
-- Rate limiting applies to all token-related endpoints
-- JWT validation required for all user operations

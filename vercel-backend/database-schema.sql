@@ -43,23 +43,26 @@ $$;
 GRANT EXECUTE ON FUNCTION cleanup_old_api_requests() TO service_role;
 
 -- ============================================
--- MONTHLY TOKEN ALLOCATION SCHEMA UPDATE
+-- 30-DAY TOKEN ALLOCATION SCHEMA UPDATE
 -- ============================================
 
--- Add new columns to user_data table for monthly free tokens
+-- Add new columns to user_data table for 30-day free token cycles
 ALTER TABLE user_data 
 ADD COLUMN IF NOT EXISTS free_tokens INTEGER DEFAULT 50,
-ADD COLUMN IF NOT EXISTS monthly_reset_date DATE DEFAULT CURRENT_DATE;
+ADD COLUMN IF NOT EXISTS monthly_reset_date DATE DEFAULT CURRENT_DATE,
+ADD COLUMN IF NOT EXISTS signup_date DATE DEFAULT CURRENT_DATE;
 
--- Update existing users to have monthly tokens if they don't already
+-- Update existing users to have 30-day tokens if they don't already
 UPDATE user_data 
 SET 
     free_tokens = COALESCE(free_tokens, 50),
-    monthly_reset_date = COALESCE(monthly_reset_date, CURRENT_DATE)
-WHERE free_tokens IS NULL OR monthly_reset_date IS NULL;
+    monthly_reset_date = COALESCE(monthly_reset_date, CURRENT_DATE),
+    signup_date = COALESCE(signup_date, CURRENT_DATE)
+WHERE free_tokens IS NULL OR monthly_reset_date IS NULL OR signup_date IS NULL;
 
--- Create index for efficient monthly reset queries
+-- Create index for efficient 30-day reset queries
 CREATE INDEX IF NOT EXISTS idx_user_data_monthly_reset ON user_data (monthly_reset_date);
+CREATE INDEX IF NOT EXISTS idx_user_data_signup_date ON user_data (signup_date);
 
 -- Add constraints to ensure data integrity
 ALTER TABLE user_data 

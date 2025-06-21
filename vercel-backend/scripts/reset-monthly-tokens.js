@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Monthly Token Reset Script
+ * 30-Day Token Reset Script
  * 
- * This script should be run via cron job on the 1st of each month
- * to reset free tokens for all users to 50.
+ * This script should be run via cron job daily
+ * to reset free tokens for users whose 30-day cycle has completed.
  * 
  * Usage: node reset-monthly-tokens.js
  * 
@@ -26,27 +26,27 @@ const supabase = createClient(
 
 async function resetMonthlyTokens() {
   try {
-    console.log('Starting monthly token reset...');
+    console.log('Starting 30-day token reset...');
     console.log('Date:', new Date().toISOString());
     
     // Call the database function to reset tokens
     const { data: resetResult, error: resetError } = await supabase.rpc('reset_monthly_tokens_for_all_users');
 
     if (resetError) {
-      console.error('Error resetting monthly tokens:', resetError);
+      console.error('Error resetting 30-day tokens:', resetError);
       process.exit(1);
     }
 
     const result = resetResult && resetResult.length > 0 ? resetResult[0] : { users_updated: 0, message: 'No users updated' };
     
-    console.log('✅ Monthly token reset completed successfully');
+    console.log('✅ 30-day token reset completed successfully');
     console.log(`📊 Users updated: ${result.users_updated}`);
     console.log(`💬 Message: ${result.message}`);
     
     process.exit(0);
     
   } catch (error) {
-    console.error('❌ Fatal error during monthly token reset:', error);
+    console.error('❌ Fatal error during 30-day token reset:', error);
     process.exit(1);
   }
 }

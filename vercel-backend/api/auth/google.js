@@ -102,15 +102,16 @@ async function processUserData(userInfo, res) {
 
       user = newUser;
 
-      // Create user_data record with monthly free tokens
+      // Create user_data record with 30-day free tokens
       const { error: userDataError } = await supabase
         .from('user_data')
         .insert({
           user_id: user.id,
           paid_tokens: 0,
-          free_tokens: 50, // Give new users 50 monthly free tokens
+          free_tokens: 50, // Give new users 50 free tokens for 30-day cycle
           usage_count: 0,
-          monthly_reset_date: new Date().toISOString().split('T')[0] // Current date
+          monthly_reset_date: new Date().toISOString().split('T')[0], // Current date
+          signup_date: new Date().toISOString().split('T')[0] // Track signup date for 30-day cycles
         });
 
       if (userDataError) {

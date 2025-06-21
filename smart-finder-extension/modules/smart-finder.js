@@ -281,7 +281,7 @@ export class SmartFinder {
         this.ui.setSearchProgress('💰 Get more tokens to continue AI search', false);
         
       } else if (error.message.includes('must be signed in') || error.message.includes('sign in') || error.message.includes('authentication')) {
-        this.ui.updateSmartSearchHint('Sign in for smart search');
+        this.ui.updateSmartSearchHint('Sign in for smart search. Click the extension icon');
         this.ui.setSearchProgress('Sign in required for AI search', false);
         
       } else {
@@ -301,6 +301,7 @@ export class SmartFinder {
     // Add to progressive matches only if we have new matches
     if (newMatches.length > 0) {
       const previousMatchCount = this.progressiveMatches.length;
+      const isFirstBatch = previousMatchCount === 0;
       
       // Add new matches and sort all matches by document order
       this.progressiveMatches.push(...newMatches);
@@ -309,15 +310,19 @@ export class SmartFinder {
       });
       this.progressiveBatchCount++;
       
+      console.log(`📊 Batch ${batchNumber + 1}: Added ${newMatches.length} matches, total: ${this.progressiveMatches.length}, sorted by document order`);
+      
       // Only update if we're not in the middle of user navigation
       if (!this.isUserNavigating) {
-        // Update navigation state but preserve current position if possible
-        const currentIndex = this.navigationManager.getCurrentIndex();
+        // Always reset navigation to start from the top-most result after sorting
+        this.navigationManager.reset();
         this.navigationManager.setMatches(this.progressiveMatches.length);
         
-        // Use incremental highlighting to avoid invalidating existing ranges
-        if (previousMatchCount === 0) {
-          // First batch - highlight all matches normally
+        const currentIndex = this.navigationManager.getCurrentIndex(); // This will be 0
+        console.log(`🧭 Navigation reset to index ${currentIndex} (top-most result) after batch ${batchNumber + 1}`);
+        
+        if (isFirstBatch) {
+          // First batch - highlight all matches and create all scroll indicators
           this.highlightManager.highlightMatches(
             this.progressiveMatches,
             currentIndex,
@@ -325,35 +330,56 @@ export class SmartFinder {
             false,
             false
           );
+          
+          // Create all scroll indicators for the first batch
+          this.ui.updateScrollIndicators(
+            this.progressiveMatches,
+            currentIndex,
+            { ai: 'ai-highlight' },
+            false,
+            (index) => this.jumpToMatch(index),
+            false
+          );
+          
+          // Scroll to the top-most result (first batch is always from the top)
+          console.log(`🎯 First batch: Scrolling to top-most result (index 0)`);
+          this.highlightManager.scrollToCurrentMatch(0);
+          
         } else {
-          // Subsequent batches - add only new highlights
+          // Subsequent batches - add only new highlights and scroll indicators
           this.highlightManager.addMatches(
             newMatches,
             { ai: 'ai-highlight' },
             false,
             false
           );
+          
+          // Update the current highlight to point to the first (top-most) result
+          this.highlightManager.updateCurrentHighlight(0);
+          
+          // Add only new scroll indicators (incremental update)
+          this.ui.addScrollIndicators(
+            newMatches,
+            this.progressiveMatches,
+            currentIndex,
+            { ai: 'ai-highlight' },
+            false,
+            (index) => this.jumpToMatch(index),
+            false
+          );
+          
+          // Update current indicator to point to the first result
+          this.ui.updateCurrentIndicator(0);
+          
+          // No need to scroll - we're already at the top from the first batch
+          console.log(`🎯 Batch ${batchNumber + 1}: Added results below, staying at top-most result`);
         }
-        
-        // Update scroll indicators with all matches
-        this.ui.updateScrollIndicators(
-          this.progressiveMatches,
-          currentIndex,
-          { ai: 'ai-highlight' },
-          false,
-          (index) => this.jumpToMatch(index),
-          false
-        );
         
         // Update UI
         const position = this.navigationManager.getCurrentPosition();
         this.updateUI(position.current, position.total);
         this.ui.statsElement.textContent = `AI searching... (${this.progressiveMatches.length} found)`;
         
-        // Auto-scroll to first match only on the very first result
-        if (this.progressiveMatches.length === newMatches.length) {
-          this.highlightManager.scrollToCurrentMatch(0);
-        }
       } else {
         // Just update the count if user is navigating
         this.ui.statsElement.textContent = `AI searching... (${this.progressiveMatches.length} found)`;
@@ -368,7 +394,7 @@ export class SmartFinder {
     // Store matches in progressiveMatches for copy functionality
     this.progressiveMatches = [...matches];
     
-    // Reset navigation state
+    // Reset navigation state and start from the first result
     this.navigationManager.reset();
     this.navigationManager.setMatches(matches.length);
     
@@ -383,7 +409,7 @@ export class SmartFinder {
     // Highlight matches with AI-specific styling
     this.highlightManager.highlightMatches(
       matches,
-      this.navigationManager.getCurrentIndex(),
+      this.navigationManager.getCurrentIndex(), // This will be 0 after reset
       { ai: 'ai-highlight' }, // Special AI highlight class
       false, // case sensitive
       false  // use regex
@@ -392,7 +418,7 @@ export class SmartFinder {
     // Update scroll indicators like standard search
     this.ui.updateScrollIndicators(
       matches,
-      this.navigationManager.getCurrentIndex(),
+      this.navigationManager.getCurrentIndex(), // This will be 0 after reset
       { ai: 'ai-highlight' },
       false,
       (index) => this.jumpToMatch(index),
@@ -406,7 +432,7 @@ export class SmartFinder {
     // Clear search progress
     this.ui.setSearchProgress('', false);
     
-    // Auto-scroll to first match
+    // Auto-scroll to first match (top-most result)
     if (matches.length > 0) {
       this.highlightManager.scrollToCurrentMatch(0);
     }
@@ -528,15 +554,19 @@ export class SmartFinder {
   showAISearchPrompt(term) {
     if (!term.trim()) {
       // Don't change the text, just show a subtle indicator
-      this.ui.setSearchProgress('AI ready', true);
+      this.ui.setSearchProgress('', false); // Clear any loading state
+      this.updateUI(0, 0);
       return;
     }
     
-    // Show prompt to use AI search with minimal UI changes
-    this.ui.setSearchProgress('AI ready', true);
+    // Clear any loading state and show proper "Enter to smart search" state
+    this.ui.setSearchProgress('', false);
+    this.updateUI(0, 0);
+    
+    // Reset hint to default and let updateInputStyling handle visibility
     this.ui.updateSmartSearchHint(); // Reset to default hint text
     
-    // Update input styling to potentially show the hint if appropriate
+    // Update input styling to show the hint appropriately
     this.ui.updateInputStyling(false);
   }
 
@@ -605,11 +635,26 @@ export class SmartFinder {
       }
     }
     
-    // Sort matches by document order (TreeWalker already gives document order, but ensure consistency)
+    // Sort matches by document order to ensure top-to-bottom navigation
     matches.sort((a, b) => {
-      const comparison = a.compareBoundaryPoints(Range.START_TO_START, b);
-      return comparison;
+      try {
+        const comparison = a.compareBoundaryPoints(Range.START_TO_START, b);
+        return comparison;
+      } catch (error) {
+        // Fallback: compare by element position if ranges are invalid
+        console.warn('Range comparison failed, using fallback sorting:', error);
+        const aRect = a.getBoundingClientRect();
+        const bRect = b.getBoundingClientRect();
+        
+        // Sort by vertical position first, then horizontal
+        if (Math.abs(aRect.top - bRect.top) > 5) { // 5px tolerance for same line
+          return aRect.top - bRect.top;
+        }
+        return aRect.left - bRect.left;
+      }
     });
+    
+    console.log(`🔍 Found ${matches.length} AI matches in batch ${batchNumber || 0}, sorted by document order`);
     
     return matches;
   }

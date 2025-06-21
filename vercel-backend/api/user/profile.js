@@ -62,6 +62,16 @@ export default async function handler(req, res) {
       usage_count: 0
     };
 
+    // Get days until next free token reset
+    const { data: resetInfo, error: resetError } = await supabase.rpc('get_days_until_next_reset', {
+      p_user_id: userId
+    });
+
+    const resetData = resetInfo && resetInfo.length > 0 ? resetInfo[0] : {
+      days_remaining: 0,
+      next_reset_date: new Date().toISOString().split('T')[0]
+    };
+
     // If the database function didn't return proper breakdown, try direct query
     if (!summary.free_tokens && !summary.paid_tokens && summary.total_tokens === 0) {
       const { data: directData, error: directError } = await supabase
@@ -83,7 +93,9 @@ export default async function handler(req, res) {
       tokens: summary.total_tokens,
       freeTokens: summary.free_tokens,
       paidTokens: summary.paid_tokens,
-      usageCount: summary.usage_count
+      usageCount: summary.usage_count,
+      daysUntilReset: resetData.days_remaining,
+      nextResetDate: resetData.next_reset_date
     });
 
   } catch (error) {
