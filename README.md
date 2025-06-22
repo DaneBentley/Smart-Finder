@@ -10,20 +10,20 @@
   [![Version](https://img.shields.io/badge/Version-1.1.0-brightgreen.svg)](https://github.com/DaneBentley/Smart-Finder/releases)
 </div>
 
-## 🚀 Overview
+## Overview
 
 Smart Finder revolutionizes web page searching by replacing traditional Ctrl+F with AI-powered search capabilities. Find anything on any webpage using natural language queries, intelligent pattern detection, and multi-color highlighting.
 
 ## ✨ Key Features
 
-- **🤖 AI-Powered Search** - Ask questions in natural language using Groq Llama 3.1
-- **🎯 Smart Pattern Detection** - Automatically finds emails, phone numbers, URLs, dates, and more
-- **🌈 Multi-Color Highlighting** - Highlight up to 5 different search terms simultaneously
-- **⚡ Lightning Fast** - Instant results with real-time highlighting
-- **🔒 Privacy Focused** - Local processing for traditional searches, secure AI processing
-- **🎨 Non-Intrusive UI** - Shadow DOM isolation prevents website conflicts
+- **AI-Powered Search** - Ask questions in natural language using Groq Llama 3.1
+- **Smart Pattern Detection** - Automatically finds emails, phone numbers, URLs, dates, and more
+- **Multi-Color Highlighting** - Highlight up to 5 different search terms simultaneously
+- **Lightning Fast** - Instant results with real-time highlighting
+- **Privacy Focused** - Local processing for traditional searches, secure AI processing
+- **Non-Intrusive UI** - Shadow DOM isolation prevents website conflicts
 
-## 📦 Installation
+## Installation
 
 ### From Chrome Web Store
 1. Visit the [Chrome Web Store](https://chrome.google.com/webstore)
@@ -36,7 +36,7 @@ Smart Finder revolutionizes web page searching by replacing traditional Ctrl+F w
 3. Enable "Developer mode"
 4. Click "Load unpacked" and select the `smart-finder-extension` folder
 
-## 🎯 Quick Start
+## Quick Start
 
 1. **Install the extension** from the Chrome Web Store
 2. **Press Ctrl+F** (or Cmd+F on Mac) on any webpage
@@ -65,7 +65,7 @@ Search: "What is the price of the premium plan?"
 Result: Intelligently locates and highlights pricing information
 ```
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 Smart-Finder/
@@ -87,7 +87,7 @@ Smart-Finder/
 └── archive/                  # Development files and tests
 ```
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 - Node.js 18+
@@ -118,21 +118,21 @@ Smart-Finder/
 cd vercel-backend && vercel deploy --prod
 ```
 
-## 📚 Documentation
+## Documentation
 
 - **[User Guide](https://danebentley.github.io/Smart-Finder/help.html)** - Complete usage instructions
 - **[Setup Guide](docs/setup/SETUP_GUIDE.md)** - Development environment setup
 - **[API Documentation](docs/setup/AI_SETUP_GUIDE.md)** - Backend API setup
 - **[Privacy Policy](https://danebentley.github.io/Smart-Finder/privacy-policy.html)** - Data handling practices
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **Local Processing** - Traditional searches never leave your device
 - **Secure AI** - AI searches use encrypted connections with no permanent storage
 - **No Tracking** - We don't track your browsing or store personal data
 - **Open Source** - Full transparency with public source code
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
@@ -142,18 +142,18 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Groq** - Ultra-fast AI inference
 - **Google Chrome** - Extension platform
 - **Vercel** - Backend hosting
 - **Supabase** - Database services
 
-## 📞 Support
+## Support
 
 - **Documentation**: [Smart Finder Help](https://danebentley.github.io/Smart-Finder/help.html)
 - **Issues**: [GitHub Issues](https://github.com/DaneBentley/Smart-Finder/issues)
@@ -162,5 +162,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <strong>Made with ❤️ for better web searching</strong>
+  <strong>Made with love for better web searching</strong>
 </div> 

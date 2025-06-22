@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Smart Finder! We welcome contributions from the community and are grateful for any help you can provide.
 
-## 🤝 How to Contribute
+## How to Contribute
 
 ### Reporting Issues
 - **Check existing issues** first to avoid duplicates
@@ -73,7 +73,7 @@ Thank you for your interest in contributing to Smart Finder! We welcome contribu
    - Screenshots/videos if UI changes
    - Testing steps performed
 
-## 📋 Pull Request Guidelines
+## Pull Request Guidelines
 
 ### Before Submitting
 - [ ] Code follows existing style and patterns
@@ -89,7 +89,7 @@ Thank you for your interest in contributing to Smart Finder! We welcome contribu
 - **Screenshots** for UI changes
 - **Breaking changes** if any
 
-## 🏗️ Development Setup
+## Development Setup
 
 ### Prerequisites
 - Node.js 18+
@@ -114,7 +114,7 @@ npm install
 # See docs/setup/SETUP_GUIDE.md for full backend setup
 ```
 
-## 🎯 Areas for Contribution
+## Areas for Contribution
 
 ### High Priority
 - **Performance optimizations** for large pages
@@ -134,7 +134,7 @@ npm install
 - **Code comments** and inline documentation
 - **Video demos** or examples
 
-## 🐛 Bug Reports
+## Bug Reports
 
 ### Before Reporting
 - **Update to latest version** and test again
@@ -150,7 +150,7 @@ npm install
 - **Console errors** (F12 → Console tab)
 - **Screenshots or screen recordings**
 
-## 🔒 Security
+## Security
 
 ### Reporting Security Issues
 - **Do NOT** create public issues for security vulnerabilities
@@ -164,7 +164,7 @@ npm install
 - **Use HTTPS** for all API communications
 - **Follow Chrome extension** security guidelines
 
-## 📝 Code Review Process
+## Code Review Process
 
 ### What We Look For
 - **Code quality** and maintainability
@@ -179,28 +179,28 @@ npm install
 - **Follow-up** on requested changes
 - **Merge** when approved and tests pass
 
-## 🏷️ Versioning
+## Versioning
 
 We follow [Semantic Versioning](https://semver.org/):
 - **MAJOR** version for incompatible API changes
 - **MINOR** version for backward-compatible functionality
 - **PATCH** version for backward-compatible bug fixes
 
-## 📄 License
+## License
 
 By contributing to Smart Finder, you agree that your contributions will be licensed under the same MIT License that covers the project.
 
-## 🙏 Recognition
+## Recognition
 
 Contributors are recognized in:
 - **README.md** acknowledgments section
 - **Release notes** for significant contributions
 - **GitHub contributors** page
 
-## 💬 Questions?
+## Questions?
 
 - **GitHub Discussions** for general questions
 - **GitHub Issues** for bug reports and feature requests
 - **Pull Request comments** for code-specific questions
 
-Thank you for contributing to Smart Finder! 🚀 
+Thank you for contributing to Smart Finder! 
