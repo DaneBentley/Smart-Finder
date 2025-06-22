@@ -12,7 +12,7 @@
 
 ## Overview
 
-Smart Finder revolutionizes web page searching by replacing traditional Ctrl+F with AI-powered search capabilities. Find anything on any webpage using natural language queries, intelligent pattern detection, and multi-color highlighting.
+Smart Finder improves web page searching by replacing traditional Ctrl+F with AI-powered search capabilities. Find anything on any webpage using natural language queries, intelligent pattern detection, and multi-color highlighting.
 
 ## Key Features
 

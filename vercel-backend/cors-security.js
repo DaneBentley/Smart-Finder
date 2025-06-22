@@ -6,7 +6,7 @@
 // List of allowed origins for CORS
 const ALLOWED_ORIGINS = [
   // Chrome extension IDs (these will be the actual extension URLs)
-  'chrome-extension://jepkdjpmdpjmoigjmpmammhgbbpoapnp', // Replace with actual extension ID
+  'chrome-extension://dhnhlkpgbbglkgaljoimcgbgnblbjeop', // Replace with actual extension ID
   // For development/testing - remove in production
   'https://localhost:3000',
   'http://localhost:3000',
