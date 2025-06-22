@@ -548,7 +548,7 @@ class SmartFinderPopup {
 
     } catch (error) {
       // Account deletion request failed - silently handle
-      alert('Failed to request account deletion. Please try again.');
+      this.showCustomAmountError('Failed to request account deletion. Please try again.');
     }
   }
 
@@ -605,7 +605,7 @@ class SmartFinderPopup {
     const enteredCode = codeInput.value.trim();
 
     if (enteredCode !== this.deletionConfirmationCode) {
-      alert('Invalid confirmation code. Please check and try again.');
+      this.showCustomAmountError('Invalid confirmation code. Please check and try again.');
       return;
     }
 
@@ -641,7 +641,7 @@ class SmartFinderPopup {
 
     } catch (error) {
       // Account deletion failed - silently handle
-      alert('Failed to delete account: ' + error.message);
+      this.showCustomAmountError('Failed to delete account: ' + error.message);
       this.hideDeleteAccountModal();
     }
   }

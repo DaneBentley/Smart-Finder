@@ -516,10 +516,7 @@ class AuthManager {
   }
 }
 
-// Make AuthManager available globally for popup (when loaded as script)
-if (typeof window !== 'undefined') {
-  window.AuthManager = AuthManager;
-}
+// AuthManager is exported as ES6 module
 
 // Export for ES6 module usage
 export { AuthManager }; 
