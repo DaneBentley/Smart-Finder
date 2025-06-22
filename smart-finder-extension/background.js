@@ -148,7 +148,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   if (message.action === 'openHelpPage') {
     chrome.tabs.create({
-      url: chrome.runtime.getURL('help.html')
+      url: 'https://danebentley.github.io/Smart-Finder/help.html'
     });
   }
 });

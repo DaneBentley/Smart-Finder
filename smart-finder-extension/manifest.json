@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Smart Finder",
   "version": "1.1.0",
-  "description": "AI-powered search extension with smart finding capabilities. Find text on web pages using natural language queries or traditional search.",
+  "description": "AI-Powered Find-in-Page Tool. Replaces Ctrl+F with AI-powered search, pattern detection, multi-color highlighting, and more.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -53,10 +53,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "modules/*.js",
-        "privacy-policy.html",
-        "terms-conditions.html",
-        "help.html"
+        "modules/*.js"
       ],
       "matches": ["<all_urls>"]
     }

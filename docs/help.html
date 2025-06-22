@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Finder - Help & Support</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+      background: #fff;
+    }
+    
+    h1 {
+      color: #1a73e8;
+      border-bottom: 2px solid #e8eaed;
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo {
+      width: 32px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 0;
+    }
+    
+    h2 {
+      color: #5f6368;
+      margin-top: 35px;
+      margin-bottom: 15px;
+      border-left: 4px solid #1a73e8;
+      padding-left: 15px;
+    }
+    
+    h3 {
+      color: #5f6368;
+      margin-top: 25px;
+      margin-bottom: 12px;
+    }
+    
+    .toc {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #e8eaed;
+    }
+    
+    .toc h3 {
+      margin-top: 0;
+      color: #1a73e8;
+    }
+    
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .toc a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    
+    .toc a:hover {
+      text-decoration: underline;
+    }
+    
+    .feature-box {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-left: 4px solid #0ea5e9;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .feature-title {
+      font-weight: 600;
+      color: #0369a1;
+      margin-bottom: 8px;
+    }
+    
+    .tip-box {
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .tip-title {
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .warning-box {
+      background: #fef2f2;
+      border: 1px solid #f87171;
+      border-left: 4px solid #dc2626;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .warning-title {
+      font-weight: 600;
+      color: #dc2626;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .security-box {
+      background: #f0fdf4;
+      border: 1px solid #16a34a;
+      border-left: 4px solid #16a34a;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .security-title {
+      font-weight: 600;
+      color: #15803d;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .keyboard-shortcut {
+      background: #e5e7eb;
+      color: #374151;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .pricing-table {
+      background: #f8f9fa;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .pricing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #e8eaed;
+    }
+    
+    .pricing-row:last-child {
+      border-bottom: none;
+      font-weight: 600;
+      color: #1a73e8;
+    }
+    
+    .contact-info {
+      background: #e8f0fe;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      border: 1px solid #1a73e8;
+    }
+    
+    .contact-title {
+      color: #1a73e8;
+      font-weight: 600;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .email-link {
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .email-link:hover {
+      text-decoration: underline;
+    }
+    
+    ul, ol {
+      padding-left: 20px;
+    }
+    
+    li {
+      margin-bottom: 8px;
+    }
+    
+    code {
+      background: #f1f3f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      color: #5f6368;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    .steps {
+      counter-reset: step-counter;
+    }
+    
+    .step {
+      counter-increment: step-counter;
+      margin-bottom: 15px;
+      padding-left: 30px;
+      position: relative;
+    }
+    
+    .step::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #1a73e8;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .token-breakdown {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .troubleshooting {
+      background: #fefefe;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .troubleshooting h4 {
+      color: #374151;
+      margin-top: 0;
+    }
+    
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a73e8;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .back-to-top:hover {
+      background: #1557b0;
+      transform: translateY(-2px);
+    }
+    
+    .regex-examples {
+      background: #f8f9fa;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+    }
+    
+    .token-policy {
+      background: #f0fdf4;
+      border: 1px solid #22c55e;
+      border-left: 4px solid #22c55e;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .token-policy-title {
+      font-weight: 600;
+      color: #16a34a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <img src="icon48.png" alt="Smart Finder" class="logo">
+    Smart Finder Help & Support
+  </h1>
+  
+  <div class="toc">
+    <h3>📖 Table of Contents</h3>
+    <ul>
+      <li><a href="#getting-started">Getting Started</a></li>
+      <li><a href="#features">Features Overview</a></li>
+      <li><a href="#how-to-use">How to Use Each Feature</a></li>
+      <li><a href="#regex-search">Regex & Pattern Search</a></li>
+      <li><a href="#tokens-system">Token System & Pricing</a></li>
+      <li><a href="#payments">Payments & Billing</a></li>
+      <li><a href="#keyboard-shortcuts">Keyboard Shortcuts</a></li>
+      <li><a href="#security-privacy">Security & Privacy</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#account-management">Account Management</a></li>
+      <li><a href="#support">Support & Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="section" id="getting-started">
+    <h2>🚀 Getting Started</h2>
+    <p>Smart Finder is a powerful Chrome extension that helps you find specific content on web pages using both traditional text search and AI-powered natural language queries.</p>
+    
+    <div class="feature-box">
+      <div class="feature-title">Quick Start</div>
+      <ol class="steps">
+        <div class="step">Install the Smart Finder extension from the Chrome Web Store</div>
+        <div class="step">Click the Smart Finder icon in your Chrome toolbar or use <span class="keyboard-shortcut">Ctrl+F</span> (or <span class="keyboard-shortcut">Cmd+F</span> on Mac)</div>
+        <div class="step">Try a traditional search (free) or sign in with Google for AI-powered searches</div>
+        <div class="step">Start finding content more efficiently!</div>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section" id="features">
+    <h2>✨ Features Overview</h2>
+    
+    <div class="feature-box">
+      <div class="feature-title">🔍 Traditional Text Search</div>
+      <ul>
+        <li><strong>Always free and unlimited</strong></li>
+        <li>Standard find-on-page functionality</li>
+        <li>Supports exact text matching</li>
+        <li>Use quotes for phrase searching</li>
+        <li>No account required</li>
+      </ul>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature-title">🔧 Advanced Regex Search</div>
+      <ul>
+        <li><strong>Powerful pattern matching</strong> - Use regular expressions for complex searches</li>
+        <li><strong>Automatic pattern detection</strong> - Simply type "email", "phone", or "date" for smart pattern matching</li>
+        <li><strong>Multi-term highlighting</strong> - Search multiple patterns with different colors</li>
+        <li><strong>Built-in patterns</strong> - Pre-configured for emails, phones, URLs, dates, IP addresses, and more</li>
+        <li><strong>Always free</strong> - No tokens required for regex searches</li>
+      </ul>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature-title">🤖 AI-Powered Search</div>
+      <ul>
+        <li><strong>Natural language queries</strong> - Ask questions like "What's the main point?" or "Find conclusions"</li>
+        <li><strong>Groq Llama 3.1 8B Instant</strong> - Ultra-fast AI processing with large context windows</li>
+        <li><strong>Progressive batch processing</strong> - Handles large pages by splitting into overlapping sections</li>
+        <li><strong>Smart content understanding</strong> - AI analyzes the page content to find relevant information</li>
+        <li><strong>Context-aware results</strong> - Gets the meaning behind your search, not just exact matches</li>
+        <li><strong>Custom AI prompts</strong> - Personalize AI behavior with your own instructions</li>
+        <li><strong>Token-efficient</strong> - Only charges when AI finds relevant matches</li>
+        <li><strong>Rate limited</strong> - 20 calls/min, 100/hour, 400/day for fair usage</li>
+        <li>Requires tokens and Google account sign-in</li>
+      </ul>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature-title">⚙️ Advanced Features</div>
+      <ul>
+        <li><strong>Custom AI prompts</strong> - Override default behavior with your own instructions like "Always return only one sentence"</li>
+        <li><strong>Shadow DOM isolation</strong> - UI completely isolated from website styles and scripts</li>
+        <li><strong>Dynamic content monitoring</strong> - Automatically detects and re-searches when page content changes</li>
+        <li><strong>Performance optimization</strong> - Handles up to 10,000 highlights with batch processing</li>
+        <li><strong>Scroll indicators</strong> - Visual markers on page scrollbar showing match locations</li>
+        <li><strong>Copy all results</strong> - Export all search results to clipboard in organized format</li>
+        <li><strong>Dark/Light theme</strong> - Automatic theme detection based on system preferences</li>
+        <li><strong>Account management</strong> - Full control over your data and account with secure deletion</li>
+        <li><strong>Real-time token tracking</strong> - Monitor your search credits with live updates</li>
+        <li><strong>Encrypted storage</strong> - Sensitive data protected with XOR encryption locally</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="how-to-use">
+    <h2>📝 How to Use Each Feature</h2>
+
+    <h3>Traditional Text Search (Free)</h3>
+    <ol class="steps">
+      <div class="step">Press <span class="keyboard-shortcut">Ctrl+F</span> (Windows/Linux) or <span class="keyboard-shortcut">Cmd+F</span> (Mac)</div>
+      <div class="step">Type your search term in the search box</div>
+      <div class="step">Use <span class="keyboard-shortcut">Enter</span> to go to next match, <span class="keyboard-shortcut">Shift+Enter</span> for previous</div>
+      <div class="step">Press <span class="keyboard-shortcut">Esc</span> to close the search interface</div>
+    </ol>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 Traditional Search Tips</div>
+      <ul>
+        <li>Exact phrases are always prioritized</li>
+        <li>Search is not case-sensitive by default</li>
+        <li>Works instantly without any account or tokens</li>
+        <li>Perfect for finding exact text or advanced regular expressions</li>
+      </ul>
+    </div>
+
+    <h3>AI-Powered Search (Requires Tokens)</h3>
+    <ol class="steps">
+      <div class="step">Sign in with your Google account through the extension popup</div>
+      <div class="step">Ensure you have available tokens (50 free tokens topped off monthly)</div>
+      <div class="step">Open the Smart Finder interface (<span class="keyboard-shortcut">Ctrl+F</span> or <span class="keyboard-shortcut">Cmd+F</span>)</div>
+      <div class="step">Switch to AI search mode by clicking the AI toggle (on by default) or typing a natural language query</div>
+      <div class="step">Ask questions like:
+        <ul>
+          <li>"What are the main points on this page?"</li>
+          <li>"Find the author and title of this article"</li>
+          <li>"Show me the pricing information"</li>
+          <li>"Contact information"</li>
+          <li>"Important dates"</li>
+          <li>"Key statistics or numbers"</li>
+        </ul>
+      </div>
+    </ol>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 AI Search Tips</div>
+      <ul>
+        <li><strong>Be specific:</strong> "Find the CEO's name" works better than "find names"</li>
+        <li><strong>Use context:</strong> "What's the return policy?" instead of just "return"</li>
+        <li><strong>Ask questions:</strong> AI understands natural questions better than keywords</li>
+        <li><strong>Try different approaches:</strong> If one query doesn't work, rephrase it</li>
+      </ul>
+    </div>
+
+    <h3>Custom AI Prompts (Advanced)</h3>
+    <ol class="steps">
+      <div class="step">Open the extension popup and scroll to "Advanced Settings"</div>
+      <div class="step">Click to expand the advanced settings section</div>
+      <div class="step">Edit the "Custom System Prompt" textarea</div>
+      <div class="step">Define your desired AI behavior (e.g., "Only return names of people")</div>
+      <div class="step">Click "Save Custom Prompt" to apply your changes</div>
+      <div class="step">Use AI search as normal - it will follow your custom instructions</div>
+    </ol>
+  </div>
+
+  <div class="section" id="regex-search">
+    <h2>🔧 Regex & Pattern Search</h2>
+    <p>Smart Finder includes powerful regex (regular expression) capabilities for advanced pattern matching. This feature is <strong>completely free</strong> and doesn't require any tokens or account.</p>
+
+    <h3>Automatic Pattern Detection</h3>
+    <p>Just type common pattern names and Smart Finder automatically converts them to regex:</p>
+    
+    <div class="regex-examples">
+<strong>Type this:</strong>        <strong>Finds:</strong>
+"email"           →  All email addresses (user@domain.com)
+"phone"           →  Phone numbers (555-123-4567, (555) 123-4567)
+"url"             →  Web addresses (https://example.com)
+"date"            →  Dates (12/31/2023, March 15 2024, Jan 3rd)
+"time"            →  Times (3:30 PM, 15:30)
+"address"         →  Street addresses (123 Main St, 456 Oak Ave Apt 2B)
+"state"           →  US states (California, TX, New York)
+"country"         →  Countries (United States, Canada, Germany)
+"city"            →  Cities and towns (New York City, San Francisco)
+"ip"              →  IP addresses (192.168.1.1)
+"zip"             →  ZIP/postal codes (12345, K1A 0A6, SW1A 1AA)
+    </div>
+
+    <h3>Manual Regex Search</h3>
+    <ol class="steps">
+      <div class="step">Open Smart Finder (<span class="keyboard-shortcut">Ctrl+F</span> or <span class="keyboard-shortcut">Cmd+F</span>)</div>
+      <div class="step">Click the settings gear (⚙️) next to the search box</div>
+      <div class="step">Enable "Regex Mode" checkbox</div>
+      <div class="step">Type your regular expression in the search box</div>
+      <div class="step">Results will be highlighted automatically</div>
+    </ol>
+
+    <h3>Regex Examples</h3>
+    <div class="regex-examples">
+<strong>Pattern:</strong>                <strong>Finds:</strong>
+\d{3}-\d{3}-\d{4}        Phone numbers (123-456-7890)
+\b\w+@\w+\.\w+\b         Email addresses
+https?://\S+             URLs starting with http/https
+\$\d+(\.\d{2})?          Prices ($19.99, $100)
+\b[A-Z]{2,}\b            Acronyms (NASA, FBI, API)
+\d{1,2}/\d{1,2}/\d{4}    Dates (12/31/2023)
+    </div>
+
+    <h3>Multi-Term Regex</h3>
+    <p>Search for multiple patterns at once with different highlight colors:</p>
+    <ol class="steps">
+      <div class="step">Enable both "Regex Mode" and "Multi-term Highlighting"</div>
+      <div class="step">Separate patterns with spaces, use quotes for complex patterns</div>
+      <div class="step">Example: <code>email phone "https?://\S+"</code></div>
+      <div class="step">Each pattern type will be highlighted in a different color</div>
+    </ol>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 Regex Tips</div>
+      <ul>
+        <li><strong>Start simple:</strong> Use pattern detection first ("email", "phone") before writing complex regex</li>
+        <li><strong>Quote complex patterns:</strong> Use quotes around patterns with spaces or special characters</li>
+        <li><strong>Case sensitivity:</strong> Toggle case-sensitive mode in settings for exact matches</li>
+        <li><strong>Test patterns:</strong> Invalid regex will show an error - check your syntax</li>
+        <li><strong>Common characters to escape:</strong> <code>. + * ? ^ $ | ( ) [ ] { } \</code></li>
+      </ul>
+    </div>
+
+    <div class="security-box">
+      <div class="security-title">🔒 Security Note</div>
+      <p><strong>Regex searches are processed locally in your browser</strong> - no data is sent to our servers. Your search patterns and page content remain completely private during regex operations.</p>
+    </div>
+  </div>
+
+  <div class="section" id="tokens-system">
+    <h2>🪙 Token System & Pricing</h2>
+
+    <div class="token-policy">
+      <div class="token-policy-title">🛡️ Important: Failed Searches Don't Cost Tokens</div>
+      <ul>
+        <li><strong>Tokens are only consumed when AI search finds relevant results</strong></li>
+        <li><strong>If AI search finds no matches, you keep your token</strong></li>
+        <li><strong>Network errors or search failures are completely free</strong></li>
+        <li><strong>You're only charged for successful AI searches that return results</strong></li>
+      </ul>
+    </div>
+
+    <h3>How Tokens Work</h3>
+    <div class="token-breakdown">
+      <p><strong>Free Tokens:</strong> Monthly allocation with automatic reset (check extension popup for current amount)</p>
+      <p><strong>AI Search Cost:</strong> Variable tokens per successful search - depends on content length and complexity</p>
+      <p><strong>Token Usage:</strong> Longer pages may require multiple tokens due to batch processing</p>
+      <p><strong>Failed AI Searches:</strong> 0 tokens (no charge when no results found)</p>
+      <p><strong>Traditional Text Search:</strong> Always free (unlimited)</p>
+      <p><strong>Regex Search:</strong> Always free (unlimited)</p>
+      <p><strong>Pattern Detection:</strong> Always free (unlimited)</p>
+      <p><strong>Multi-term Highlighting:</strong> Always free (unlimited)</p>
+    </div>
+
+    <h3>Token Consumption Rules</h3>
+    <div class="feature-box">
+      <div class="feature-title">✅ When Tokens ARE Consumed</div>
+      <ul>
+        <li>AI search successfully finds and highlights relevant content</li>
+        <li>AI search returns text snippets that match your query</li>
+        <li>AI successfully processes your natural language query</li>
+        <li><strong>Multiple tokens may be consumed for longer pages</strong> due to batch processing</li>
+        <li>Token usage scales with content length and search complexity</li>
+      </ul>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature-title">❌ When Tokens Are NOT Consumed</div>
+      <ul>
+        <li><strong>AI search finds no relevant results</strong> - you keep your token</li>
+        <li><strong>Network connection errors</strong> - no charge for failed requests</li>
+        <li><strong>Invalid queries or processing errors</strong> - technical failures are free</li>
+        <li><strong>Traditional text search</strong> - always free regardless of results</li>
+        <li><strong>Regex/pattern search</strong> - always free regardless of results</li>
+        <li><strong>Browsing and using the extension interface</strong> - completely free</li>
+      </ul>
+    </div>
+
+    <h3>Pricing</h3>
+    <div class="pricing-table">
+      <div class="pricing-row">
+        <span>Free Monthly Tokens</span>
+        <span><strong>Automatic monthly reset</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>AI Search Cost</span>
+        <span><strong>Variable tokens per successful search</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Token Usage</span>
+        <span><strong>Depends on content length & complexity</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Failed AI Searches</span>
+        <span><strong>0 tokens (free)</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Additional Tokens</span>
+        <span><strong>$0.01 per token (100 tokens = $1.00)</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Minimum Purchase</span>
+        <span><strong>100 tokens ($1.00)</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Maximum Purchase</span>
+        <span><strong>100,000 tokens ($1,000)</strong></span>
+      </div>
+      <div class="pricing-row">
+        <span>Traditional/Regex/Pattern Search</span>
+        <span><strong>Always Free & Unlimited</strong></span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 Money-Saving Tips</div>
+      <ul>
+        <li><strong>Try traditional search first:</strong> For exact text matches, use free regular search</li>
+        <li><strong>Use pattern detection:</strong> "email" or "phone" uses free regex, not AI tokens</li>
+        <li><strong>Be specific with AI queries:</strong> Better results mean fewer retry attempts</li>
+        <li><strong>Check your balance:</strong> Monitor tokens in the extension popup</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="payments">
+    <h2>💳 Payments & Billing</h2>
+
+    <h3>How to Purchase Tokens</h3>
+    <ol class="steps">
+      <div class="step">Sign in to your Google account in the extension popup</div>
+      <div class="step">Click "Buy Tokens" or enter a custom amount</div>
+      <div class="step">Choose your token amount (minimum 100 tokens = $1.00)</div>
+      <div class="step">Complete payment through Stripe's secure checkout</div>
+      <div class="step">Tokens are added to your account immediately</div>
+    </ol>
+
+    <div class="feature-box">
+      <div class="feature-title">🔒 Secure Processing</div>
+      <ul>
+        <li><strong>Stripe-powered payments</strong> - Industry-leading security</li>
+        <li><strong>No card storage</strong> - We never store your payment information</li>
+        <li><strong>Encrypted transactions</strong> - All payments use SSL encryption</li>
+        <li><strong>PCI compliance</strong> - Meets highest security standards</li>
+      </ul>
+    </div>
+
+    <h3>Billing Information</h3>
+    <ul>
+      <li><strong>Instant processing:</strong> Tokens added immediately after payment</li>
+      <li><strong>No subscriptions:</strong> One-time purchases only</li>
+      <li><strong>No automatic charges:</strong> You control when to buy more tokens</li>
+      <li><strong>Receipts:</strong> Handled by Stripe</li>
+      <li><strong>Refund policy:</strong> Contact support for assistance</li>
+    </ul>
+
+    <div class="warning-box">
+      <div class="warning-title">⚠️ Important Payment Notes</div>
+      <ul>
+        <li>Tokens are non-transferable between accounts</li>
+        <li>Account deletion permanently removes all tokens</li>
+        <li>Purchases are final - tokens cannot be converted back to money</li>
+        <li>Monthly free tokens reset regardless of purchased tokens</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="keyboard-shortcuts">
+    <h2>⌨️ Keyboard Shortcuts</h2>
+
+    <div class="feature-box">
+      <div class="feature-title">Essential Shortcuts</div>
+      <div class="pricing-table">
+        <div class="pricing-row">
+          <span>Open Smart Finder</span>
+          <span><span class="keyboard-shortcut">Ctrl+F</span> or <span class="keyboard-shortcut">Cmd+F</span></span>
+        </div>
+        <div class="pricing-row">
+          <span>Next match</span>
+          <span><span class="keyboard-shortcut">Enter</span> or <span class="keyboard-shortcut">↓</span></span>
+        </div>
+        <div class="pricing-row">
+          <span>Previous match</span>
+          <span><span class="keyboard-shortcut">Shift+Enter</span> or <span class="keyboard-shortcut">↑</span></span>
+        </div>
+        <div class="pricing-row">
+          <span>Close interface</span>
+          <span><span class="keyboard-shortcut">Esc</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 Productivity Tips</div>
+      <ul>
+        <li><strong>Replaces native search:</strong> Smart Finder overrides Chrome's built-in Ctrl+F/Cmd+F</li>
+        <li><strong>Same familiar shortcuts:</strong> All the shortcuts you know from browser search work here</li>
+        <li><strong>Seamless integration:</strong> Works on all websites except chrome:// pages</li>
+        <li><strong>Mode flexibility:</strong> Shortcuts work in traditional, regex, and AI search modes</li>
+        <li><strong>Quick access:</strong> Also available by clicking the extension icon in toolbar</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="security-privacy">
+    <h2>🔐 Security & Privacy</h2>
+
+    <div class="security-box">
+      <div class="security-title">🛡️ Enterprise-Grade Security</div>
+      <p>Smart Finder v1.1.0 implements comprehensive security measures to protect your data and privacy with significant security enhancements over previous versions:</p>
+    </div>
+
+    <h3>Token & Authentication Security</h3>
+    <div class="feature-box">
+      <div class="feature-title">🔒 Advanced Protection</div>
+      <ul>
+        <li><strong>Encrypted token storage:</strong> All authentication tokens encrypted in browser storage</li>
+        <li><strong>No plaintext logging:</strong> Sensitive data automatically masked in all logs</li>
+        <li><strong>Google OAuth security:</strong> Industry-standard authentication with Google</li>
+        <li><strong>Automatic token cleanup:</strong> Failed decryption triggers secure re-authentication</li>
+        <li><strong>Rate limiting:</strong> Built-in protection against abuse and spam</li>
+      </ul>
+    </div>
+
+    <h3>Data Processing & Privacy</h3>
+    <div class="feature-box">
+      <div class="feature-title">🔒 Local vs. Server Processing</div>
+      <ul>
+        <li><strong>Traditional search:</strong> 100% local processing - never leaves your browser</li>
+        <li><strong>Regex search:</strong> 100% local processing - completely private</li>
+        <li><strong>Pattern detection:</strong> 100% local processing - no data transmitted</li>
+        <li><strong>AI search:</strong> Page content sent to AI service - not stored permanently</li>
+        <li><strong>Browsing history:</strong> Never collected or tracked</li>
+      </ul>
+    </div>
+
+    <h3>What We Collect</h3>
+    <ul>
+      <li><strong>Google account info:</strong> Name, email, profile picture (via OAuth)</li>
+      <li><strong>Token usage:</strong> Number of AI searches to manage your balance</li>
+      <li><strong>Basic analytics:</strong> Extension usage to improve functionality</li>
+    </ul>
+
+    <h3>What We DON'T Collect</h3>
+    <ul>
+      <li><strong>Your search queries:</strong> Not stored permanently (AI searches processed and discarded)</li>
+      <li><strong>Website content:</strong> Only sent to AI when needed, not saved on our servers</li>
+      <li><strong>Browsing history:</strong> We don't track which websites you visit</li>
+      <li><strong>Personal data:</strong> Beyond what's required for the service to function</li>
+      <li><strong>Payment information:</strong> Handled entirely by Stripe, never stored by us</li>
+    </ul>
+
+    <h3>Data Security Measures</h3>
+    <div class="security-box">
+      <div class="security-title">🛡️ Security Infrastructure</div>
+      <ul>
+        <li><strong>XOR encryption:</strong> All sensitive tokens and authentication data encrypted locally</li>
+        <li><strong>Automatic migration:</strong> Seamless upgrade from plaintext to encrypted storage</li>
+        <li><strong>No plaintext logging:</strong> Sensitive data automatically masked in all logs and error reports</li>
+        <li><strong>Secure token cleanup:</strong> Failed decryption triggers automatic re-authentication</li>
+        <li><strong>JWT security:</strong> Enhanced JWT validation with comprehensive error handling</li>
+        <li><strong>Rate limiting:</strong> Built-in protection against API abuse (20/min, 100/hour, 400/day)</li>
+        <li><strong>Secure servers:</strong> Hosted on enterprise-grade Vercel and Supabase infrastructure</li>
+        <li><strong>OAuth 2.0 security:</strong> Google's battle-tested authentication with encrypted token storage</li>
+        <li><strong>No payment storage:</strong> Credit card details never stored, handled entirely by Stripe</li>
+        <li><strong>Shadow DOM isolation:</strong> Extension UI completely isolated from page content</li>
+        <li><strong>Input validation:</strong> All user inputs sanitized and validated before processing</li>
+        <li><strong>CORS protection:</strong> API endpoints restricted to extension domains only</li>
+      </ul>
+    </div>
+
+    <h3>Security Best Practices for Users</h3>
+    <div class="tip-box">
+      <div class="tip-title">💡 Stay Secure</div>
+      <ul>
+        <li><strong>Keep Chrome updated:</strong> Latest security patches for the browser</li>
+        <li><strong>Review permissions:</strong> Smart Finder only requests necessary permissions</li>
+        <li><strong>Use trusted networks:</strong> Avoid public WiFi for sensitive searches</li>
+        <li><strong>Sign out when sharing:</strong> Use private browsing or sign out on shared computers</li>
+        <li><strong>Monitor token usage:</strong> Check for unexpected usage patterns</li>
+      </ul>
+    </div>
+
+    <p>For complete details, please review our <a href="https://danebentley.github.io/Smart-Finder/privacy-policy.html" target="_blank">Privacy Policy</a> and <a href="https://danebentley.github.io/Smart-Finder/terms-conditions.html" target="_blank">Terms & Conditions</a>.</p>
+  </div>
+
+  <div class="section" id="troubleshooting">
+    <h2>🔧 Troubleshooting</h2>
+
+    <div class="troubleshooting">
+      <h4>❓ Smart Finder interface doesn't appear</h4>
+      <ul>
+        <li>Ensure the extension is enabled in Chrome extensions settings</li>
+        <li>Refresh the page and try again</li>
+        <li>Check if the website blocks extensions (some secure sites do)</li>
+        <li>Try clicking the extension icon in the toolbar instead</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ AI search not working</h4>
+      <ul>
+        <li>Verify you're signed in to your Google account</li>
+        <li>Check if you have available tokens in the popup</li>
+        <li>Ensure your internet connection is stable</li>
+        <li>Try a simpler query first to test the connection</li>
+        <li>Remember: Failed AI searches don't consume tokens</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ Regex patterns not working</h4>
+      <ul>
+        <li>Ensure "Regex Mode" is enabled in settings</li>
+        <li>Check your regex syntax - invalid patterns show errors</li>
+        <li>Try pattern detection first: type "email" instead of writing regex</li>
+        <li>Use quotes around complex patterns with spaces</li>
+        <li>Test simple patterns first (like <code>\d+</code> for numbers)</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ Can't sign in with Google</h4>
+      <ul>
+        <li>Allow popups for the Smart Finder extension</li>
+        <li>Clear your browser cache and try again</li>
+        <li>Disable other extensions temporarily to test conflicts</li>
+        <li>Check if third-party cookies are enabled</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ Payment issues</h4>
+      <ul>
+        <li>Ensure popups are allowed for Stripe checkout</li>
+        <li>Check your card details and try again</li>
+        <li>Contact your bank if payments are being declined</li>
+        <li>Try a different payment method</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ Tokens not updating after purchase</h4>
+      <ul>
+        <li>Click the "Refresh" button in the token section</li>
+        <li>Close and reopen the extension popup</li>
+        <li>Check your internet connection</li>
+        <li>Wait a few minutes and try again - payments process instantly but may need a moment to sync</li>
+      </ul>
+    </div>
+
+    <div class="troubleshooting">
+      <h4>❓ Extension appears broken or outdated</h4>
+      <ul>
+        <li>Update Chrome to the latest version</li>
+        <li>Remove and reinstall the extension</li>
+        <li>Check the Chrome Web Store for extension updates</li>
+        <li>Clear extension data in Chrome settings</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="account-management">
+    <h2>👤 Account Management</h2>
+
+    <h3>Managing Your Account</h3>
+    <ul>
+      <li><strong>Sign in:</strong> Click "Sign in with Google" in the extension popup</li>
+      <li><strong>View profile:</strong> Your name, email, and avatar appear when signed in</li>
+      <li><strong>Check tokens:</strong> Token count is displayed prominently in the popup</li>
+      <li><strong>Sign out:</strong> Click "Sign out" in your profile section</li>
+    </ul>
+
+    <h3>Account Deletion</h3>
+    <div class="warning-box">
+      <div class="warning-title">⚠️ Permanent Account Deletion</div>
+      <p>You can permanently delete your account at any time:</p>
+      <ol class="steps">
+        <div class="step">Click "Delete account" in your profile section</div>
+        <div class="step">Review the deletion warning carefully</div>
+        <div class="step">Click "Request Deletion" if you're sure</div>
+        <div class="step">Enter the 6-digit confirmation code</div>
+        <div class="step">Click "Delete Account" to complete the process</div>
+      </ol>
+      <p><strong>This action is irreversible and will remove:</strong></p>
+      <ul>
+        <li>Your profile and account information</li>
+        <li>All purchased and free tokens</li>
+        <li>Your usage history and preferences</li>
+        <li>All stored data and settings</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" id="support">
+    <h2>🎧 Support & Contact</h2>
+
+    <div class="contact-info">
+      <div class="contact-title">📧 Need Help?</div>
+      <p>We're here to help! Contact us for any questions, issues, or feedback:</p>
+      
+      <p><strong>Support Email:</strong> <a href="mailto:danebentley2004@gmail.com" class="email-link">danebentley2004@gmail.com</a></p>
+      
+      <p><strong>Response Time:</strong> We aim to respond within 24-48 hours during business days.</p>
+      
+      <p><strong>What to Include in Your Message:</strong></p>
+      <ul>
+        <li>Detailed description of the issue</li>
+        <li>Steps you've already tried</li>
+        <li>Your Chrome version and operating system</li>
+        <li>Screenshots if applicable</li>
+        <li>Error messages (if any)</li>
+      </ul>
+
+      <p><strong>Common Support Topics:</strong></p>
+      <ul>
+        <li>Technical issues and bugs</li>
+        <li>Payment and billing questions</li>
+        <li>Account management problems</li>
+        <li>Regex and pattern search help</li>
+        <li>Feature requests and suggestions</li>
+        <li>Privacy and security concerns</li>
+      </ul>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 Before Contacting Support</div>
+      <ul>
+        <li>Check this help page for solutions</li>
+        <li>Try the troubleshooting steps above</li>
+        <li>Ensure your extension is up to date</li>
+        <li>Test in an incognito window to rule out conflicts</li>
+        <li>For regex issues, try pattern detection first ("email", "phone")</li>
+      </ul>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature-title">🚀 Feature Requests</div>
+      <p>Have an idea for improving Smart Finder? We'd love to hear it! Send us your suggestions and we'll consider them for future updates. Popular requests include:</p>
+      <ul>
+        <li>New AI search capabilities</li>
+        <li>Additional regex patterns and shortcuts</li>
+        <li>Integration with other tools</li>
+        <li>User interface improvements</li>
+        <li>Custom highlighting colors and themes</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="#top" class="back-to-top">↑ Back to Top</a>
+
+
+  </body>
+</html>
