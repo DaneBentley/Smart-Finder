@@ -203,4 +203,4 @@ Contributors are recognized in:
 - **GitHub Issues** for bug reports and feature requests
 - **Pull Request comments** for code-specific questions
 
-Thank you for contributing to Smart Finder! 
+Thank you for contributing to Smart Finder!  
