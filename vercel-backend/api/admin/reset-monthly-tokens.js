@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get JWT from Authorization header
+    // Get JWT from Authorization header 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Missing or invalid authorization header' });
