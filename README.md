@@ -45,7 +45,7 @@ Smart Finder revolutionizes web page searching by replacing traditional Ctrl+F w
    - **Pattern**: Smart detection of emails, phones, URLs, etc.
    - **AI**: Natural language queries (requires sign-in)
 
-## 💡 Usage Examples
+## Usage Examples
 
 ### Traditional Search
 ```
