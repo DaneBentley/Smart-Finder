@@ -127,8 +127,8 @@ container.appendChild(fragment);</div>
         <h3>Authentication and Authorization</h3>
         <p>Implement robust authentication mechanisms with proper session management. Use secure token storage, implement proper logout functionality, and validate permissions on every request.</p>
         
-        <div class="code-example">// Secure token handling
-const token = localStorage.getItem('authToken');
+        <div class="code-example">// Secure token handling (EXAMPLE ONLY - tokens are encrypted in production)
+const token = getSecureToken(); // In production: use encrypted storage
 if (token && !isTokenExpired(token)) {
   // Include token in API requests
   headers: {

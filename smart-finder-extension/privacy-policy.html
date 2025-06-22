@@ -75,7 +75,8 @@
   
   <div class="last-updated">
     <strong>Last Updated:</strong> June 2025<br>
-    <strong>Effective Date:</strong> June 2025
+    <strong>Effective Date:</strong> June 2025<br>
+    <strong>Extension Version:</strong> 1.1.0
   </div>
 
   <div class="section">
@@ -96,15 +97,28 @@
     <h3>2.2 Usage Data</h3>
     <p>We may collect:</p>
     <ul>
-      <li><strong>Search Queries:</strong> Text you search for using our AI-powered search (processed but not permanently stored)</li>
-      <li><strong>Token Usage:</strong> Number of AI searches performed to manage your token balance</li>
-      <li><strong>Extension Interactions:</strong> Basic usage statistics to improve functionality</li>
+      <li><strong>AI Search Queries:</strong> Text you search for using AI-powered search (processed in real-time, not permanently stored)</li>
+      <li><strong>Token Usage:</strong> Number of successful AI searches performed to manage your token balance</li>
+      <li><strong>Extension Interactions:</strong> Basic usage statistics to improve functionality (anonymized)</li>
+      <li><strong>Search Performance:</strong> Response times and success rates for service optimization</li>
+    </ul>
+    
+    <h3>2.3 Data NOT Collected</h3>
+    <p>We explicitly do NOT collect:</p>
+    <ul>
+      <li><strong>Traditional Search Queries:</strong> Regular text searches are processed entirely locally</li>
+      <li><strong>Regex Patterns:</strong> Pattern searches are processed entirely locally</li>
+      <li><strong>Website Content:</strong> Page content is only sent to AI when you explicitly use AI search</li>
+      <li><strong>Browsing History:</strong> We don't track which websites you visit</li>
+      <li><strong>Personal Files:</strong> No access to your local files or other browser data</li>
     </ul>
 
-    <h3>2.3 Technical Data</h3>
+    <h3>2.4 Technical Data</h3>
     <ul>
-      <li><strong>Browser Information:</strong> Extension version, Chrome version (for compatibility)</li>
-      <li><strong>Error Logs:</strong> Crash reports and error information (anonymized)</li>
+      <li><strong>Browser Information:</strong> Extension version, Chrome version (for compatibility and debugging)</li>
+      <li><strong>Error Logs:</strong> Crash reports and error information (anonymized, no personal data)</li>
+      <li><strong>Performance Metrics:</strong> Search response times and success rates (aggregated)</li>
+      <li><strong>Feature Usage:</strong> Which features are used most often (anonymized statistics)</li>
     </ul>
   </div>
 
@@ -169,10 +183,13 @@
       <li>Subject to <a href="https://stripe.com/privacy" target="_blank">Stripe's Privacy Policy</a></li>
     </ul>
 
-    <h3>5.3 AI Services</h3>
+    <h3>5.3 AI Services (Groq)</h3>
     <ul>
-      <li>Search queries processed by AI services for intelligent results</li>
-      <li>Queries are not stored permanently by us or our AI providers</li>
+      <li><strong>AI Provider:</strong> Groq (Llama 3.1 8B Instant model)</li>
+      <li><strong>Data Processing:</strong> Search queries and page content sent only when you use AI search</li>
+      <li><strong>No Permanent Storage:</strong> Queries processed in real-time and not stored by Groq or us</li>
+      <li><strong>Rate Limiting:</strong> Built-in protections against abuse (20 calls/min, 100/hour, 400/day)</li>
+      <li><strong>Content Filtering:</strong> Large pages split into batches for processing efficiency</li>
     </ul>
   </div>
 
@@ -195,11 +212,37 @@
     <h3>7.1 Account Control</h3>
     <ul>
       <li><strong>Sign Out:</strong> Disconnect your Google account at any time</li>
-      <li><strong>Data Deletion:</strong> Request deletion of your account and associated data</li>
+      <li><strong>Account Deletion:</strong> Permanently delete your account and all associated data through the extension interface</li>
       <li><strong>Data Access:</strong> Request a copy of your personal data</li>
     </ul>
 
-    <h3>7.2 Extension Control</h3>
+    <h3>7.2 Account Deletion Process</h3>
+    <p>You have the right to delete your account and all associated data at any time. To delete your account:</p>
+    <ol>
+      <li>Open the Smart Finder extension popup</li>
+      <li>Click on "Delete account" in your user profile section</li>
+      <li>Review the deletion warning and click "Request Deletion"</li>
+      <li>Enter the 6-digit confirmation code to permanently delete your account</li>
+    </ol>
+    
+    <p><strong>What gets deleted:</strong></p>
+    <ul>
+      <li>Your profile and account information</li>
+      <li>All purchased and free tokens</li>
+      <li>Your usage history and preferences</li>
+      <li>All search data and interactions</li>
+      <li>Authentication tokens and stored credentials</li>
+    </ul>
+    
+    <p><strong>Important notes:</strong></p>
+    <ul>
+      <li>Account deletion is <strong>permanent and cannot be undone</strong></li>
+      <li>Purchase records may be retained in anonymized form for financial compliance, but will not be linked to your identity</li>
+      <li>The deletion process is immediate and irreversible</li>
+      <li>You cannot recover tokens or data after deletion</li>
+    </ul>
+
+    <h3>7.3 Extension Control</h3>
     <ul>
       <li><strong>Disable/Remove:</strong> Disable or uninstall the extension to stop all data collection</li>
       <li><strong>Permission Management:</strong> Manage extension permissions in Chrome settings</li>

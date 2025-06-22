@@ -31,8 +31,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Access token is required' });
     }
 
-    console.log('Processing Chrome extension OAuth token...');
-
     // Verify the access token with Google's userinfo endpoint
     // This is the most reliable method for Chrome extension tokens
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -43,15 +41,16 @@ export default async function handler(req, res) {
 
     if (!userInfoResponse.ok) {
       const errorText = await userInfoResponse.text();
-      console.error('Google userinfo API error:', userInfoResponse.status, errorText);
+      // Log error without exposing token details
+      console.error('Google userinfo API error:', userInfoResponse.status);
       return res.status(401).json({ 
         error: 'Invalid or expired token',
-        details: `Google userinfo API returned ${userInfoResponse.status}: ${errorText}`
+        details: `Google userinfo API returned ${userInfoResponse.status}`
       });
     }
 
     const userInfo = await userInfoResponse.json();
-    console.log('Successfully verified token with Google userinfo API');
+    // Authentication successful - no token logging
 
     // Validate that we have the required fields
     if (!userInfo.email) {

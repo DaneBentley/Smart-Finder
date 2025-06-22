@@ -28,10 +28,10 @@ export class PatternDetector {
         description: 'URLs'
       },
       
-      // Date patterns (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD)
+      // Enhanced Date patterns - covers many more formats
       date: {
-        keywords: ['date', 'birthday', 'born', 'created', 'updated'],
-        regex: /\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/g,
+        keywords: ['date', 'birthday', 'born', 'created', 'updated', 'expires', 'due', 'deadline', 'scheduled'],
+        regex: /\b(?:(?:(?:0?[1-9]|1[0-2])[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})|(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})|(?:\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})|(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{2,4})|(?:\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{2,4})|(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?)|(?:\d{1,2}[\/\-\.]\d{1,2})|(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?))\b/gi,
         description: 'dates'
       },
       
@@ -58,16 +58,44 @@ export class PatternDetector {
       
       // IP Address patterns
       ip: {
-        keywords: ['ip', 'ip address', 'address'],
+        keywords: ['ip', 'server', 'gateway'],
         regex: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g,
         description: 'IP addresses'
       },
       
-      // ZIP code patterns
+      // Enhanced ZIP code patterns - includes international postal codes
       zip: {
-        keywords: ['zip', 'zip code', 'postal code'],
-        regex: /\b\d{5}(-\d{4})?\b/g,
-        description: 'ZIP codes'
+        keywords: ['zip', 'zip code', 'postal code', 'postcode'],
+        regex: /\b(?:\d{5}(?:-\d{4})?|[A-Z]\d[A-Z]\s?\d[A-Z]\d|[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}|\d{4,5})\b/g,
+        description: 'ZIP codes and postal codes'
+      },
+      
+      // Comprehensive Address patterns
+      address: {
+        keywords: ['address', 'street', 'avenue', 'road', 'drive', 'lane', 'blvd', 'boulevard', 'apt', 'suite', 'unit'],
+        regex: /\b\d+\s+(?:[NSEW]\s+)?(?:[A-Za-z]+\s+)*(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Ln|Lane|Blvd|Boulevard|Ct|Court|Pl|Place|Way|Circle|Cir|Pkwy|Parkway|Ter|Terrace|Sq|Square|Broadway|Main|Oak|Elm|Park|First|Second|Third|Market|Center|Central|North|South|East|West)\.?(?:\s*,?\s*(?:#?\s*(?:Apt|Apartment|Suite|Ste|Unit|#)\s*[A-Za-z0-9-]+)?)?/gi,
+        description: 'street addresses'
+      },
+      
+      // US States patterns
+      state: {
+        keywords: ['state', 'province'],
+        regex: /\b(?:Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming|AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)\b/g,
+        description: 'US states'
+      },
+      
+      // Countries patterns (major countries)
+      country: {
+        keywords: ['country', 'nation'],
+        regex: /\b(?:United States|USA|US|Canada|Mexico|United Kingdom|UK|England|Scotland|Wales|Ireland|France|Germany|Italy|Spain|Portugal|Netherlands|Belgium|Switzerland|Austria|Sweden|Norway|Denmark|Finland|Poland|Czech Republic|Hungary|Romania|Bulgaria|Greece|Turkey|Russia|China|Japan|South Korea|India|Australia|New Zealand|Brazil|Argentina|Chile|Colombia|Peru|South Africa|Egypt|Nigeria|Kenya|Morocco)\b/gi,
+        description: 'countries'
+      },
+      
+      // City patterns (common city indicators)
+      city: {
+        keywords: ['city', 'town', 'municipality'],
+        regex: /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:City|Town|Village|Borough|Township))\b/g,
+        description: 'cities and towns'
       }
     };
   }
@@ -87,10 +115,13 @@ export class PatternDetector {
     
     // Check each pattern for matches
     for (const [patternName, pattern] of Object.entries(this.patterns)) {
-      // Check if any keywords match
-      const hasKeyword = pattern.keywords.some(keyword => 
-        normalizedQuery.includes(keyword.toLowerCase())
-      );
+      // Check if any keywords match using word boundaries to avoid substring matches
+      const hasKeyword = pattern.keywords.some(keyword => {
+        const keywordLower = keyword.toLowerCase();
+        // Use word boundary regex to match whole words only
+        const wordBoundaryRegex = new RegExp(`\\b${keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+        return wordBoundaryRegex.test(normalizedQuery);
+      });
       
       if (hasKeyword) {
         matchedPatterns.push({

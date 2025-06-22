@@ -19,6 +19,7 @@ export class EventHandler {
     this.navigationManager = navigationManager; // Store reference for Enter key logic
     this.storageManager = storageManager;
     this.mainController = mainController;
+    this.ui = ui; // Store reference for event target checking
     this.bindInputEvents(ui, onSearch, onNavigate);
     this.bindNavigationEvents(ui, onNavigate);
     this.bindSettingsEvents(ui, searchEngine, onSearch, onCopyResults, onToggleAI);
@@ -30,7 +31,10 @@ export class EventHandler {
   
   bindInputEvents(ui, onSearch, onNavigate) {
     // Real-time search with adaptive debouncing
-    ui.input.addEventListener('input', () => {
+    ui.input.addEventListener('input', (e) => {
+      // Prevent event from bubbling to avoid interfering with website
+      e.stopPropagation();
+      
       this.handleSearchInput(ui, onSearch);
       
       // Update styling based on current input state in AI mode
@@ -44,6 +48,9 @@ export class EventHandler {
     
     // Handle typing indicators
     ui.input.addEventListener('keydown', (e) => {
+      // Prevent extension input events from bubbling to the website
+      e.stopPropagation();
+      
       if (e.key === 'Enter') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -63,6 +70,20 @@ export class EventHandler {
         }
       }
       // Note: Escape handling is now done globally in bindKeyboardShortcuts
+    });
+    
+    // Also handle keyup to prevent bubbling
+    ui.input.addEventListener('keyup', (e) => {
+      e.stopPropagation();
+    });
+    
+    // Handle other input-related events to prevent interference
+    ui.input.addEventListener('focus', (e) => {
+      e.stopPropagation();
+    });
+    
+    ui.input.addEventListener('blur', (e) => {
+      e.stopPropagation();
     });
   }
   
@@ -147,6 +168,15 @@ export class EventHandler {
         this.saveSettings(ui.settings);
       });
     }
+
+    // Scroll indicators toggle
+    checkboxes.scrollIndicatorsCheckbox.addEventListener('change', (e) => {
+      ui.updateSettings({ ...ui.settings, showScrollIndicators: e.target.checked });
+      this.saveSettings(ui.settings);
+      if (ui.input.value) {
+        onSearch(ui.input.value);
+      }
+    });
     
     // Copy all results
     if (checkboxes.copyAllButton && onCopyResults) {
@@ -155,34 +185,43 @@ export class EventHandler {
         onCopyResults();
       });
     }
+    
+    // Help text
+    if (checkboxes.helpText) {
+      checkboxes.helpText.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openHelpPage();
+      });
+    }
   }
   
   bindUIEvents(ui, onToggle, onClose, closeButton) {
-    // Settings dropdown toggle
+    // Settings row toggle
     ui.statsElement.addEventListener('click', (e) => {
       e.stopPropagation();
       ui.toggleSettingsDropdown();
     });
     
-    // Close settings dropdown when clicking outside or pressing Escape
-    const closeSettingsHandler = (e) => {
+    // Close settings row when clicking outside or pressing Escape
+    this.closeSettingsHandler = (e) => {
       if (e.type === 'click') {
-        if (!ui.settingsDropdown.contains(e.target) && !ui.statsElement.contains(e.target)) {
+        if (!ui.settingsRow.contains(e.target) && !ui.statsElement.contains(e.target)) {
           ui.hideSettingsDropdown();
         }
       } else if (e.type === 'keydown' && e.key === 'Escape') {
-        if (!ui.settingsDropdown.classList.contains('hidden')) {
+        // Only handle Escape if the settings dropdown is open AND the event is from within the extension
+        if (!ui.settingsRow.classList.contains('hidden') && this.isEventFromExtension(e.target, ui)) {
           e.stopPropagation(); // Prevent closing the entire find bar
           ui.hideSettingsDropdown();
         }
       }
     };
     
-    document.addEventListener('click', closeSettingsHandler);
-    document.addEventListener('keydown', closeSettingsHandler);
+    document.addEventListener('click', this.closeSettingsHandler);
+    document.addEventListener('keydown', this.closeSettingsHandler);
     
-    // Prevent settings dropdown clicks from closing it
-    ui.settingsDropdown.addEventListener('click', (e) => {
+    // Prevent settings row clicks from closing it
+    ui.settingsRow.addEventListener('click', (e) => {
       e.stopPropagation();
     });
     
@@ -200,18 +239,70 @@ export class EventHandler {
   }
   
   bindKeyboardShortcuts(onToggle, onClose) {
-    document.addEventListener('keydown', (e) => {
+    this.keyboardShortcutHandler = (e) => {
+      // Only handle keyboard shortcuts if the event is not from a website input element
+      if (this.isEventFromWebsiteInput(e.target)) {
+        return; // Let the website handle its own input events
+      }
+      
       // Handle Ctrl+F/Cmd+F to open find bar (only when not visible)
       if ((e.ctrlKey || e.metaKey) && e.key === 'f' && !this.isVisible) {
         e.preventDefault();
         onToggle();
       }
-      // Handle Escape to close find bar (when visible)
+      // Handle Escape to close find bar (when visible and event is from extension or page content)
       else if (e.key === 'Escape' && this.isVisible) {
-        e.preventDefault();
-        onClose();
+        // Only prevent default if this escape is meant to close our find bar
+        // Don't interfere with website modals, dropdowns, etc.
+        if (this.isEventFromExtension(e.target, this.ui) || !this.isEventFromWebsiteInput(e.target)) {
+          e.preventDefault();
+          onClose();
+        }
       }
-    });
+    };
+    
+    document.addEventListener('keydown', this.keyboardShortcutHandler);
+  }
+  
+  // Helper method to check if an event originated from the extension's UI
+  isEventFromExtension(target, ui) {
+    if (!target || !ui) return false;
+    
+    // Check if the target is within the shadow root
+    if (ui.shadowRoot && ui.shadowRoot.contains(target)) {
+      return true;
+    }
+    
+    // Check if the target is the shadow host
+    if (ui.shadowHost && (target === ui.shadowHost || ui.shadowHost.contains(target))) {
+      return true;
+    }
+    
+    // Check if the target is part of scroll indicators (outside shadow DOM)
+    if (ui.scrollIndicatorsContainer && ui.scrollIndicatorsContainer.contains(target)) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // Helper method to check if an event originated from a website input element
+  isEventFromWebsiteInput(target) {
+    if (!target) return false;
+    
+    // Check if the target is an input element that belongs to the website (not our extension)
+    const inputElements = ['input', 'textarea', 'select'];
+    const editableElements = target.isContentEditable || target.contentEditable === 'true';
+    
+    if (inputElements.includes(target.tagName?.toLowerCase()) || editableElements) {
+      // Make sure it's not our extension's input
+      if (this.ui && target === this.ui.input) {
+        return false; // This is our extension's input
+      }
+      return true; // This is a website input
+    }
+    
+    return false;
   }
   
   bindSelectionEvents(ui, onSearch) {
@@ -247,8 +338,25 @@ export class EventHandler {
     }
   }
   
+  openHelpPage() {
+    // Open the help page in a new tab
+    chrome.runtime.sendMessage({
+      action: 'openHelpPage'
+    });
+  }
+  
   cleanup() {
     clearTimeout(this.debounceTimer);
     clearTimeout(this.typingTimer);
+    
+    // Remove global event listeners to prevent memory leaks and interference
+    if (this.closeSettingsHandler) {
+      document.removeEventListener('click', this.closeSettingsHandler);
+      document.removeEventListener('keydown', this.closeSettingsHandler);
+    }
+    
+    if (this.keyboardShortcutHandler) {
+      document.removeEventListener('keydown', this.keyboardShortcutHandler);
+    }
   }
 } 

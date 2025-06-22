@@ -3,37 +3,41 @@
  */
 
 import { AuthManager } from './auth-manager.js';
+import { StorageManager } from './storage-manager.js';
 
 export class AIService {
   constructor() {
     this.apiEndpoint = 'https://findr-api-backend.vercel.app/api/ai-search';
-    this.maxContextLength = 6000; // Conservative limit for AI context window
-    this.batchOverlapSize = 200; // Overlap between batches to avoid splitting sentences
+    // Optimized for Groq Llama 3.1 8B Instant: Fast, cost-effective with large context window
+    this.maxContextLength = 120000; // ~30k tokens - leverage large 131k context window
+    this.batchOverlapSize = 2000; // Larger overlap for better context continuity with bigger batches
     this.authManager = new AuthManager();
+    this.storageManager = new StorageManager();
     
-    // Rate limiting configuration - based on API calls (cost-aware)
+    // Rate limiting configuration - optimized for larger, fewer batches
     this.rateLimits = {
-      apiCallsPerMinute: 15,    // Max 15 API calls per minute (prevents rapid batch spam)
-      apiCallsPerHour: 60,      // Max 60 API calls per hour (prevents sustained abuse)
-      apiCallsPerDay: 200,      // Max 200 API calls per day (covers edge cases)
-      maxBatchesPerSearch: 20,  // Hard limit: max 20 batches per single search
-      maxContentLength: 120000  // Hard limit: max 120k chars per search (20 batches × 6k)
+      apiCallsPerMinute: 20,    // Higher limits for faster 8B model
+      apiCallsPerHour: 100,     // Increased for better throughput
+      apiCallsPerDay: 400,      // Higher daily limit for 8B instant model
+      maxBatchesPerSearch: 8,   // Fewer batches needed with larger context
+      maxContentLength: 960000  // Adjusted: 8 batches × 120k chars = 960k total
     };
     
     this.requestHistory = [];
+    this.pendingTokenConsumption = []; // Track batches that need token consumption
   }
 
   async searchWithAI(query, pageContent, onBatchComplete = null) {
     try {
-      // Initialize auth manager and check authentication
+      // Initialize auth manager and force refresh from storage to catch recent sign-ins
+      // This fixes the UX issue where users need to refresh page after signing in
       await this.authManager.initialize();
+      await this.authManager.forceRefreshFromStorage();
       
       if (!this.authManager.isSignedIn()) {
         throw new Error('User must be signed in to use AI features');
       }
       
-
-
       if (!this.authManager.hasTokens()) {
         // Try refreshing user data first in case it's a sync issue
         try {
@@ -66,49 +70,22 @@ export class AIService {
       // Record this request for rate limiting (with actual API call count)
       this.recordRequest(estimatedBatches);
       
+      // Clear pending token consumption for new search
+      this.pendingTokenConsumption = [];
+      
       // Use progressive parallel search for longer content
       if (pageContent.length > this.maxContextLength) {
         return await this.progressiveParallelSearch(query, pageContent, onBatchComplete);
       }
       
       // Get JWT token for authenticated request  
-      const tokenData = await chrome.storage.local.get(['jwt']);
-      
-      // Single search for shorter content
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenData.jwt}`
-        },
-        body: JSON.stringify({
-          query,
-          content: pageContent
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        // If it's a token error, try syncing user data in case it's a sync issue
-        if (response.status === 403 && errorText.includes('tokens')) {
-          try {
-            await this.authManager.syncUser();
-          } catch (syncError) {
-            // Ignore sync errors
-          }
-        }
-        
-        throw new Error(`AI API error: ${response.status} - ${errorText}`);
+      const jwt = await this.authManager.getStoredJWT();
+      if (!jwt) {
+        throw new Error('Authentication required - please sign in again');
       }
-
-      const result = await response.json();
       
-      // Update client-side token counts after successful AI search
-      try {
-        await this.authManager.refreshUserData();
-      } catch (refreshError) {
-        // Don't fail the search if refresh fails
-      }
+      // Single search for shorter content with retry logic
+      const result = await this.makeAPIRequestWithRetry(query, pageContent, jwt);
       
       // Handle both old format (relevantSnippets) and new format (rawResponse)
       let snippets = [];
@@ -119,6 +96,15 @@ export class AIService {
         snippets = result.relevantSnippets || [];
       } else {
         snippets = [];
+      }
+      
+      // Track this batch for token consumption
+      if (!result.tokenConsumed) {
+        this.pendingTokenConsumption.push({
+          batchIndex: 0,
+          snippets: snippets,
+          matchesFound: 0 // Will be updated when matches are found
+        });
       }
       
       return snippets;
@@ -217,31 +203,126 @@ export class AIService {
     await chrome.storage.local.set({ aiApiCallHistory: this.apiCallHistory });
   }
 
+  async makeAPIRequestWithRetry(query, content, jwtToken, maxRetries = 2) {
+    let lastError;
+    
+    // Get the system prompt (custom or default)
+    const systemPrompt = await this.getSystemPrompt();
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(this.apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({
+            query,
+            content,
+            customSystemPrompt: systemPrompt
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          
+          // If it's a token error, try syncing user data in case it's a sync issue
+          if (response.status === 403 && JSON.stringify(errorData).includes('tokens')) {
+            try {
+              await this.authManager.syncUser();
+            } catch (syncError) {
+              // Ignore sync errors
+            }
+          }
+          
+          // Check if this is a retryable error
+          if (errorData.shouldRetry && attempt < maxRetries) {
+            const retryAfter = errorData.retryAfter || 30;
+            // Retry after rate limit
+            
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+            continue;
+          }
+          
+          // Not retryable or max retries reached
+          throw new Error(`AI API error: ${response.status} - ${errorData.error || errorData.details || 'Unknown error'}`);
+        }
+
+        // Success - return the parsed response
+        return await response.json();
+        
+      } catch (error) {
+        lastError = error;
+        
+        // If it's a network error and we haven't reached max retries, try again
+        if (error.name === 'TypeError' && error.message.includes('fetch') && attempt < maxRetries) {
+          // Network error, retrying
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          continue;
+        }
+        
+        // If it's not retryable or we've reached max retries, throw the error
+        throw error;
+      }
+    }
+    
+    // If we get here, all retries failed
+    throw lastError;
+  }
+
+  // Get the system prompt (custom or default) with JSON format requirement
+  async getSystemPrompt() {
+    try {
+      const settings = await this.storageManager.getSettings();
+      const customPrompt = await this.storageManager.getCustomSystemPrompt();
+      
+      if (settings.useCustomPrompt) {
+        if (customPrompt && customPrompt.trim().length > 0) {
+          // Append JSON format requirement to custom prompt
+          return customPrompt.trim() + this.storageManager.getJsonFormatRequirement();
+        }
+      }
+      
+      // Return default prompt (already includes JSON format requirement)
+      return this.storageManager.getDefaultSystemPrompt();
+    } catch (error) {
+      // Failed to get system prompt - silently handle
+      // Fallback to default prompt
+      return this.storageManager.getDefaultSystemPrompt();
+    }
+  }
+
   async progressiveParallelSearch(query, pageContent, onBatchComplete = null) {
-    // Split content into batches with overlap
+    // Split content into cost-optimized batches with overlap
     const batches = this.createContentBatches(pageContent);
-    // Process batches in smaller parallel groups to avoid rate limits
-    const batchSize = 3; // Process 3 batches at a time
     const allResults = [];
     const processedSnippets = new Set(); // Track already processed snippets
     
-    for (let i = 0; i < batches.length; i += batchSize) {
-      const batchGroup = batches.slice(i, i + batchSize);
-      
+
+    
+    // Process batches sequentially from top to bottom instead of concurrently
+    for (let i = 0; i < batches.length; i++) {
       try {
-        const groupPromises = batchGroup.map((batch, index) => 
-          this.searchBatchWithCallback(query, batch, i + index, onBatchComplete, processedSnippets)
+
+        
+        const batchResult = await this.searchBatchWithCallback(
+          query, 
+          batches[i], 
+          i, 
+          onBatchComplete, 
+          processedSnippets
         );
         
-        const groupResults = await Promise.all(groupPromises);
-        allResults.push(...groupResults);
+        allResults.push(batchResult);
         
-        // Small delay between batch groups to respect rate limits
-        if (i + batchSize < batches.length) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // Small delay between batches to avoid overwhelming the UI and API
+        if (i < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay for better UX
         }
       } catch (error) {
-        console.error(`Batch group ${Math.floor(i/batchSize) + 1} failed:`, error);
+        // Batch failed, continuing with next batch
       }
     }
     
@@ -250,14 +331,7 @@ export class AIService {
       const allSnippets = allResults.flat();
       const uniqueSnippets = this.deduplicateSnippets(allSnippets);
       
-      // Update client-side token counts after all batches complete
-      try {
-        await this.authManager.refreshUserData();
-      } catch (refreshError) {
-        // Don't fail the search if refresh fails
-      }
-      
-      return uniqueSnippets.slice(0, 8); // Limit to 8 best results
+      return uniqueSnippets.slice(0, 20); // Higher limit: larger context batches with 8B instant model = better quality results
     } catch (error) {
       return [];
     }
@@ -266,17 +340,50 @@ export class AIService {
   createContentBatches(content) {
     const batches = [];
     let startIndex = 0;
-    const maxBatches = this.rateLimits.maxBatchesPerSearch; // Enforce hard limit from rate limits
+    const maxBatches = this.rateLimits.maxBatchesPerSearch;
+    
+
     
     while (startIndex < content.length && batches.length < maxBatches) {
       const endIndex = Math.min(startIndex + this.maxContextLength, content.length);
       let batchContent = content.substring(startIndex, endIndex);
       
-      // If not the last batch, try to end at a sentence boundary
+      // If not the last batch, find optimal boundary (paragraph > sentence > word)
       if (endIndex < content.length) {
-        const lastSentenceEnd = batchContent.lastIndexOf('. ');
-        if (lastSentenceEnd > this.maxContextLength * 0.7) {
-          batchContent = batchContent.substring(0, lastSentenceEnd + 1);
+        const minLength = this.maxContextLength * 0.7; // Don't go below 70% for better cost efficiency
+        
+        // Try paragraph boundary first (double newline or section break)
+        let lastParagraphEnd = Math.max(
+          batchContent.lastIndexOf('\n\n'),
+          batchContent.lastIndexOf('\n\n'),
+          batchContent.lastIndexOf('</p>'),
+          batchContent.lastIndexOf('</div>')
+        );
+        
+        // If no good paragraph boundary, try sentence boundary
+        if (lastParagraphEnd < minLength) {
+          const sentenceEndings = ['. ', '! ', '? ', '.\n', '!\n', '?\n'];
+          lastParagraphEnd = -1;
+          
+          for (const ending of sentenceEndings) {
+            const pos = batchContent.lastIndexOf(ending);
+            if (pos > lastParagraphEnd && pos >= minLength) {
+              lastParagraphEnd = pos + ending.length;
+            }
+          }
+        }
+        
+        // If still no good boundary, try word boundary
+        if (lastParagraphEnd < minLength) {
+          const lastSpace = batchContent.lastIndexOf(' ', this.maxContextLength - 100);
+          if (lastSpace >= minLength) {
+            lastParagraphEnd = lastSpace;
+          }
+        }
+        
+        // Use the boundary if it's reasonable, otherwise use full length
+        if (lastParagraphEnd >= minLength) {
+          batchContent = batchContent.substring(0, lastParagraphEnd);
         }
       }
       
@@ -286,13 +393,14 @@ export class AIService {
       }
       
       batches.push(batchContent);
+
       
       // Calculate next start position with overlap
       const nextStart = startIndex + batchContent.length - this.batchOverlapSize;
       
       // Ensure we're making progress (prevent infinite loops)
       if (nextStart <= startIndex) {
-        startIndex = startIndex + Math.max(1000, this.maxContextLength / 2);
+        startIndex = startIndex + Math.max(30000, this.maxContextLength / 4);
       } else {
         startIndex = nextStart;
       }
@@ -301,10 +409,15 @@ export class AIService {
       if (startIndex >= content.length) break;
     }
     
+    // Log final batch statistics
+    const totalChars = batches.reduce((sum, batch) => sum + batch.length, 0);
+    const avgBatchSize = Math.round(totalChars / batches.length);
+    
+    
     // Log warning if content was truncated due to batch limits
     if (batches.length >= maxBatches && startIndex < content.length) {
       const truncatedChars = content.length - startIndex;
-      console.warn(`Content truncated: ${truncatedChars} characters skipped due to batch limit`);
+      // Content truncated due to batch limit
     }
     
     return batches;
@@ -315,23 +428,7 @@ export class AIService {
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);
       
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenData.jwt}`
-        },
-        body: JSON.stringify({
-          query,
-          content: batchContent
-        })
-      });
-
-      if (!response.ok) {
-        return [];
-      }
-
-      const result = await response.json();
+      const result = await this.makeAPIRequestWithRetry(query, batchContent, tokenData.jwt);
       let snippets = [];
       
       if (result.rawResponse) {
@@ -351,29 +448,22 @@ export class AIService {
       // Get JWT token for authenticated request
       const tokenData = await chrome.storage.local.get(['jwt']);
       
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenData.jwt}`
-        },
-        body: JSON.stringify({
-          query,
-          content: batchContent
-        })
-      });
-
-      if (!response.ok) {
-        return [];
-      }
-
-      const result = await response.json();
+      const result = await this.makeAPIRequestWithRetry(query, batchContent, tokenData.jwt);
       let snippets = [];
       
       if (result.rawResponse) {
         snippets = this.parseAndCleanAIResponse(result.rawResponse);
       } else if (result.relevantSnippets) {
         snippets = result.relevantSnippets || [];
+      }
+      
+      // Track this batch for token consumption
+      if (!result.tokenConsumed) {
+        this.pendingTokenConsumption.push({
+          batchIndex: batchIndex,
+          snippets: snippets,
+          matchesFound: 0 // Will be updated when matches are found
+        });
       }
       
       // Process new snippets immediately if callback provided
@@ -470,7 +560,7 @@ export class AIService {
         return cleaned;
       })
       .filter(snippet => snippet && snippet.length > 0)
-      .slice(0, 5); // Limit to 5 snippets per batch
+      .slice(0, 15); // Higher limit: larger context batches with 8B instant produce more relevant results
     
     return cleanedSnippets;
   }
@@ -563,5 +653,60 @@ export class AIService {
 
     // Return full content - progressive search will handle batching if needed
     return textBlocks.join(' ');
+  }
+
+  // New method to report match results and consume tokens
+  async reportMatchResults(totalMatchesFound) {
+
+    
+    if (this.pendingTokenConsumption.length === 0) {
+
+      return;
+    }
+
+    try {
+      const jwt = await this.authManager.getStoredJWT();
+      if (!jwt) {
+        return;
+      }
+      
+      // Consume tokens for each batch that was processed
+      // If any matches were found in the overall search, consume tokens for all batches
+      // If no matches were found at all, don't consume any tokens
+      const shouldConsumeTokens = totalMatchesFound > 0;
+      
+      for (const batch of this.pendingTokenConsumption) {
+        const response = await fetch(this.apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwt}`
+          },
+          body: JSON.stringify({
+            matchesFound: shouldConsumeTokens ? 1 : 0 // Consume 1 token per batch if any matches found overall
+          })
+        });
+
+        if (!response.ok) {
+          // Failed to report match results for batch
+        } else {
+          const result = await response.json();
+
+        }
+      }
+      
+      // Update client-side token counts after reporting results
+      try {
+        await this.authManager.refreshUserData();
+      } catch (refreshError) {
+        // Failed to refresh user data after token consumption
+      }
+      
+    } catch (error) {
+      // Failed to report match results - silently handle
+    } finally {
+      // Clear pending consumption requests
+      this.pendingTokenConsumption = [];
+    }
   }
 } 

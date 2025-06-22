@@ -17,11 +17,16 @@ export class UIManager {
     this.hintTimeout = null;
     this.hintDelayTimeout = null;
     
+    // Restriction notification properties
+    this.restrictionNotification = null;
+    this.restrictionTimeout = null;
+    
     // Settings state
     this.caseSensitive = false;
-    this.useRegex = false;
+    this.useRegex = true;
     this.multiTermHighlighting = false;
     this.aiMode = true;
+    this.showScrollIndicators = true;
   }
   
   createFindBar() {
@@ -70,31 +75,45 @@ export class UIManager {
     this.statsElement.textContent = '0/0';
     this.statsElement.title = 'Settings';
     
-    // Settings dropdown
-    this.settingsCheckboxes = this.createSettingsDropdown();
-    
     // Previous button
     this.prevButton = document.createElement('button');
     this.prevButton.className = 'smart-finder-button';
-    this.prevButton.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>';
+    // Use safer DOM manipulation instead of innerHTML
+    const prevSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    prevSvg.setAttribute('width', '36');
+    prevSvg.setAttribute('height', '36');
+    prevSvg.setAttribute('viewBox', '0 0 24 24');
+    prevSvg.setAttribute('fill', 'none');
+    prevSvg.setAttribute('stroke', 'currentColor');
+    prevSvg.setAttribute('stroke-width', '2');
+    const prevPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    prevPolyline.setAttribute('points', '18 15 12 9 6 15');
+    prevSvg.appendChild(prevPolyline);
+    this.prevButton.appendChild(prevSvg);
     this.prevButton.title = 'Previous (Shift+Enter)';
     
     // Next button
     this.nextButton = document.createElement('button');
     this.nextButton.className = 'smart-finder-button';
-    this.nextButton.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+    // Use safer DOM manipulation instead of innerHTML
+    const nextSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    nextSvg.setAttribute('width', '36');
+    nextSvg.setAttribute('height', '36');
+    nextSvg.setAttribute('viewBox', '0 0 24 24');
+    nextSvg.setAttribute('fill', 'none');
+    nextSvg.setAttribute('stroke', 'currentColor');
+    nextSvg.setAttribute('stroke-width', '2');
+    const nextPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    nextPolyline.setAttribute('points', '6 9 12 15 18 9');
+    nextSvg.appendChild(nextPolyline);
+    this.nextButton.appendChild(nextSvg);
     this.nextButton.title = 'Next (Enter)';
     
     // Close button
     const closeButton = document.createElement('button');
     closeButton.className = 'smart-finder-button smart-finder-close';
-    closeButton.innerHTML = '✕';
+    closeButton.textContent = '✕';
     closeButton.title = 'Close (Escape)';
-    
-    // Smart search hint
-    this.smartSearchHint = document.createElement('div');
-    this.smartSearchHint.className = 'smart-finder-smart-search-hint hidden';
-    this.smartSearchHint.textContent = 'Enter to smart search';
 
     // Create toolbar row container
     const toolbarRow = document.createElement('div');
@@ -103,14 +122,27 @@ export class UIManager {
     // Assemble toolbar row
     toolbarRow.appendChild(this.input);
     toolbarRow.appendChild(this.statsElement);
-    toolbarRow.appendChild(this.settingsDropdown);
     toolbarRow.appendChild(this.prevButton);
     toolbarRow.appendChild(this.nextButton);
     toolbarRow.appendChild(closeButton);
     
+    // Settings row (inline settings)
+    this.settingsRow = this.createSettingsRow();
+    
+    // Smart search hint
+    this.smartSearchHint = document.createElement('div');
+    this.smartSearchHint.className = 'smart-finder-smart-search-hint hidden';
+    this.smartSearchHint.textContent = 'Press Enter for smart search';
+    
+    // Restriction notification
+    this.restrictionNotification = document.createElement('div');
+    this.restrictionNotification.className = 'smart-finder-restriction-notification hidden';
+    
     // Assemble find bar
     this.findBar.appendChild(toolbarRow);
+    this.findBar.appendChild(this.settingsRow);
     this.findBar.appendChild(this.smartSearchHint);
+    this.findBar.appendChild(this.restrictionNotification);
     
     // Add to shadow root instead of document.body
     this.shadowRoot.appendChild(this.findBar);
@@ -280,7 +312,7 @@ export class UIManager {
         background: #4285f4 !important;
         width: 14px !important;
         height: 3px !important;
-        border-radius: 2px !important;
+        border-radius: 0px !important;
       }
 
       .smart-finder-indicator.multi-term-ai:hover {
@@ -350,6 +382,45 @@ export class UIManager {
         display: none;
       }
 
+      .smart-finder-restriction-notification {
+        width: 100%;
+        font-size: 11px;
+        font-weight: 400;
+        padding: 6px 8px;
+        text-align: left;
+        color: #d93025;
+        background: rgba(234, 67, 53, 0.1);
+        border: 1px solid rgba(234, 67, 53, 0.2);
+        border-radius: 8px;
+        margin-top: 4px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        line-height: 1.3;
+      }
+
+      .smart-finder-restriction-notification.hidden {
+        display: none;
+      }
+
+      .smart-finder-restriction-notification .dismiss-button {
+        background: none;
+        border: none;
+        color: #d93025;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0 4px;
+        margin-left: 8px;
+        border-radius: 4px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .smart-finder-restriction-notification .dismiss-button:hover {
+        background: rgba(234, 67, 53, 0.1);
+      }
+
       @media (prefers-color-scheme: dark) {
         .smart-finder-bar {
           background: rgba(30, 30, 30, 0.95);
@@ -362,10 +433,24 @@ export class UIManager {
         .smart-finder-smart-search-hint {
           color: #9aa0a6;
         }
+
+        .smart-finder-restriction-notification {
+          color: #f28b82;
+          background: rgba(244, 67, 54, 0.15);
+          border: 1px solid rgba(244, 67, 54, 0.25);
+        }
+
+        .smart-finder-restriction-notification .dismiss-button {
+          color: #f28b82;
+        }
+
+        .smart-finder-restriction-notification .dismiss-button:hover {
+          background: rgba(244, 67, 54, 0.2);
+        }
       }
 
       .smart-finder-bar.settings-open {
-        border-radius: 18px 18px 0 0;
+        border-radius: 18px;
         box-shadow: 
           0 4px 16px rgba(0, 0, 0, 0.08),
           0 1px 4px rgba(0, 0, 0, 0.04);
@@ -537,63 +622,111 @@ export class UIManager {
         40% { opacity: 1; }
       }
 
-      .smart-finder-settings-dropdown {
-        position: absolute;
-        top: 100%;
-        left: -1px;
-        right: -1px;
-        background: rgba(255, 255, 255);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-top: none;
+      .smart-finder-settings-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 8px 4px 4px 4px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        margin-top: 8px;
+        transition: all 0.2s ease;
         border-radius: 0 0 18px 18px;
-        box-shadow: 
-          0 4px 16px rgba(0, 0, 0, 0.08),
-          0 2px 8px rgba(0, 0, 0, 0.04);
-        padding: 8px;
-        margin-top: -1px;
-        font-size: 13px;
+      }
+
+      .smart-finder-settings-row.hidden {
+        display: none;
+      }
+
+      .smart-finder-settings-row .smart-finder-copy-all-button {
+        grid-column: 1 / -1;
+        margin-top: 4px;
+      }
+
+      .smart-finder-settings-row .smart-finder-help-text {
+        grid-column: 1 / -1;
+        margin-top: 8px;
+        text-align: center;
       }
 
       @media (prefers-color-scheme: dark) {
-        .smart-finder-settings-dropdown {
-          background: rgba(30, 30, 30, 0.95);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-top: none;
-          box-shadow: 
-            0 4px 16px rgba(0, 0, 0, 0.3),
-            0 2px 8px rgba(0, 0, 0, 0.15);
+        .smart-finder-settings-row {
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
-      }
-
-      .smart-finder-settings-dropdown.hidden {
-        display: none;
-        pointer-events: none;
-        visibility: hidden;
       }
 
       .smart-finder-setting-option {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 8px 2px;
+        gap: 8px;
+        padding: 6px 8px;
         cursor: pointer;
         color: #1a1a1a;
         font-weight: 400;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-        margin-bottom: 6px;
+        font-size: 12px;
+        border-radius: 8px;
+        transition: background-color 0.15s ease;
+        user-select: none;
+        position: relative;
       }
 
-      .smart-finder-setting-option:last-of-type {
-        border-bottom: none;
-        margin-bottom: 0;
+      .smart-finder-setting-option:hover {
+        background: rgba(0, 0, 0, 0.04);
       }
 
       @media (prefers-color-scheme: dark) {
         .smart-finder-setting-option {
           color: #e8eaed;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .smart-finder-setting-option:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .smart-finder-checkbox {
+          background: rgba(255, 255, 255, 0.12);
+        }
+
+        .smart-finder-checkbox:checked {
+          background: #8ab4f8;
+        }
+
+        .smart-finder-checkbox::before {
+          background: #e8eaed;
+        }
+
+        .smart-finder-copy-all-button {
+          background: rgba(138, 180, 248, 0.08);
+          border-color: rgba(138, 180, 248, 0.2);
+          color: #8ab4f8;
+        }
+
+        .smart-finder-copy-all-button:hover:not(:disabled) {
+          background: rgba(138, 180, 248, 0.12);
+          border-color: rgba(138, 180, 248, 0.3);
+        }
+
+        .smart-finder-copy-all-button:active:not(:disabled) {
+          background: rgba(138, 180, 248, 0.16);
+          border-color: rgba(138, 180, 248, 0.4);
+        }
+
+        .smart-finder-copy-all-button:disabled {
+          background: rgba(255, 255, 255, 0.04);
+          color: rgba(255, 255, 255, 0.3);
+          border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .smart-finder-help-text {
+          color: #9aa0a6;
+        }
+
+        .smart-finder-help-text:hover {
+          color: #8ab4f8;
+          text-decoration-color: #8ab4f8;
+        }
+
+        .smart-finder-help-text:active {
+          color: #aecbfa;
         }
       }
 
@@ -663,6 +796,29 @@ export class UIManager {
         cursor: default;
         border-color: rgba(0, 0, 0, 0.08);
         transform: none;
+      }
+
+      .smart-finder-help-text {
+        display: block;
+        color: #666;
+        font-size: 11px;
+        font-family: inherit;
+        font-weight: 400;
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        transition: all 0.2s ease;
+        opacity: 0.7;
+      }
+
+      .smart-finder-help-text:hover {
+        color: #1a73e8;
+        text-decoration-color: #1a73e8;
+        opacity: 1;
+      }
+
+      .smart-finder-help-text:active {
+        color: #1557b0;
       }
 
       .smart-finder-button {
@@ -736,42 +892,57 @@ export class UIManager {
     `;
   }
   
-  createSettingsDropdown() {
-    this.settingsDropdown = document.createElement('div');
-    this.settingsDropdown.className = 'smart-finder-settings-dropdown hidden';
+  createSettingsRow() {
+    this.settingsRow = document.createElement('div');
+    this.settingsRow.className = 'smart-finder-settings-row hidden';
     
-    // Case sensitivity option
-    const caseSensitiveOption = this.createSettingOption('Match case', this.caseSensitive);
-    this.settingsDropdown.appendChild(caseSensitiveOption.element);
+    // AI mode option (first position) - using text icon
+    const aiModeOption = this.createSettingOption('Smart Search', this.aiMode, 'Use AI to find relevant content intelligently');
+    this.settingsRow.appendChild(aiModeOption.element);
     
-    // Regex option
-    const regexOption = this.createSettingOption('Use regex', this.useRegex);
-    this.settingsDropdown.appendChild(regexOption.element);
+    // Case sensitivity option - using Aa icon
+    const caseSensitiveOption = this.createSettingOption('Aa Match Case', this.caseSensitive, 'Distinguish between uppercase and lowercase letters');
+    this.settingsRow.appendChild(caseSensitiveOption.element);
     
-    // Multi-term highlighting option
-    const multiTermOption = this.createSettingOption('Highlight multiple terms', this.multiTermHighlighting);
-    this.settingsDropdown.appendChild(multiTermOption.element);
+    // Regex option - using .* icon
+    const regexOption = this.createSettingOption('Regular Expression', this.useRegex, 'Use regular expression patterns for advanced search');
+    this.settingsRow.appendChild(regexOption.element);
     
-    // AI mode option
-    const aiModeOption = this.createSettingOption('AI search mode', this.aiMode);
-    this.settingsDropdown.appendChild(aiModeOption.element);
+    // Multi-term highlighting option - clearer naming
+    const multiTermOption = this.createSettingOption('Multiple Terms', this.multiTermHighlighting, 'Highlight different search terms with different colors');
+    this.settingsRow.appendChild(multiTermOption.element);
+    
+    // Scroll indicators option - using text description
+    const scrollIndicatorsOption = this.createSettingOption('Scrollbar Highlights', this.showScrollIndicators, 'Show match locations on the scrollbar');
+    this.settingsRow.appendChild(scrollIndicatorsOption.element);
     
     // Copy all results option (button, not checkbox)
     const copyAllOption = this.createCopyAllOption();
-    this.settingsDropdown.appendChild(copyAllOption);
+    this.settingsRow.appendChild(copyAllOption);
     
-    return {
+    // Help button (button, not checkbox)
+    const helpOption = this.createHelpOption();
+    this.settingsRow.appendChild(helpOption);
+    
+    this.settingsCheckboxes = {
+      aiModeCheckbox: aiModeOption.checkbox,
       caseSensitiveCheckbox: caseSensitiveOption.checkbox,
       regexCheckbox: regexOption.checkbox,
       multiTermCheckbox: multiTermOption.checkbox,
-      aiModeCheckbox: aiModeOption.checkbox,
-      copyAllButton: copyAllOption
+      scrollIndicatorsCheckbox: scrollIndicatorsOption.checkbox,
+      copyAllButton: copyAllOption,
+      helpText: helpOption
     };
+    
+    return this.settingsRow;
   }
-  
-  createSettingOption(labelText, checked) {
+
+  createSettingOption(labelText, checked, tooltipText) {
     const option = document.createElement('label');
     option.className = 'smart-finder-setting-option';
+    if (tooltipText) {
+      option.title = tooltipText;
+    }
     
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -795,6 +966,15 @@ export class UIManager {
     button.disabled = true; // Initially disabled
     
     return button;
+  }
+  
+  createHelpOption() {
+    const helpText = document.createElement('span');
+    helpText.className = 'smart-finder-help-text';
+    helpText.textContent = 'Help';
+    helpText.title = 'Get help with using Smart Finder';
+    
+    return helpText;
   }
   
   createScrollIndicators() {
@@ -833,7 +1013,7 @@ export class UIManager {
   }
   
   toggleSettingsDropdown() {
-    if (this.settingsDropdown.classList.contains('hidden')) {
+    if (this.settingsRow.classList.contains('hidden')) {
       this.showSettingsDropdown();
     } else {
       this.hideSettingsDropdown();
@@ -841,13 +1021,13 @@ export class UIManager {
   }
   
   showSettingsDropdown() {
-    this.settingsDropdown.classList.remove('hidden');
+    this.settingsRow.classList.remove('hidden');
     this.findBar.classList.add('settings-open');
     this.statsElement.classList.add('settings-active');
   }
   
   hideSettingsDropdown() {
-    this.settingsDropdown.classList.add('hidden');
+    this.settingsRow.classList.add('hidden');
     this.findBar.classList.remove('settings-open');
     this.statsElement.classList.remove('settings-active');
   }
@@ -860,7 +1040,7 @@ export class UIManager {
     } else if (this.useRegex) {
       this.input.placeholder = 'Find in page (regex)';
     } else if (this.multiTermHighlighting) {
-      this.input.placeholder = 'Find in page (multiple terms, use quotes or ? for phrases)';
+      this.input.placeholder = 'Space to seperate. Quote to contain';
     } else {
       this.input.placeholder = 'Find in page';
     }
@@ -868,8 +1048,8 @@ export class UIManager {
 
   toggleAIMode() {
     this.aiMode = !this.aiMode;
-    this.aiToggle.classList.toggle('active', this.aiMode);
     this.updateInputPlaceholder();
+    this.updateCheckboxStates(); // Update the checkbox state to reflect the change
     return this.aiMode;
   }
 
@@ -877,7 +1057,7 @@ export class UIManager {
     // Apply AI-ready styling when in AI mode, has input text, and no matches exist
     // (meaning Enter would trigger AI search)
     const hasInputText = this.input.value.trim().length > 0;
-    const isDefaultHintText = this.smartSearchHint.textContent === 'Enter to smart search';
+    const isDefaultHintText = this.smartSearchHint.textContent === 'Press Enter for smart search';
     const isSearching = this.statsElement.classList.contains('searching');
     
     // Clear any existing hint delay timeout
@@ -904,7 +1084,7 @@ export class UIManager {
       this.hintDelayTimeout = setTimeout(() => {
         // Double-check conditions haven't changed
         const stillHasInputText = this.input.value.trim().length > 0;
-        const stillIsDefaultHint = this.smartSearchHint.textContent === 'Enter to smart search';
+        const stillIsDefaultHint = this.smartSearchHint.textContent === 'Press Enter for smart search';
         const stillSearching = this.statsElement.classList.contains('searching');
         
         if (this.aiMode && stillHasInputText && !stillSearching && stillIsDefaultHint) {
@@ -919,7 +1099,7 @@ export class UIManager {
   }
   
   // Update smart search hint text (for showing "No results" after AI search)
-  updateSmartSearchHint(text = 'Enter to smart search') {
+  updateSmartSearchHint(text = 'Press Enter for smart search') {
     this.smartSearchHint.textContent = text;
     
     // Clear any existing timeout
@@ -930,7 +1110,7 @@ export class UIManager {
     
     // If we're setting a non-default hint (like "No results"), show it temporarily
     // but don't show the default hint automatically
-    if (text !== 'Enter to smart search') {
+    if (text !== 'Press Enter for smart search') {
       this.smartSearchHint.classList.remove('hidden');
       this.input.classList.remove('ai-ready');
       
@@ -972,12 +1152,7 @@ export class UIManager {
       this.settingsCheckboxes.copyAllButton.disabled = false;
     }
     
-    // Update extension badge
-    chrome.runtime.sendMessage({
-      action: 'updateBadge',
-      current: current,
-      total: total
-    });
+    // Badge is now handled by SmartFinder's updateTokenBadge method
   }
   
   setSearchProgress(message, isSearching = false) {
@@ -1056,7 +1231,7 @@ export class UIManager {
   updateScrollIndicators(matches, currentIndex, termToColorMap, caseSensitive, onIndicatorClick, useRegex = false) {
     this.clearScrollIndicators();
     
-    if (matches.length === 0) {
+    if (matches.length === 0 || !this.showScrollIndicators) {
       this.scrollIndicators.classList.add('hidden');
       return;
     }
@@ -1078,7 +1253,7 @@ export class UIManager {
         const rect = range.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const elementTop = rect.top + scrollTop;
-        const percentage = (elementTop / documentHeight) * 100;
+        const percentage = Math.max(0, Math.min(100, (elementTop / documentHeight) * 100));
         
         const indicator = document.createElement('div');
         indicator.className = 'smart-finder-indicator';
@@ -1090,7 +1265,7 @@ export class UIManager {
           // Handle AI search case
           if (termToColorMap.ai) {
             colorIndex = 'ai';
-            + '%';
+    
           } else if (useRegex && range._regexPattern !== undefined) {
             // For regex patterns, use the pattern index
             colorIndex = (range._patternIndex % 5) + 1;
@@ -1121,7 +1296,87 @@ export class UIManager {
         this.scrollIndicators.appendChild(indicator);
         this.indicatorElements.push(indicator);
       } catch (error) {
+        // Could not create scroll indicator - silently handle
+      }
+    });
+  }
+
+  // Add new method for progressive scroll indicator updates
+  addScrollIndicators(newMatches, allMatches, currentIndex, termToColorMap, caseSensitive, onIndicatorClick, useRegex = false) {
+    if (newMatches.length === 0 || !this.showScrollIndicators) return;
+    
+    this.scrollIndicators.classList.remove('hidden');
+    
+    // Get document height
+    const documentHeight = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight
+    );
+    
+    // Create indicators only for new matches
+    newMatches.forEach((range) => {
+      try {
+        const rect = range.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const elementTop = rect.top + scrollTop;
+        const percentage = Math.max(0, Math.min(100, (elementTop / documentHeight) * 100));
+        
+        const indicator = document.createElement('div');
+        indicator.className = 'smart-finder-indicator';
+        
+        // Find the index of this range in the complete matches array
+        const matchIndex = allMatches.findIndex(match => {
+          try {
+            return match.compareBoundaryPoints(Range.START_TO_START, range) === 0 &&
+                   match.compareBoundaryPoints(Range.END_TO_END, range) === 0;
+          } catch (error) {
+            return false;
+          }
+        });
+        
+        // Add multi-term color class if applicable
+        if (termToColorMap) {
+          let colorIndex = null;
+          
+          // Handle AI search case
+          if (termToColorMap.ai) {
+            colorIndex = 'ai';
+    
+          } else if (useRegex && range._regexPattern !== undefined) {
+            // For regex patterns, use the pattern index
+            colorIndex = (range._patternIndex % 5) + 1;
+          } else if (range.toString()) {
+            // For text matching, find the matching term
+            const matchText = caseSensitive ? range.toString() : range.toString().toLowerCase();
+            for (const [term, termColorIndex] of termToColorMap) {
+              const searchTerm = caseSensitive ? term : term.toLowerCase();
+              if (matchText === searchTerm) {
+                colorIndex = termColorIndex;
+                break;
+              }
+            }
+          }
+          
+          if (colorIndex) {
+            indicator.classList.add(`multi-term-${colorIndex}`);
+          }
         }
+        
+        if (matchIndex === currentIndex) {
+          indicator.classList.add('current');
+        }
+        
+        indicator.style.top = `${percentage}%`;
+        indicator.addEventListener('click', () => onIndicatorClick(matchIndex));
+        
+        this.scrollIndicators.appendChild(indicator);
+        this.indicatorElements.push(indicator);
+      } catch (error) {
+        // Could not create scroll indicator - silently handle
+      }
     });
   }
   
@@ -1151,7 +1406,8 @@ export class UIManager {
       caseSensitive: this.caseSensitive,
       useRegex: this.useRegex,
       multiTermHighlighting: this.multiTermHighlighting,
-      aiMode: this.aiMode
+      aiMode: this.aiMode,
+      showScrollIndicators: this.showScrollIndicators
     };
   }
   
@@ -1162,6 +1418,12 @@ export class UIManager {
     this.multiTermHighlighting = settings.multiTermHighlighting;
     if (settings.aiMode !== undefined) {
       this.aiMode = settings.aiMode;
+    }
+    if (settings.showScrollIndicators !== undefined) {
+      this.showScrollIndicators = settings.showScrollIndicators;
+      if (!this.showScrollIndicators) {
+        this.clearScrollIndicators();
+      }
     }
     this.updateInputPlaceholder();
     this.updateCheckboxStates();
@@ -1174,6 +1436,7 @@ export class UIManager {
       this.settingsCheckboxes.regexCheckbox.checked = this.useRegex;
       this.settingsCheckboxes.multiTermCheckbox.checked = this.multiTermHighlighting;
       this.settingsCheckboxes.aiModeCheckbox.checked = this.aiMode;
+      this.settingsCheckboxes.scrollIndicatorsCheckbox.checked = this.showScrollIndicators;
     }
   }
   
@@ -1181,6 +1444,55 @@ export class UIManager {
   setLastSearch(query) {
     if (this.input) {
       this.input.value = query;
+    }
+  }
+  
+  // Show restriction notification with auto-dismiss
+  showRestrictionNotification(message) {
+    if (!this.restrictionNotification) return;
+    
+    // Clear any existing timeout
+    if (this.restrictionTimeout) {
+      clearTimeout(this.restrictionTimeout);
+      this.restrictionTimeout = null;
+    }
+    
+    // Create message content - clear existing content safely
+    while (this.restrictionNotification.firstChild) {
+      this.restrictionNotification.removeChild(this.restrictionNotification.firstChild);
+    }
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    
+    const dismissButton = document.createElement('button');
+    dismissButton.className = 'dismiss-button';
+    dismissButton.textContent = '×';
+    dismissButton.title = 'Dismiss';
+    dismissButton.addEventListener('click', () => this.hideRestrictionNotification());
+    
+    this.restrictionNotification.appendChild(messageSpan);
+    this.restrictionNotification.appendChild(dismissButton);
+    
+    // Show the notification
+    this.restrictionNotification.classList.remove('hidden');
+    
+    // Auto-dismiss after 10 seconds
+    this.restrictionTimeout = setTimeout(() => {
+      this.hideRestrictionNotification();
+    }, 10000);
+  }
+  
+  // Hide restriction notification
+  hideRestrictionNotification() {
+    if (!this.restrictionNotification) return;
+    
+    this.restrictionNotification.classList.add('hidden');
+    
+    // Clear timeout if it exists
+    if (this.restrictionTimeout) {
+      clearTimeout(this.restrictionTimeout);
+      this.restrictionTimeout = null;
     }
   }
   
@@ -1196,6 +1508,12 @@ export class UIManager {
     if (this.hintDelayTimeout) {
       clearTimeout(this.hintDelayTimeout);
       this.hintDelayTimeout = null;
+    }
+    
+    // Clean up restriction notification timeout
+    if (this.restrictionTimeout) {
+      clearTimeout(this.restrictionTimeout);
+      this.restrictionTimeout = null;
     }
     
     // Clean up shadow DOM

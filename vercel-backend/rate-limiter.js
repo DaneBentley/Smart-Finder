@@ -13,8 +13,8 @@ const supabase = createClient(
 // Rate limiting configurationz
 const RATE_LIMITS = {
   requestsPerMinute: 10,     // Max 10 requests per minute per user
-  requestsPerHour: 70,       // Max 60 requests per hour per user  
-  requestsPerDay: 200,       // Max 200 requests per day per user
+  requestsPerHour: 100,       // Max 60 requests per hour per user  
+  requestsPerDay: 300,       // Max 200 requests per day per user
   globalRequestsPerMinute: 100, // Global rate limit across all users
 };
 

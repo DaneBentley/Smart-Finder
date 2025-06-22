@@ -91,12 +91,16 @@ In AI mode, Findr automatically detects common patterns and converts them to reg
 - **📧 Email Addresses**: Search "email", "e-mail", "mail", or "@" to find all email addresses
 - **📞 Phone Numbers**: Search "phone", "telephone", "mobile", "cell" to find phone numbers
 - **🌐 URLs**: Search "url", "link", "website", "http" to find web addresses  
-- **📅 Dates**: Search "date", "birthday", "created" to find date patterns (MM/DD/YYYY, YYYY-MM-DD, etc.)
+- **📅 Dates**: Search "date", "birthday", "created", "expires", "deadline" to find dates (MM/DD/YYYY, March 15 2024, Jan 3rd, etc.)
 - **🕐 Times**: Search "time", "clock", "hour" to find time patterns (HH:MM, HH:MM AM/PM)
+- **🏠 Street Addresses**: Search "address", "street", "avenue" to find full addresses (123 Main St, 456 Oak Ave Apt 2B)
+- **🗺️ US States**: Search "state" to find state names and abbreviations (California, TX, New York)
+- **🌍 Countries**: Search "country" to find country names (United States, Canada, Germany)
+- **🏙️ Cities**: Search "city", "town" to find cities and towns (New York City, San Francisco)
+- **📮 ZIP/Postal Codes**: Search "zip", "postal code" to find codes (12345, K1A 0A6, SW1A 1AA)
+- **🌐 IP Addresses**: Search "ip", "server" to find IP addresses (192.168.1.1)
 - **💳 Credit Cards**: Search "credit card", "card number", "visa" to find card numbers
 - **🔢 SSN**: Search "ssn", "social security" to find social security numbers
-- **🏠 ZIP Codes**: Search "zip", "postal code" to find ZIP codes
-- **🌐 IP Addresses**: Search "ip", "ip address" to find IP addresses
 
 **How it Works:**
 1. Type a pattern keyword (e.g., "email") in AI mode
@@ -106,7 +110,7 @@ In AI mode, Findr automatically detects common patterns and converts them to reg
 
 **Multi-Pattern Search:**
 - Type multiple keywords: "phone email" → finds both phone numbers and emails
-- Works with any combination: "date time", "url ip", "zip ssn"
+- Works with any combination: "date time", "address zip", "state country", "url ip"
 - Shows combined message: "Searching for phone numbers and email addresses using pattern detection"
 - **Different Colors**: Each pattern type gets its own highlight color (phone numbers = yellow, emails = blue, etc.)
 - Navigate through all matches normally with Enter/Shift+Enter

@@ -643,31 +643,33 @@ export class SearchEngine {
     
     const walker = this.createTextWalker();
     let node;
+    let nodeCount = 0;
     
     while (node = walker.nextNode()) {
       const contentId = this.getNodeContentId(node);
       this.contentSnapshot.add(contentId);
+      nodeCount++;
     }
-    
     }
   
   getNodeContentId(node) {
-    // Create a unique identifier for this text content based on its position and content
-    let element = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-    let path = '';
+    // Create a stable identifier based on text content and parent element
+    const content = node.textContent.trim();
     
-    // Build a path to uniquely identify this content
-    while (element && element !== document.body) {
-      const index = Array.from(element.parentElement?.children || []).indexOf(element);
-      path = `${element.tagName}[${index}]/${path}`;
-      element = element.parentElement;
+    // For very short content, include more context to avoid false duplicates
+    if (content.length < 10) {
+      // Get parent context for disambiguation
+      const parent = node.parentElement;
+      const parentText = parent ? parent.tagName + (parent.className || '') : '';
+      return `${this.simpleHash(content)}:${this.simpleHash(parentText)}:${content.length}`;
     }
     
-    // Include a hash of the content to make it more unique
-    const content = node.textContent.trim();
+    // For longer content, use a combination of content hash and length
+    // This is more stable than position-based approaches
     const contentHash = this.simpleHash(content);
+    const lengthKey = Math.floor(content.length / 10) * 10; // Round to nearest 10
     
-    return `${path}:${contentHash}`;
+    return `${contentHash}:${lengthKey}`;
   }
   
   simpleHash(str) {

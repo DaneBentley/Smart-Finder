@@ -15,11 +15,11 @@
       --border-color-hover: #cbd5e1;
       --accent-color: #6366f1;
       --accent-hover: #4f46e5;
-      --success-bg: #f0fdf4;
-      --success-border: #dcfce7;
-      --success-text: #065f46;
-      --green-primary: #10b981;
-      --green-hover: #059669;
+      --success-bg: #eff6ff;
+      --success-border: #dbeafe;
+      --success-text: #1e40af;
+      --blue-primary: #3b82f6;
+      --blue-hover: #2563eb;
       --button-disabled: #e2e8f0;
       --button-disabled-text: #94a3b8;
       --error-color: #dc2626;
@@ -36,11 +36,11 @@
       --border-color-hover: #5f6368;
       --accent-color: #8ab4f8;
       --accent-hover: #93bbf7;
-      --success-bg: #1e2718;
-      --success-border: #2e4324;
-      --success-text: #81c995;
-      --green-primary: #81c995;
-      --green-hover: #8dd5a0;
+      --success-bg: #1e293b;
+      --success-border: #334155;
+      --success-text: #93c5fd;
+      --blue-primary: #60a5fa;
+      --blue-hover: #93c5fd;
       --button-disabled: #3c4043;
       --button-disabled-text: #9aa0a6;
       --error-color: #f28b82;
@@ -71,37 +71,34 @@
       flex: 1;
       padding: 24px;
       overflow-y: auto;
-      padding-bottom: 120px; /* Space for floating footer */
+      padding-bottom: 160px; /* Space for floating footer and legal footer */
     }
     
     .header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       margin-bottom: 24px;
+      width: 100%;
+      text-align: center;
     }
 
     .header-left {
       display: flex;
       align-items: center;
+      justify-content: center;
     }
     
     .logo {
-      width: 32px;
-      height: 32px;
-      background: var(--accent-color);
-      border-radius: 10px;
-      margin-right: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 14px;
+      width: 28px;
+      height: 28px;
+      margin-right: 10px;
+      object-fit: cover;
+      border-radius: 0;
     }
     
     .title {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--text-primary);
       letter-spacing: -0.025em;
@@ -116,10 +113,45 @@
       align-items: center;
       padding: 16px;
       background: var(--bg-secondary);
-      border-radius: 12px;
+      border-radius: 24px;
       margin-bottom: 16px;
       border: 1px solid var(--border-color);
       transition: background-color 0.2s ease, border-color 0.2s ease;
+      position: relative;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .action-separator {
+      color: var(--text-secondary);
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .sign-out-link, .delete-account-link {
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .sign-out-link:hover {
+      color: var(--text-primary);
+    }
+
+    .delete-account-link {
+      color: var(--error-color);
+      opacity: 0.7;
+    }
+    
+    .delete-account-link:hover {
+      opacity: 1;
     }
     
     .user-avatar {
@@ -134,6 +166,26 @@
     .user-details {
       flex: 1;
       min-width: 0;
+    }
+
+    .sign-out-button {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .sign-out-button:hover {
+      background: var(--surface-hover);
+      color: var(--text-primary);
+      border-color: var(--border-color-hover);
     }
     
     .user-name {
@@ -157,7 +209,7 @@
     .token-info {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 24px;
       padding: 16px;
       margin-bottom: 20px;
       transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -166,8 +218,9 @@
     .token-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 12px;
+      position: relative;
     }
     
     .token-count {
@@ -189,12 +242,15 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 6px 12px;
+      padding: 6px;
       font-size: 12px;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 500;
+      position: absolute;
+      top: 0;
+      right: 0px;
     }
     
     .refresh-button:hover {
@@ -246,9 +302,9 @@
     
     .sign-in-prompt {
       text-align: center;
-      padding: 24px 20px;
+      padding: 20px 20px 0px 20px;
       background: var(--bg-secondary);
-      border-radius: 12px;
+      border-radius: 24px;
       margin-bottom: 20px;
       border: 1px solid var(--border-color);
       transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -273,7 +329,7 @@
       width: 100%;
       padding: 14px 20px;
       background: var(--accent-color);
-      color: white;
+      color: #ffffff;
       border: none;
       border-radius: 12px;
       font-size: 15px;
@@ -282,6 +338,10 @@
       transition: all 0.2s ease;
       margin-bottom: 20px;
       letter-spacing: -0.025em;
+    }
+    
+    [data-theme="dark"] .action-button {
+      color: #1e293b;
     }
     
     .action-button:hover {
@@ -323,7 +383,7 @@
     .shortcuts {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 24px;
       padding: 16px;
       margin-bottom: 20px;
       transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -353,106 +413,93 @@
     }
     
     .hidden {
-      display: none;
+      display: none !important;
+      visibility: hidden !important;
     }
     
     /* Floating Footer for Token Purchase */
     .floating-footer {
       position: fixed;
-      bottom: 0;
+      bottom: 32px; /* Above the legal footer */
       left: 0;
       right: 0;
       background: var(--bg-secondary);
       border-top: 1px solid var(--border-color);
-      padding: 16px 24px;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 20px;
+      transition: all 0.2s ease;
+      z-index: 998; /* Below legal footer */
     }
     
     .purchase-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       margin-bottom: 12px;
     }
     
     .purchase-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
-      letter-spacing: -0.025em;
     }
     
-    .collapse-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 18px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-    
-    .collapse-btn:hover {
-      background: var(--surface-hover);
-      color: var(--text-primary);
-    }
-    
-    .custom-amount {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-    
-    .custom-amount-input {
+    .purchase-content {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 8px;
     }
     
+    .amount-input {
+      display: flex;
+      align-items: center;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2px 8px;
+      flex: 1;
+      transition: border-color 0.15s ease;
+    }
+    
+    .amount-input:focus-within {
+      border-color: var(--accent-color);
+    }
+    
     .currency-symbol {
-      font-size: 16px;
-      color: var(--text-primary);
-      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-right: 4px;
     }
     
     #customAmount {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 15px;
-      background: var(--bg-secondary);
+      border: none;
+      background: transparent;
+      font-size: 14px;
       color: var(--text-primary);
       font-weight: 600;
-      text-align: center;
-      transition: all 0.2s ease;
-    }
-    
-    #customAmount:focus {
+      text-align: left;
+      width: 60px;
       outline: none;
-      border-color: var(--accent-color);
-      background: var(--bg-secondary);
     }
     
     .custom-buy-button {
-      background: var(--green-primary);
-      color: white;
+      background: var(--blue-primary);
+      color: #ffffff;
       border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 14px;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background-color 0.15s ease;
       white-space: nowrap;
     }
     
+    [data-theme="dark"] .custom-buy-button {
+      color: #1e293b;
+    }
+    
     .custom-buy-button:hover {
-      background: var(--green-hover);
+      background: var(--blue-hover);
     }
     
     .custom-buy-button:disabled {
@@ -461,47 +508,607 @@
       cursor: not-allowed;
     }
     
-    .tokens-preview {
-      text-align: center;
-      font-size: 12px;
+    .purchase-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
       color: var(--text-secondary);
+    }
+    
+    .tokens-preview {
       font-weight: 500;
     }
-    
-    .footer-links {
-      text-align: center;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border-color);
+
+    .search-estimate {
+      font-weight: 400;
+      color: var(--text-secondary);
+      opacity: 0.8;
     }
     
-    .footer-links a {
+    .privacy-link {
       color: var(--accent-color);
       text-decoration: none;
-      font-size: 12px;
       font-weight: 500;
     }
     
-    .footer-links a:hover {
+    .privacy-link:hover {
+      text-decoration: underline;
+    }
+
+    .legal-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+    }
+    
+    .legal-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 12px;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+    
+    .legal-link:hover {
+      opacity: 1;
       text-decoration: underline;
     }
     
-    /* Collapsed state */
-    .floating-footer.collapsed .custom-amount,
-    .floating-footer.collapsed .footer-links {
-      display: none;
+    .link-separator {
+      color: var(--text-secondary);
+      font-size: 12px;
+      opacity: 0.5;
     }
     
-    .floating-footer.collapsed {
-      padding: 12px 24px;
+    /* Legal Footer Styles */
+    .legal-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 8px 16px;
+      z-index: 999;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
+    
+    .legal-footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .legal-footer-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 11px;
+      opacity: 0.8;
+      transition: opacity 0.2s ease, color 0.2s ease;
+    }
+    
+    .legal-footer-link:hover {
+      opacity: 1;
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+    
+    .footer-separator {
+      color: var(--text-secondary);
+      font-size: 11px;
+      opacity: 0.5;
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--bg-primary);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80%;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .delete-step {
+      display: block;
+    }
+
+    .warning-box {
+      background: #fef7e0;
+      border: 1px solid #fce8b2;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    [data-theme="dark"] .warning-box {
+      background: #2d1b00;
+      border-color: #4a3300;
+    }
+
+    .warning-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .warning-content h4 {
+      margin: 0 0 8px 0;
+      color: #ea8600;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] .warning-content h4 {
+      color: #fbbf24;
+    }
+
+    .warning-content p {
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .warning-content ul {
+      margin: 0;
+      padding-left: 16px;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .warning-content li {
+      margin-bottom: 4px;
+    }
+
+    .confirmation-box {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .confirmation-box h4 {
+      margin: 0 0 12px 0;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .confirmation-box p {
+      margin: 0 0 16px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .code-display {
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-color);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent-color);
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .code-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 2px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .code-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    .warnings {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #dc2626;
+    }
+
+    [data-theme="dark"] .warnings {
+      background: #2d1212;
+      border-color: #4a1e1e;
+      color: #f87171;
+    }
+
+    .delete-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .danger-button {
+      background: var(--error-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .danger-button:hover:not(:disabled) {
+      background: #b91c1c;
+    }
+
+    .danger-button:disabled {
+      background: var(--button-disabled);
+      color: var(--button-disabled-text);
+      cursor: not-allowed;
+    }
+
+    .processing-box {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top: 3px solid var(--accent-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .processing-box h4 {
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .processing-box p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    /* Advanced Settings Styles */
+    .advanced-settings {
+      margin-top: 20px;
+    }
+
+    .advanced-settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+
+    .advanced-settings-header:hover {
+      background: var(--surface-hover);
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+      border-radius: 6px;
+    }
+
+    .expand-icon {
+      font-size: 12px;
+      color: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+
+    .advanced-settings-content {
+      padding: 16px 0;
+    }
+
+    .setting-group {
+      margin-bottom: 16px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .setting-description {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .custom-prompt-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.4;
+      resize: vertical;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .custom-prompt-textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    .custom-prompt-textarea::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    .character-counter {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .character-counter.warning {
+      color: #f59e0b;
+    }
+
+    .character-counter.error {
+      color: var(--error-color);
+    }
+
+    .setting-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .setting-actions button {
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1.5;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .setting-actions .secondary-button {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-weight: 500;
+    }
+
+    .setting-actions .secondary-button:hover {
+      background: var(--surface-hover);
+      color: var(--text-primary);
+      border-color: var(--border-color-hover);
+    }
+
+    .setting-actions .action-button {
+      background: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] .setting-actions .action-button {
+      color: #1e293b;
+    }
+
+    .setting-actions .action-button:hover {
+      background: var(--accent-hover);
+    }
+
+    .setting-info {
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      padding: 10px;
+    }
+
+    .info-item {
+      margin-bottom: 4px;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-item strong {
+      color: var(--text-primary);
+    }
+
+    /* Regex Patterns Section Styles */
+    .regex-patterns-section {
+      margin-top: 20px;
+    }
+
+    .regex-patterns-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+
+    .regex-patterns-header:hover {
+      background: var(--surface-hover);
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+      border-radius: 6px;
+    }
+
+    .regex-patterns-content {
+      padding: 16px 0;
+    }
+
+    .patterns-info {
+      font-size: 13px;
+    }
+
+    .patterns-description {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .patterns-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pattern-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .pattern-item:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-color-hover);
+    }
+
+    .pattern-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pattern-keywords {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', Monaco, monospace;
+      background: var(--bg-tertiary);
+      padding: 4px 6px;
+      border-radius: 4px;
+      line-height: 1.3;
+    }
+
+    .patterns-note {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--success-text);
+      line-height: 1.4;
+    }
+
+    .patterns-note strong {
+      color: var(--success-text);
+    }
+
   </style>
 </head>
 <body>
   <div class="main-content">
     <div class="header">
       <div class="header-left">
-        <div class="logo">SF</div>
+        <img src="icon48.png" class="logo" alt="Smart Finder Logo" style="max-width: 100%; height: auto;">
         <div class="title">Smart Finder</div>
       </div>
     </div>
@@ -511,23 +1118,15 @@
       <!-- Sign In Prompt (shown when not authenticated) -->
       <div id="signInPrompt" class="sign-in-prompt">
         <h3>Welcome to Smart Finder</h3>
-        <p>Get 50 free AI searches monthly with Google sign-in</p>
+        <p>Sign in to use AI search</p>
         
         <button class="action-button" id="signInButton">
           Sign In with Google
         </button>
       </div>
       
-      <!-- User Info (shown when authenticated) -->
+      <!-- User Section with Token Info (shown when authenticated) -->
       <div id="userSection" class="hidden">
-        <div class="user-info">
-          <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
-          <div class="user-details">
-            <div id="userName" class="user-name"></div>
-            <div id="userEmail" class="user-email"></div>
-          </div>
-        </div>
-        
         <div class="token-info">
           <div class="token-header">
             <div>
@@ -547,23 +1146,10 @@
           </div>
           
           <div class="monthly-info">
-            You receive 50 free tokens every month
+            Tokens top to 50 every 30 days
           </div>
         </div>
-        
-        <button id="signOutButton" class="secondary-button">
-          Sign Out
-        </button>
       </div>
-    </div>
-    
-    <div class="compact-list">
-      <div class="section-title">Pro Tips</div>
-      <div class="compact-item">Use natural language: "main points" or "most important" or "phone" or "email" or "dates" to search for regular expressions</div>
-      <div class="compact-item">For multiple terms sperate with a space or 'use quotes for phrases'</div>
-      <div class="compact-item">Regular Ctrl+F search is always free and unlimited</div>
-      <div class="compact-item">AI searches use one token per query, but more for longer content</div>
-
     </div>
     
     <div class="shortcuts">
@@ -585,29 +1171,240 @@
         <span class="shortcut-key">Esc</span>
       </div>
     </div>
+    
+    <!-- User Profile (shown when authenticated) -->
+    <div id="userProfile" class="hidden">
+      <div class="user-info">
+        <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+        <div class="user-details">
+          <div id="userName" class="user-name"></div>
+          <div id="userEmail" class="user-email"></div>
+          <div class="user-actions">
+            <a id="signOutButton" class="sign-out-link">Sign out</a>
+            <span class="action-separator">•</span>
+            <a id="deleteAccountButton" class="delete-account-link">Delete account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="compact-list">
+      <div class="section-title">Pro Tips</div>
+      <div class="compact-item">Use natural language: "main points" or "most important" or "phone" or "email" or "dates" to search for regular expressions</div>
+      <div class="compact-item">Click the 0/0 indicator on the toolbar to access settings</div>
+      <div class="compact-item">For multiple terms sperate with a space or 'use quotes for phrases'</div>
+      <div class="compact-item">Regular Ctrl+F search is always free and unlimited</div>
+      <div class="compact-item">AI searches use one token per query, but more for longer content</div>
+      <div class="compact-item">You can still access the chrome find bar at any time via Ctrl/Cmd + G</div>
+    </div>
+
+    <!-- Regex Patterns Section -->
+    <div class="regex-patterns-section">
+      <div class="regex-patterns-header" id="regexPatternsToggle">
+        <div class="section-title">Regex Patterns</div>
+        <div class="expand-icon" id="regexExpandIcon">▼</div>
+      </div>
+      
+      <div class="regex-patterns-content hidden" id="regexPatternsContent">
+        <div class="patterns-info">
+          <div class="patterns-description">
+            When both <strong>Smart Search</strong> and <strong>Regular Expression</strong> are enabled, you can search for these patterns using simple keywords:
+          </div>
+          
+          <div class="patterns-grid">
+            <div class="pattern-item">
+              <div class="pattern-title">Email Addresses</div>
+              <div class="pattern-keywords">email, e-mail, mail, @</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">Phone Numbers</div>
+              <div class="pattern-keywords">phone, telephone, mobile, cell</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">URLs</div>
+              <div class="pattern-keywords">url, link, website, http</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">📅 Dates</div>
+              <div class="pattern-keywords">date, birthday, created, expires</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🕐 Times</div>
+              <div class="pattern-keywords">time, clock, hour</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🏠 Addresses</div>
+              <div class="pattern-keywords">address, street, avenue</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">📮 ZIP Codes</div>
+              <div class="pattern-keywords">zip, postal code</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🌍 Countries</div>
+              <div class="pattern-keywords">country, nation</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🗺️ US States</div>
+              <div class="pattern-keywords">state, province</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🏙️ Cities</div>
+              <div class="pattern-keywords">city, town</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">🌐 IP Addresses</div>
+              <div class="pattern-keywords">ip, server</div>
+            </div>
+            
+            <div class="pattern-item">
+              <div class="pattern-title">💳 Credit Cards</div>
+              <div class="pattern-keywords">credit card, visa</div>
+            </div>
+          </div>
+          
+          <div class="patterns-note">
+            <strong>Example:</strong> Type "email" to find all email addresses on the page automatically. Combine multiple patterns like "phone email" to find both at once with different colors.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Settings Section -->
+    <div class="advanced-settings hidden" id="advancedSettingsSection">
+      <div class="advanced-settings-header" id="advancedSettingsToggle">
+        <div class="section-title">Advanced Settings</div>
+        <div class="expand-icon" id="expandIcon">▼</div>
+      </div>
+      
+      <div class="advanced-settings-content hidden" id="advancedSettingsContent">
+        <div class="setting-group">
+          <div class="setting-label">Custom System Prompt</div>
+          <div class="setting-description">Override the default AI behavior with your own instructions.</div>
+          <textarea 
+            id="customSystemPrompt" 
+            class="custom-prompt-textarea" 
+            placeholder="Enter your custom instructions here (e.g., 'Summarize the main points', 'Extract all names', 'Find technical specifications')."
+            rows="4"
+          ></textarea>
+          <div class="character-counter" id="promptCharCounter">0 / 2000 characters</div>
+          <div class="setting-actions">
+            <button id="resetPromptButton" class="secondary-button">Reset to Default</button>
+            <button id="savePromptButton" class="action-button">Save Custom Prompt</button>
+          </div>
+          <div class="setting-info">
+            <div class="info-item">
+              <strong>Default:</strong> You are an assistant designed to help users find specific information in a web page. The user will ask a question or describe what theyre looking for. Your task is to: Search the full webpage content provided below. Identify relevant sections that answer or relate to the users query
+            </div>
+            <div class="info-item">
+              <strong>Custom:</strong> Define your own AI behavior (e.g., summarize, analyze, extract specific data)
+            </div>
+            <div class="info-item">
+              <strong>Note:</strong> JSON array format is automatically enforced for proper parsing
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
   <!-- Floating Footer for Token Purchase -->
-  <div class="floating-footer" id="purchaseFooter">
+  <div class="floating-footer hidden" id="purchaseFooter">
     <div class="purchase-header">
       <div class="purchase-title">Buy More Tokens</div>
-      <button class="collapse-btn" id="collapseBtn">−</button>
     </div>
     
-    <div class="custom-amount">
-      <div class="custom-amount-input">
+    <div class="purchase-content">
+      <div class="amount-input">
         <span class="currency-symbol">$</span>
-        <input type="number" id="customAmount" value="5" min="1" max="300" step="0.01" placeholder="5.00">
-        <button id="buyCustomAmount" class="custom-buy-button">Buy Tokens</button>
+        <input type="number" id="customAmount" value="5" min="1" max="300" step="0.01" placeholder="5">
       </div>
-      <div class="tokens-preview" id="tokensPreview">500 tokens</div>
+      <button id="buyCustomAmount" class="custom-buy-button">Buy Tokens</button>
     </div>
     
-    <div class="footer-links">
-      <a href="privacy-policy.html" target="_blank">Privacy Policy</a>
+    <div class="purchase-info">
+      <div class="tokens-preview" id="tokensPreview">500 tokens</div>
+      <div class="search-estimate" id="searchEstimate">~200-300 searches</div>
     </div>
   </div>
   
+  <!-- Account Deletion Modal -->
+  <div class="modal hidden" id="deleteAccountModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Delete Account</h3>
+        <button class="modal-close" id="closeDeleteModal">&times;</button>
+      </div>
+      <div class="modal-body" id="deleteModalBody">
+        <!-- Step 1: Warning and confirmation -->
+        <div id="deleteStep1" class="delete-step">
+          <div class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-content">
+              <h4>This action cannot be undone</h4>
+              <p>Deleting your account will permanently remove:</p>
+              <ul>
+                <li>Your profile and account information</li>
+                <li>All purchased and free tokens</li>
+                <li>Your usage history</li>
+                <li>All associated data</li>
+              </ul>
+            </div>
+          </div>
+          <div class="delete-actions">
+            <button class="secondary-button" id="cancelDelete">Cancel</button>
+            <button class="danger-button" id="requestDelete">Request Deletion</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Confirmation code -->
+        <div id="deleteStep2" class="delete-step hidden">
+          <div class="confirmation-box">
+            <h4>Confirm Account Deletion</h4>
+            <p>A confirmation code has been generated. Enter it below to permanently delete your account:</p>
+            <div class="code-display" id="confirmationCodeDisplay"></div>
+            <input type="text" id="confirmationCodeInput" placeholder="Enter 6-digit code" maxlength="6" class="code-input">
+            <div class="warnings" id="deletionWarnings"></div>
+          </div>
+          <div class="delete-actions">
+            <button class="secondary-button" id="cancelConfirm">Cancel</button>
+            <button class="danger-button" id="confirmDelete" disabled>Delete Account</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Processing -->
+        <div id="deleteStep3" class="delete-step hidden">
+          <div class="processing-box">
+            <div class="spinner"></div>
+            <h4>Deleting Account...</h4>
+            <p>Please wait while we process your request.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal Footer (always visible) -->
+  <div class="legal-footer">
+    <div class="legal-footer-content">
+      <a href="help.html" target="_blank" class="legal-footer-link">Help & Support</a>
+      <span class="footer-separator">•</span>
+      <a href="privacy-policy.html" target="_blank" class="legal-footer-link">Privacy Policy</a>
+      <span class="footer-separator">•</span>
+      <a href="terms-conditions.html" target="_blank" class="legal-footer-link">Terms & Conditions</a>
+    </div>
+  </div>
+
   <script src="popup.js" type="module"></script>
 </body>
 </html>

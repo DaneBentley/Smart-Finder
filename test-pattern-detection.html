@@ -124,12 +124,22 @@
         <div class="test-section">
             <h2>📅 Dates</h2>
             <div class="pattern-examples">
-                <p><strong>Test searches:</strong> "date", "birthday", "created"</p>
+                <p><strong>Test searches:</strong> "date", "birthday", "created", "expires", "deadline"</p>
                 <p>Meeting scheduled for: 12/25/2023</p>
                 <p>Born on: 03/15/1990</p>
                 <p>Project deadline: 2024-01-15</p>
                 <p>Updated: 11-30-2023</p>
                 <p>Event date: 2/14/24</p>
+                <p>Conference: March 15, 2024</p>
+                <p>Due: January 3rd, 2024</p>
+                <p>Holiday: 4th of July 2024</p>
+                <p>Meeting: Monday, December 25th</p>
+                <p>Expires: Jun 30, 2025</p>
+                <p>Launch: September 1st</p>
+                <p>Deadline: Fri, Oct 13th</p>
+                <p>Birthday: May 5</p>
+                <p>European format: 25.12.2023</p>
+                <p>Short format: 3/5</p>
             </div>
         </div>
 
@@ -145,13 +155,50 @@
         </div>
 
         <div class="test-section">
-            <h2>🏠 Addresses and Codes</h2>
+            <h2>🏠 Addresses and Location Data</h2>
             <div class="pattern-examples">
-                <p><strong>Test searches:</strong> "zip", "postal code", "ip address"</p>
-                <p>ZIP Code: 90210</p>
+                <p><strong>Test searches:</strong> "address", "street", "zip", "postal code", "state", "country", "city"</p>
+                
+                <h4>📮 ZIP Codes & Postal Codes:</h4>
+                <p>US ZIP: 90210</p>
                 <p>Extended ZIP: 10001-1234</p>
+                <p>Canadian: K1A 0A6</p>
+                <p>UK Postal: SW1A 1AA</p>
+                <p>German: 10115</p>
+                
+                <h4>🏘️ Street Addresses:</h4>
+                <p>Home: 123 Main Street</p>
+                <p>Office: 456 Oak Avenue, Suite 200</p>
+                <p>Store: 789 Elm Drive, Apt 3B</p>
+                <p>Business: 1000 N Park Boulevard</p>
+                <p>Address: 55 Broadway, Unit 12</p>
+                <p>Location: 2500 S First Lane</p>
+                <p>Headquarters: 100 Technology Way</p>
+                <p>Branch: 75 Market Square</p>
+                
+                <h4>🗺️ States & Provinces:</h4>
+                <p>Located in California</p>
+                <p>Shipped to: TX</p>
+                <p>From: New York</p>
+                <p>Destination: FL</p>
+                
+                <h4>🌍 Countries:</h4>
+                <p>Headquarters: United States</p>
+                <p>Branch office: United Kingdom</p>
+                <p>Subsidiary: Germany</p>
+                <p>Partner: Canada</p>
+                <p>Expansion: Australia</p>
+                
+                <h4>🏙️ Cities:</h4>
+                <p>Based in New York City</p>
+                <p>Visit San Francisco</p>
+                <p>Conference in Las Vegas</p>
+                <p>Meeting in Boston</p>
+                
+                <h4>🌐 IP Addresses:</h4>
                 <p>Server IP: 192.168.1.1</p>
                 <p>Public IP: 203.0.113.42</p>
+                <p>Gateway: 10.0.0.1</p>
             </div>
         </div>
 
@@ -193,8 +240,10 @@
                 <ul>
                     <li><code>phone email</code> - Find both phone numbers and email addresses</li>
                     <li><code>date time</code> - Find both dates and times</li>
+                    <li><code>address zip</code> - Find both street addresses and ZIP codes</li>
+                    <li><code>state country</code> - Find both US states and countries</li>
                     <li><code>url ip</code> - Find both URLs and IP addresses</li>
-                    <li><code>zip ssn</code> - Find both ZIP codes and social security numbers</li>
+                    <li><code>city address</code> - Find both cities and street addresses</li>
                 </ul>
                 <p><strong>Expected behavior:</strong></p>
                 <ul>

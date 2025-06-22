@@ -61,33 +61,46 @@ async function handleFindToggle() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
-    if (!tab) return;
+    if (!tab || !tab.id) {
+      return;
+    }
+
+    // Check if we can access this tab
+    if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('moz-extension://')) {
+      return;
+    }
     
     // Inject content script if not already present
     try {
-      await chrome.scripting.executeScript({
+      const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => window.smartFinder !== undefined
       });
-    } catch (error) {
-      // Content script not loaded, inject it
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      });
       
-      await chrome.scripting.insertCSS({
-        target: { tabId: tab.id },
-        files: ['findbar.css']
-      });
+      // If content script not loaded, inject it
+      if (!results || !results[0] || !results[0].result) {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        
+        // Wait a moment for the script to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      return;
     }
     
     // Send toggle message to content script
-    chrome.tabs.sendMessage(tab.id, { action: 'toggleFind' });
+    try {
+      await chrome.tabs.sendMessage(tab.id, { action: 'toggleFind' });
+    } catch (error) {
+      // Message sending failed, but we don't need to log in production
+    }
     
-  } catch (error) {
-    console.error('Error toggling find:', error);
-  }
+          } catch (error) {
+            // Error toggling find - silently handle
+        }
 }
 
 // Listen for messages from content scripts
@@ -107,10 +120,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
   
+  if (message.action === 'updateTokenBadge') {
+    const { tokenCount } = message;
+    let badgeText = '';
+    
+    if (tokenCount > 0) {
+      badgeText = tokenCount > 99 ? '99+' : tokenCount.toString();
+    }
+    
+    chrome.action.setBadgeText({
+      tabId: sender.tab?.id,
+      text: badgeText
+    });
+    
+    chrome.action.setBadgeBackgroundColor({
+      tabId: sender.tab?.id,
+      color: tokenCount > 0 ? '#34d399' : '#ef4444'
+    });
+  }
+  
   if (message.action === 'clearBadge') {
     chrome.action.setBadgeText({
       tabId: sender.tab.id,
       text: ''
+    });
+  }
+  
+  if (message.action === 'openHelpPage') {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('help.html')
     });
   }
 });

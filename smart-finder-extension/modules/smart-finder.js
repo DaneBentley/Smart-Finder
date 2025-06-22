@@ -34,7 +34,7 @@ export class SmartFinder {
     
     // Initialize asynchronously
     this.init().catch(error => {
-      console.error('Failed to initialize SmartFinder:', error);
+      // Failed to initialize SmartFinder - silently handle
     });
   }
   
@@ -47,10 +47,13 @@ export class SmartFinder {
     
     this.bindEvents(closeButton);
     
+    // Update token badge on initialization
+    await this.updateTokenBadge();
+    
     // Start monitoring content changes for automatic re-search
     this.searchEngine.startContentMonitoring((searchTerm) => {
       // Only trigger incremental search, don't clear existing highlights
-      if (this.ui.isVisible && searchTerm) {
+      if (this.isVisible && searchTerm) {
         this.performIncrementalSearch(searchTerm);
       }
     });
@@ -139,6 +142,9 @@ export class SmartFinder {
         }
       }
 
+      // Clear any previous AI search results since we're doing regular search
+      this.progressiveMatches = [];
+      
       // Find matches with progress callback
       this.ui.setSearchProgress('Searching...', true);
       const matches = await this.searchEngine.findMatches(term, this.ui.settings, (count, isComplete) => {
@@ -195,7 +201,7 @@ export class SmartFinder {
       if (error.name === 'AbortError') {
         this.ui.showSearchCancelled();
       } else {
-        console.error('Search error:', error);
+        // Search error - silently handle
         this.ui.setSearchProgress('', false);
       }
     } finally {
@@ -261,8 +267,16 @@ export class SmartFinder {
         this.updateUI(0, 0);
       }
       
+      // Report match results for token consumption (after all processing is complete)
+      await this.aiService.reportMatchResults(this.progressiveMatches.length);
+      
+      // Update token badge after AI search completion and potential token consumption
+      this.updateTokenBadge().catch(() => {
+        // Failed to update token badge - silently handle
+      });
+      
     } catch (error) {
-      console.error('AI search failed:', error);
+      // AI search failed - silently handle
       
       // Clear search progress first
       this.ui.setSearchProgress('', false);
@@ -277,7 +291,7 @@ export class SmartFinder {
         this.ui.setSearchProgress('📄 ' + error.message, false);
         
       } else if (error.message.includes('No tokens available')) {
-        this.ui.updateSmartSearchHint('No tokens');
+        this.ui.updateSmartSearchHint('Out of tokens. Buy more to continue. $1 = 100 tokens');
         this.ui.setSearchProgress('💰 Get more tokens to continue AI search', false);
         
       } else if (error.message.includes('must be signed in') || error.message.includes('sign in') || error.message.includes('authentication')) {
@@ -291,6 +305,18 @@ export class SmartFinder {
       
       // Update UI with zero results, but preserve the error hint
       this.updateUI(0, 0);
+      
+      // Report zero matches for token consumption cleanup (even on error)
+      try {
+        await this.aiService.reportMatchResults(0);
+      } catch (reportError) {
+        // Failed to report match results after error - silently handle
+      }
+      
+      // Update token badge after potential token consumption
+      this.updateTokenBadge().catch(() => {
+        // Failed to update token badge - silently handle
+      });
     }
   }
 
@@ -310,7 +336,7 @@ export class SmartFinder {
       });
       this.progressiveBatchCount++;
       
-      console.log(`📊 Batch ${batchNumber + 1}: Added ${newMatches.length} matches, total: ${this.progressiveMatches.length}, sorted by document order`);
+
       
       // Only update if we're not in the middle of user navigation
       if (!this.isUserNavigating) {
@@ -319,7 +345,7 @@ export class SmartFinder {
         this.navigationManager.setMatches(this.progressiveMatches.length);
         
         const currentIndex = this.navigationManager.getCurrentIndex(); // This will be 0
-        console.log(`🧭 Navigation reset to index ${currentIndex} (top-most result) after batch ${batchNumber + 1}`);
+
         
         if (isFirstBatch) {
           // First batch - highlight all matches and create all scroll indicators
@@ -342,7 +368,7 @@ export class SmartFinder {
           );
           
           // Scroll to the top-most result (first batch is always from the top)
-          console.log(`🎯 First batch: Scrolling to top-most result (index 0)`);
+
           this.highlightManager.scrollToCurrentMatch(0);
           
         } else {
@@ -372,7 +398,7 @@ export class SmartFinder {
           this.ui.updateCurrentIndicator(0);
           
           // No need to scroll - we're already at the top from the first batch
-          console.log(`🎯 Batch ${batchNumber + 1}: Added results below, staying at top-most result`);
+
         }
         
         // Update UI
@@ -455,7 +481,7 @@ export class SmartFinder {
       return matches.length > 0;
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Error checking for regular matches:', error);
+        // Error checking for regular matches - silently handle
       }
       return false;
     }
@@ -467,24 +493,23 @@ export class SmartFinder {
       return;
     }
     
+    // Clear any previous AI search results since we're doing regular search
+    this.progressiveMatches = [];
+    
     try {
       // Check for pattern detection in AI mode
       const patternResult = this.patternDetector.detectPattern(term);
       let searchTerm = term;
       let searchSettings = { ...this.ui.settings };
       
-      if (patternResult.isPattern) {
-        // Use pattern-detected regex
+      if (patternResult.isPattern && searchSettings.useRegex) {
+        // Use pattern-detected regex only if regex is enabled
         searchTerm = patternResult.regex;
-        searchSettings.useRegex = true;
         
         // Enable multi-term highlighting for multi-pattern searches
         if (patternResult.isMultiPattern) {
           searchSettings.multiTermHighlighting = true;
         }
-        
-        console.log(`🔍 Pattern detected: ${patternResult.description}`);
-        console.log(`🔍 Using regex: ${searchTerm}`);
         
         // Show pattern detection message
         this.ui.setSearchProgress(this.patternDetector.getPatternMessage(patternResult), true);
@@ -495,7 +520,7 @@ export class SmartFinder {
       
       const matches = await this.searchEngine.findMatches(searchTerm, searchSettings, (count, isComplete) => {
         if (!isComplete) {
-          if (patternResult.isPattern) {
+          if (patternResult.isPattern && searchSettings.useRegex) {
             this.ui.setSearchProgress(`Finding ${patternResult.description}... (${count} found)`, true);
           } else {
             this.ui.setSearchProgress(`Searching... (${count} found)`, true);
@@ -545,7 +570,7 @@ export class SmartFinder {
       if (error.name === 'AbortError') {
         this.ui.showSearchCancelled();
       } else {
-        console.error('Regular search error in AI mode:', error);
+        // Regular search error in AI mode - silently handle
         this.ui.setSearchProgress('', false);
       }
     }
@@ -559,6 +584,9 @@ export class SmartFinder {
       return;
     }
     
+    // Clear any previous search results
+    this.progressiveMatches = [];
+    
     // Clear any loading state and show proper "Enter to smart search" state
     this.ui.setSearchProgress('', false);
     this.updateUI(0, 0);
@@ -571,7 +599,7 @@ export class SmartFinder {
   }
 
   testSnippetMatch(snippet) {
-    // Test if a snippet exists on the page (for debugging)
+    // Test if a snippet exists on the page
     const walker = this.searchEngine.createTextWalker();
     let node;
     
@@ -642,7 +670,7 @@ export class SmartFinder {
         return comparison;
       } catch (error) {
         // Fallback: compare by element position if ranges are invalid
-        console.warn('Range comparison failed, using fallback sorting:', error);
+        // Range comparison failed, using fallback sorting - silently handle
         const aRect = a.getBoundingClientRect();
         const bRect = b.getBoundingClientRect();
         
@@ -654,7 +682,7 @@ export class SmartFinder {
       }
     });
     
-    console.log(`🔍 Found ${matches.length} AI matches in batch ${batchNumber || 0}, sorted by document order`);
+    
     
     return matches;
   }
@@ -736,7 +764,7 @@ export class SmartFinder {
               seen.add(text.toLowerCase());
             }
           } catch (error) {
-            console.warn(`Error extracting range ${index + 1}:`, error);
+            // Error extracting range - silently handle
           }
         });
       } else {
@@ -762,7 +790,7 @@ export class SmartFinder {
         this.showCopyFeedback(`Copied ${results.length} result${results.length !== 1 ? 's' : ''}`);
       }
     } catch (error) {
-      console.warn('Failed to copy results:', error);
+      // Failed to copy results - silently handle
       this.showCopyFeedback('Failed to copy results', true);
     }
   }
@@ -811,6 +839,9 @@ export class SmartFinder {
     this.isVisible = true;
     this.eventHandler.setVisibility(true);
     
+    // Check if we're on a restricted Google service or PDF viewer
+    this.checkForRestrictedSites();
+    
     // Restore last search when opening find bar (including empty string)
     if (this.lastSearchQuery !== undefined) {
       this.ui.setLastSearch(this.lastSearchQuery);
@@ -824,6 +855,41 @@ export class SmartFinder {
     }
   }
   
+  checkForRestrictedSites() {
+    const hostname = window.location.hostname;
+    const pathname = window.location.pathname;
+    const url = window.location.href;
+    
+    // Check for Google services (including various subdomains)
+    const isGoogleDrive = hostname === 'drive.google.com' || hostname.endsWith('.drive.google.com');
+    const isGoogleDocs = hostname === 'docs.google.com' || hostname.endsWith('.docs.google.com');
+    const isGoogleSheets = hostname === 'sheets.google.com' || hostname.endsWith('.sheets.google.com');
+    const isGoogleSlides = hostname === 'slides.google.com' || hostname.endsWith('.slides.google.com');
+    
+    // Check for Chrome's native PDF viewer
+    // Chrome PDF viewer uses chrome-extension:// URLs or file:// URLs with .pdf extension
+    const isPdfViewer = url.startsWith('chrome-extension://') && url.includes('pdf');
+    const isFilePdf = url.startsWith('file://') && pathname.toLowerCase().endsWith('.pdf');
+    const isChromePdfViewer = isPdfViewer || isFilePdf || 
+                             (document.querySelector('embed[type="application/pdf"]') !== null);
+    
+    if (isGoogleDrive || isGoogleDocs || isGoogleSheets || isGoogleSlides || isChromePdfViewer) {
+      let serviceName;
+      if (isGoogleDrive) serviceName = 'Google Drive';
+      else if (isGoogleDocs) serviceName = 'Google Docs';
+      else if (isGoogleSheets) serviceName = 'Google Sheets';
+      else if (isGoogleSlides) serviceName = 'Google Slides';
+      else if (isChromePdfViewer) serviceName = 'Chrome PDF Viewer';
+      
+      // Detect OS to show appropriate keyboard shortcut
+      const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+      const shortcut = isMac ? '⌘+G' : 'Ctrl+G';
+      
+      const message = `${serviceName} doesn't allow extensions to search. Use ${shortcut} for Chrome's built-in search instead.`;
+      this.ui.showRestrictionNotification(message);
+    }
+  }
+
   hideFindBar() {
     this.isVisible = false;
     this.eventHandler.setVisibility(false);
@@ -833,10 +899,30 @@ export class SmartFinder {
     this.navigationManager.reset();
     this.searchEngine.clear();
     
-    // Clear badge
-    chrome.runtime.sendMessage({ action: 'clearBadge' });
+    // Update token badge (will show token count instead of clearing)
+    this.updateTokenBadge().catch(() => {
+      // Failed to update token badge - silently handle
+    });
   }
   
+  async updateTokenBadge() {
+    try {
+      // Initialize auth manager if needed and get token count
+      await this.aiService.authManager.initialize();
+      await this.aiService.authManager.forceRefreshFromStorage();
+      
+      const tokenCount = this.aiService.authManager.getTokenCount();
+      
+      // Send token badge update to background script
+      chrome.runtime.sendMessage({
+        action: 'updateTokenBadge',
+        tokenCount: tokenCount
+      });
+    } catch (error) {
+      // Failed to update token badge - silently handle
+    }
+  }
+
   updateUI(current, total) {
     this.ui.updateStats(current, total);
     this.ui.updateButtonStates(this.navigationManager.hasMatches());
@@ -852,6 +938,11 @@ export class SmartFinder {
       this.ui.updateInputStyling(hasMatches);
     }
     // Otherwise, leave hint visibility as-is to preserve error messages
+    
+    // Update token badge whenever UI is updated
+    this.updateTokenBadge().catch(() => {
+      // Failed to update token badge - silently handle
+    });
   }
   
   // Public API
@@ -877,9 +968,18 @@ export class SmartFinder {
       return;
     }
     
-    // In AI mode, don't auto-update - AI results are contextual and shouldn't change
+    // In AI mode, only allow incremental search if we're currently showing regular search results
+    // (not AI search results). AI search results are contextual and shouldn't change.
     if (this.ui.aiMode) {
-      return;
+      // Check if we have AI search results currently displayed
+      const hasAIResults = this.progressiveMatches && this.progressiveMatches.length > 0 && 
+                          this.progressiveMatches.some(match => match && match._aiSnippet);
+      
+      if (hasAIResults) {
+        // We're showing AI search results - don't do incremental search
+        return;
+      }
+      // We're in AI mode but showing regular search results - allow incremental search
     }
     
     try {
@@ -887,9 +987,8 @@ export class SmartFinder {
       const newMatches = await this.searchEngine.findIncrementalMatches(term, this.ui.settings);
       
       if (newMatches.length > 0) {
-        
-        // Add new matches to existing ones
-        const allMatches = [...this.searchEngine.getMatches(), ...newMatches];
+        // Get all matches (which now includes the new ones)
+        const allMatches = this.searchEngine.getMatches();
         this.navigationManager.setMatches(allMatches.length);
         
         // Get term-to-color mapping for consistency
@@ -918,10 +1017,15 @@ export class SmartFinder {
         
         // Update UI with new totals
         const position = this.navigationManager.getCurrentPosition();
-        this.updateUI(position.current, allMatches.length);
+        this.updateUI(position.current, position.total);
       }
     } catch (error) {
-      console.warn('Incremental search error:', error);
+      // Handle extension context invalidation gracefully
+      if (error.message && error.message.includes('Extension context invalidated')) {
+        // Extension was reloaded, stopping incremental search - silently handle
+        return;
+      }
+      // Incremental search error - silently handle
     }
   }
 } 

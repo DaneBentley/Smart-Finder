@@ -48,26 +48,21 @@ export default async function handler(req, res) {
     }
 
     // Check if user has tokens available before making AI call, but don't consume yet
-    console.log('🔍 AI Search - Checking token availability for user:', userId);
-    
     const { data: tokenCheck, error: tokenError } = await supabase.rpc('get_user_token_summary', {
       p_user_id: userId
     });
 
     if (tokenError || !tokenCheck || tokenCheck.length === 0 || tokenCheck[0].total_tokens <= 0) {
-      console.log('🔍 AI Search - No tokens available for user:', userId);
       return res.status(403).json({ 
         error: 'Insufficient tokens',
         tokens: tokenCheck?.[0]?.total_tokens || 0
       });
     }
 
-    const { query, content, matchesFound } = req.body;
+    const { query, content, matchesFound, customSystemPrompt } = req.body;
 
     // Handle token consumption request (when matches are found)
     if (matchesFound !== undefined) {
-      console.log('🔍 AI Search - Processing token consumption request, matches found:', matchesFound);
-      
       if (matchesFound > 0) {
         // Consume token only when matches were found
         const { data: consumeResult, error: consumeError } = await supabase.rpc('consume_user_token', {
@@ -75,7 +70,6 @@ export default async function handler(req, res) {
         });
 
         if (consumeError || !consumeResult || !consumeResult[0]?.success) {
-          console.log('🔍 AI Search - Token consumption failed for user:', userId, consumeResult?.[0]?.message);
           return res.status(403).json({ 
             error: 'Failed to consume token',
             tokens: consumeResult?.[0]?.total_remaining || 0
@@ -89,7 +83,6 @@ export default async function handler(req, res) {
         });
       } else {
         // No matches found, don't consume token
-        console.log('🔍 AI Search - No matches found, not consuming token for user:', userId);
         return res.status(200).json({
           success: true,
           message: 'No token consumed - no matches found',
@@ -107,6 +100,11 @@ export default async function handler(req, res) {
     if (typeof query !== 'string' || typeof content !== 'string') {
       return res.status(400).json({ error: 'Query and content must be strings' });
     }
+    
+    // Validate custom system prompt if provided
+    if (customSystemPrompt !== undefined && typeof customSystemPrompt !== 'string') {
+      return res.status(400).json({ error: 'Custom system prompt must be a string' });
+    }
 
     // Security: Limit input sizes to prevent DoS attacks
     if (query.length > 1000) {
@@ -116,17 +114,34 @@ export default async function handler(req, res) {
     if (content.length > 200000) { // 200KB limit - cost-optimized for efficient processing
       return res.status(400).json({ error: 'Content too large (max 200KB)' });
     }
+    
+    // Limit custom prompt size
+    if (customSystemPrompt && customSystemPrompt.length > 2000) {
+      return res.status(400).json({ error: 'Custom system prompt too long (max 2000 characters)' });
+    }
 
     // Security: Basic sanitization
     const sanitizedQuery = query.trim();
     const sanitizedContent = content.trim();
+    const sanitizedCustomPrompt = customSystemPrompt ? customSystemPrompt.trim() : null;
 
     if (!sanitizedQuery || !sanitizedContent) {
       return res.status(400).json({ error: 'Query and content cannot be empty' });
     }
 
     // Make AI API call without consuming tokens first
-    console.log('🔍 AI Search - Making AI API call for user:', userId);
+
+    // Use the system prompt as provided by the frontend (which already includes JSON format requirement)
+    const defaultSystemPrompt = 'You are an assistant designed to help users find specific information in a web page. The user will ask a question or describe what theyre looking for. Your task is to: Search the full webpage content provided below. Identify relevant sections that answer or relate to the users query. Return ONLY a JSON array of strings containing the most relevant text snippets from the provided content. Each string should be exact text from the page - no modifications, no commentary, no explanations. Format: ["exact text snippet 1", "exact text snippet 2", "exact text snippet 3"]. Focus on quality over quantity.';
+    
+    let systemPrompt;
+    if (sanitizedCustomPrompt) {
+      // Use custom prompt as-is (frontend already appends JSON format requirement)
+      systemPrompt = sanitizedCustomPrompt;
+    } else {
+      // Use default prompt (already includes format requirement)
+      systemPrompt = defaultSystemPrompt;
+    }
 
     // Use Groq for ultra-fast inference with Llama 3.3 70B
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -140,11 +155,11 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: 'You are an intelligent content extraction system. Return ONLY a JSON array of strings containing the most relevant text snippets from the provided content. Each string should be exact text from the page - no modifications, no commentary, no explanations. Format: ["exact text snippet 1", "exact text snippet 2", "exact text snippet 3"]. Focus on quality over quantity: extract 3-8 highly relevant snippets that best answer the user\'s query. For "tldr" queries, extract the most important/summary information.'
+            content: systemPrompt
           },
           {
             role: 'user',
-            content: `Search Query: "${sanitizedQuery}"\n\n--- PAGE CONTENT ---\n${sanitizedContent}\n\n--- INSTRUCTIONS ---\nExtract the most relevant text snippets that answer or relate to the search query. Return exact text from the content above as a JSON array of strings. Prioritize complete sentences or meaningful phrases.`
+            content: `QUERY: "${sanitizedQuery}"--- PAGE CONTENT ---${sanitizedContent}`
           }
         ],
         temperature: 0.05,  // Lower temperature for more consistent JSON output

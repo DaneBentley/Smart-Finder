@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Bar Isolation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-input {
+            width: 300px;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .test-textarea {
+            width: 300px;
+            height: 100px;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .test-results {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 3px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .instructions {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+            text-align: center;
+        }
+        .modal-input {
+            width: 250px;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e9e9e9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Bar Isolation Test</h1>
+    
+    <div class="instructions">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Open the SmartFinder extension (Ctrl+F / Cmd+F)</li>
+            <li>Try typing in the website inputs below while the extension search bar is visible</li>
+            <li>Verify that:</li>
+            <ul>
+                <li>Typing in website inputs doesn't trigger extension searches</li>
+                <li>Keyboard shortcuts (Ctrl+F, Escape) work correctly based on focus</li>
+                <li>Website modals and dropdowns aren't interfered with</li>
+                <li>Extension input events don't bubble to website handlers</li>
+            </ul>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 1: Basic Input Fields</h3>
+        <p>Type in these inputs while the extension search bar is open:</p>
+        <input type="text" class="test-input" placeholder="Type here - should not trigger extension search" id="basicInput">
+        <br>
+        <textarea class="test-textarea" placeholder="Type here - should not trigger extension search" id="basicTextarea"></textarea>
+        <div class="test-results" id="basicResults">
+            Results will appear here...
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Contenteditable Elements</h3>
+        <p>Type in this contenteditable div:</p>
+        <div contenteditable="true" style="border: 1px solid #ccc; padding: 8px; min-height: 50px; width: 300px;">
+            Click here and type - should not trigger extension search
+        </div>
+        <div class="test-results" id="contenteditableResults">
+            Results will appear here...
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Modal Dialog</h3>
+        <p>Test that Escape key works correctly with website modals:</p>
+        <button onclick="openModal()">Open Modal</button>
+        <div class="test-results" id="modalResults">
+            Results will appear here...
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Keyboard Event Logging</h3>
+        <p>Focus the input below and press various keys to see if events are properly isolated:</p>
+        <input type="text" class="test-input" placeholder="Press keys here" id="eventLogInput">
+        <div class="test-results" id="eventLogResults">
+            Event log will appear here...
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <h3>Test Modal</h3>
+            <p>Press Escape to close this modal (should not close extension)</p>
+            <input type="text" class="modal-input" placeholder="Type in modal input">
+            <br>
+            <button onclick="closeModal()">Close Modal</button>
+        </div>
+    </div>
+
+    <script>
+        // Track events to verify isolation
+        let eventLog = [];
+        
+        // Test basic input isolation
+        document.getElementById('basicInput').addEventListener('input', function(e) {
+            document.getElementById('basicResults').innerHTML = 
+                '<span class="success">✓ Website input event received: ' + e.target.value + '</span>';
+        });
+        
+        document.getElementById('basicTextarea').addEventListener('input', function(e) {
+            document.getElementById('basicResults').innerHTML += 
+                '<br><span class="success">✓ Website textarea event received: ' + e.target.value.substring(0, 50) + '...</span>';
+        });
+        
+        // Test contenteditable isolation
+        document.querySelector('[contenteditable]').addEventListener('input', function(e) {
+            document.getElementById('contenteditableResults').innerHTML = 
+                '<span class="success">✓ Contenteditable input event received</span>';
+        });
+        
+        // Test keyboard event isolation
+        document.getElementById('eventLogInput').addEventListener('keydown', function(e) {
+            eventLog.push(`keydown: ${e.key} (${e.code})`);
+            updateEventLog();
+        });
+        
+        document.getElementById('eventLogInput').addEventListener('keyup', function(e) {
+            eventLog.push(`keyup: ${e.key} (${e.code})`);
+            updateEventLog();
+        });
+        
+        document.getElementById('eventLogInput').addEventListener('input', function(e) {
+            eventLog.push(`input: ${e.target.value}`);
+            updateEventLog();
+        });
+        
+        function updateEventLog() {
+            const logElement = document.getElementById('eventLogResults');
+            logElement.innerHTML = eventLog.slice(-10).map(event => 
+                '<div><span class="success">✓ ' + event + '</span></div>'
+            ).join('');
+        }
+        
+        // Modal functions
+        function openModal() {
+            document.getElementById('testModal').style.display = 'block';
+            document.getElementById('modalResults').innerHTML = 
+                '<span class="success">✓ Modal opened - test Escape key behavior</span>';
+        }
+        
+        function closeModal() {
+            document.getElementById('testModal').style.display = 'none';
+            document.getElementById('modalResults').innerHTML += 
+                '<br><span class="success">✓ Modal closed via button</span>';
+        }
+        
+        // Test modal escape key handling
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('testModal');
+                if (modal.style.display === 'block') {
+                    closeModal();
+                    document.getElementById('modalResults').innerHTML += 
+                        '<br><span class="success">✓ Modal closed via Escape key</span>';
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        });
+        
+        // Global event monitoring for debugging
+        let globalEventCount = 0;
+        document.addEventListener('keydown', function(e) {
+            globalEventCount++;
+            // Only log if it's not from our test inputs to avoid spam
+            if (!e.target.closest('.test-input, .test-textarea, [contenteditable], .modal-input')) {
+                console.log('Global keydown event #' + globalEventCount + ':', e.key, 'from', e.target.tagName);
+            }
+        }, true);
+        
+        // Add some test content for searching
+        const testContent = document.createElement('div');
+        testContent.innerHTML = `
+            <h2>Sample Content for Extension Testing</h2>
+            <p>This is some sample text that you can search for using the extension. Try searching for words like "sample", "extension", "testing", or "content".</p>
+            <p>The extension should be able to find and highlight these terms without interfering with the input fields above.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        `;
+        document.body.appendChild(testContent);
+    </script>
+</body>
+</html> 

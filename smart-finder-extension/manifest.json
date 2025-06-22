@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Smart Finder",
-  "version": "1.0",
-  "description": "AI-powered search extension with smart finding capabilities",
+  "version": "1.1.0",
+  "description": "AI-powered search extension with smart finding capabilities. Find text on web pages using natural language queries or traditional search.",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "permissions": [
     "activeTab",
     "scripting",
@@ -41,7 +46,7 @@
         "default": "Ctrl+F",
         "mac": "Command+F"
       },
-      "description": "Toggle find bar"
+      "description": "Toggle Smart Finder search bar"
     }
   },
 
@@ -49,9 +54,14 @@
     {
       "resources": [
         "modules/*.js",
-        "privacy-policy.html"
+        "privacy-policy.html",
+        "terms-conditions.html",
+        "help.html"
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 } 

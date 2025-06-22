@@ -21,7 +21,7 @@
       window.smartFinder = new SmartFinder();
       
     } catch (error) {
-      console.error('Failed to load SmartFinder modules:', error);
+      // Failed to load SmartFinder modules - silently handle
       
       // Fallback: Load a simplified version if modules fail
       initializeFallback();
