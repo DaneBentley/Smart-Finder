@@ -1,8 +1,55 @@
-# Dependencies
+# System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
 
 # Environment variables
 .env
@@ -11,27 +58,46 @@ yarn-error.log
 .env.test.local
 .env.production.local
 
-# Build outputs
-dist/
-build/
-*.zip
+# Vercel
+.vercel
 
-# IDE and OS files
-.DS_Store
-.idea/
+# IDE/Editor files
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
+
+# Build artifacts
+dist/
+build/
+*.crx
+*.pem
+
+# Extension packaging
+*.zip
+smart-finder-extension*.zip
 
 # Logs
-logs/
+logs
 *.log
 
-# Testing
-coverage/
+# Chrome extension development
+key.pem
+*.crx
 
-# Misc
-.cache/
-.temp/
+# Temporary files
+tmp/
+temp/
 
-.vercel
+# Archive (keeping for reference but not tracking changes)
+archive/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
