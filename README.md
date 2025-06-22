@@ -14,7 +14,7 @@
 
 Smart Finder revolutionizes web page searching by replacing traditional Ctrl+F with AI-powered search capabilities. Find anything on any webpage using natural language queries, intelligent pattern detection, and multi-color highlighting.
 
-## ✨ Key Features
+## Key Features
 
 - **AI-Powered Search** - Ask questions in natural language using Groq Llama 3.1
 - **Smart Pattern Detection** - Automatically finds emails, phone numbers, URLs, dates, and more

@@ -2,16 +2,16 @@
 
 A sophisticated Chrome extension that revolutionizes browser search functionality by combining traditional text matching with AI-powered natural language search capabilities. Smart Finder serves as an intelligent replacement for the standard Ctrl+F with advanced features like pattern detection, multi-term highlighting, and progressive AI search.
 
-## 🌟 Key Features
+## Key Features
 
-### 🤖 **AI-Powered Search**
+### **AI-Powered Search**
 - **Natural Language Queries**: Search using plain English instead of exact text matching
 - **Groq Llama 3.1 8B Integration**: Ultra-fast AI inference with large context windows
 - **Progressive Processing**: Handles large pages by splitting into overlapping batches
 - **Smart Token System**: Only consumes tokens when AI finds relevant matches
 - **Custom System Prompts**: Personalize AI behavior for specific search needs
 
-### 🔍 **Advanced Pattern Detection**
+### **Advanced Pattern Detection**
 Automatically recognizes and converts common search patterns:
 - **Email Addresses**: Multiple format recognition
 - **Phone Numbers**: US/International formats with various separators
@@ -23,13 +23,13 @@ Automatically recognizes and converts common search patterns:
 - **IP Addresses**: IPv4 validation
 - **ZIP Codes**: 5-digit and ZIP+4 formats
 
-### 🎨 **Multi-Color Highlighting System**
+### **Multi-Color Highlighting System**
 - **5 Distinct Colors**: Yellow, green, pink, blue, purple for multi-term searches
 - **Current Match Emphasis**: Darker highlighting for active result
 - **AI Result Styling**: Special blue border styling for AI-found content
 - **Performance Optimized**: Handles up to 10,000 highlights with batch processing
 
-### 🔐 **Secure Authentication & Monetization**
+### **Secure Authentication & Monetization**
 - **Google OAuth 2.0**: Seamless sign-in with Chrome Identity API
 - **JWT Token Management**: Secure backend communication
 - **Encrypted Local Storage**: XOR encryption for sensitive data protection
@@ -37,7 +37,7 @@ Automatically recognizes and converts common search patterns:
 - **Free Monthly Tokens**: Regular allocation with automatic reset
 - **Stripe Integration**: Secure payment processing
 
-### ⚡ **Performance & User Experience**
+### **Performance & User Experience**
 - **Shadow DOM Isolation**: Complete style isolation from web pages
 - **Event Isolation**: Extension events don't interfere with website interactions
 - **Dynamic Content Monitoring**: Automatically updates results as pages change
@@ -46,7 +46,7 @@ Automatically recognizes and converts common search patterns:
 - **Progressive Loading**: Shows partial results during AI processing
 - **Rate Limiting**: Intelligent API usage management
 
-## 📁 Architecture
+## Architecture
 
 ### File Structure
 ```
@@ -80,7 +80,7 @@ smart-finder-extension/
 - **Modular Design**: 11 specialized components for maintainability
 - **Progressive Enhancement**: Graceful degradation and fallbacks
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### From Chrome Web Store
 1. Visit the Chrome Web Store
@@ -95,7 +95,7 @@ smart-finder-extension/
 3. Load unpacked extension in Chrome Developer Mode
 4. Configure OAuth credentials in manifest.json
 
-## 💡 Usage
+## Usage
 
 ### Basic Search
 - Press **Ctrl+F** (Mac: **Cmd+F**) to activate Smart Finder
@@ -125,7 +125,7 @@ smart-finder-extension/
 - Enable/disable scroll indicators
 - Access help documentation and legal pages
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables (Backend)
 ```env
@@ -142,7 +142,7 @@ STRIPE_SECRET_KEY=your_stripe_secret
 - **Backend API**: Vercel deployment for user management
 - **Redirect URLs**: Chrome extension protocol support
 
-## 🛡️ Security & Privacy
+## Security & Privacy
 
 ### Data Protection
 - **Encrypted Storage**: Sensitive data encrypted with XOR algorithm
@@ -157,7 +157,7 @@ STRIPE_SECRET_KEY=your_stripe_secret
 - **User Control**: Complete account deletion available
 - **Transparent Policies**: Clear privacy policy and terms
 
-## 🎯 Use Cases
+## Use Cases
 
 ### Professional
 - **Research**: Find specific information in long documents or articles
@@ -171,7 +171,7 @@ STRIPE_SECRET_KEY=your_stripe_secret
 - **Social Media**: Locate posts or comments with specific themes
 - **Educational**: Research academic content with intelligent search
 
-## 📈 Performance Metrics
+## Performance Metrics
 
 - **Search Speed**: Sub-second response for regular searches
 - **AI Processing**: 2-5 seconds for AI-powered searches
@@ -179,7 +179,7 @@ STRIPE_SECRET_KEY=your_stripe_secret
 - **Battery Impact**: Minimal with efficient event handling
 - **Compatibility**: Works on all websites (excluding chrome:// pages)
 
-## 🤝 Support & Contributing
+## Support & Contributing
 
 ### Getting Help
 - **Built-in Help**: Access via extension popup
@@ -193,6 +193,6 @@ STRIPE_SECRET_KEY=your_stripe_secret
 - Verify permissions and authentication status
 - Try refreshing the page if search doesn't work
 
-## 📄 License & Legal
+## License & Legal
 
 This extension operates under standard Chrome Web Store terms with additional privacy protections and user rights as outlined in the included privacy policy and terms of service documents.
