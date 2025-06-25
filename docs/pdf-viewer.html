@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Finder PDF Viewer</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="icon16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon16.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icon48.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="icon128.png">
+  <meta name="description" content="Smart Finder PDF Viewer - View and search PDFs with AI-powered capabilities">
+  
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f8f9fa;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Header Section */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e8eaed;
+      margin-bottom: 20px;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+    }
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+      border-radius: 8px;
+    }
+    
+    .header-text h1 {
+      color: #1a73e8;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .btn:hover {
+      background: #1557b0;
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    /* PDF Viewer Container */
+    .viewer-container {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e8eaed;
+      min-height: 500px;
+      position: relative;
+    }
+    
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed #1a73e8;
+      border-radius: 8px;
+      padding: 60px 20px;
+      text-align: center;
+      margin: 20px;
+      background: #f8f9ff;
+      transition: all 0.3s ease;
+    }
+    
+    .drop-zone.drag-over {
+      border-color: #0d47a1;
+      background: #e3f2fd;
+    }
+    
+    .drop-zone h3 {
+      color: #1a73e8;
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+    }
+    
+    .drop-zone p {
+      color: #5f6368;
+      margin-bottom: 20px;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .file-input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    /* PDF Canvas Container */
+    .pdf-container {
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+      display: none;
+    }
+    
+    .pdf-page {
+      margin: 0 auto 20px;
+      display: block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
+    
+    /* Loading Spinner */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: #1a73e8;
+    }
+    
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1a73e8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Error Message */
+    .error {
+      display: none;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 20px;
+      color: #c33;
+    }
+    
+    /* Page Info */
+    .page-info {
+      text-align: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e8eaed;
+      font-size: 14px;
+      color: #5f6368;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .controls {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .container {
+        padding: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-section">
+          <img src="icon48.png" alt="Smart Finder Logo" class="logo">
+          <div class="header-text">
+            <h1>Smart Finder PDF Viewer</h1>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="zoom-out" disabled>−</button>
+          <span id="zoom-level">100%</span>
+          <button class="btn" id="zoom-in" disabled>+</button>
+          <button class="btn" id="download-btn" disabled>Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="viewer-container">
+      <div class="drop-zone" id="drop-zone">
+        <h3>📄 Open PDF Document</h3>
+        <p>Drag and drop a PDF file here, or click to browse</p>
+        <div class="file-input-wrapper">
+          <button class="btn">Choose PDF File</button>
+          <input type="file" class="file-input" id="file-input" accept=".pdf,application/pdf">
+        </div>
+      </div>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Loading PDF...</p>
+      </div>
+      
+      <div class="error" id="error"></div>
+      
+      <div class="page-info" id="page-info" style="display: none;"></div>
+      
+      <div class="pdf-container" id="pdf-container"></div>
+    </div>
+  </div>
+
+  <script>
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // Global variables
+    let currentPDF = null;
+    let currentScale = 1.0;
+    let currentURL = null;
+    
+    // DOM elements
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const pdfContainer = document.getElementById('pdf-container');
+    const pageInfo = document.getElementById('page-info');
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+    const zoomLevel = document.getElementById('zoom-level');
+    const downloadBtn = document.getElementById('download-btn');
+    
+    // Initialize app
+    init();
+    
+    function init() {
+      setupEventListeners();
+      checkURLParameter();
+    }
+    
+    function setupEventListeners() {
+      // File input
+      fileInput.addEventListener('change', handleFileSelect);
+      
+      // Drag and drop
+      dropZone.addEventListener('dragover', handleDragOver);
+      dropZone.addEventListener('dragleave', handleDragLeave);
+      dropZone.addEventListener('drop', handleDrop);
+      
+      // Zoom controls
+      zoomInBtn.addEventListener('click', () => changeZoom(0.2));
+      zoomOutBtn.addEventListener('click', () => changeZoom(-0.2));
+      
+      // Download button
+      downloadBtn.addEventListener('click', downloadPDF);
+    }
+    
+    function checkURLParameter() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fileURL = urlParams.get('file');
+      
+      if (fileURL) {
+        // Sanitize URL to prevent injection
+        if (isValidURL(fileURL)) {
+          loadPDFFromURL(fileURL);
+        } else {
+          showError('Invalid PDF URL provided');
+        }
+      }
+    }
+    
+    function isValidURL(string) {
+      try {
+        const url = new URL(string);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch (_) {
+        return false;
+      }
+    }
+    
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        loadPDFFromFile(file);
+      } else {
+        showError('Please select a valid PDF file');
+      }
+    }
+    
+    function handleDragOver(event) {
+      event.preventDefault();
+      dropZone.classList.add('drag-over');
+    }
+    
+    function handleDragLeave(event) {
+      event.preventDefault();
+      dropZone.classList.remove('drag-over');
+    }
+    
+    function handleDrop(event) {
+      event.preventDefault();
+      dropZone.classList.remove('drag-over');
+      
+      const files = event.dataTransfer.files;
+      if (files.length > 0 && files[0].type === 'application/pdf') {
+        loadPDFFromFile(files[0]);
+      } else {
+        showError('Please drop a valid PDF file');
+      }
+    }
+    
+    function loadPDFFromFile(file) {
+      showLoading();
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const arrayBuffer = e.target.result;
+        loadPDF({ data: arrayBuffer });
+        currentURL = null;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    
+    function loadPDFFromURL(url) {
+      showLoading();
+      currentURL = url;
+      loadPDF(url);
+    }
+    
+    function loadPDF(source) {
+      pdfjsLib.getDocument(source).promise
+        .then(pdf => {
+          currentPDF = pdf;
+          renderAllPages();
+          enableControls();
+          hideLoading();
+          hideDropZone();
+          showPageInfo(pdf.numPages);
+        })
+        .catch(err => {
+          console.error('Error loading PDF:', err);
+          showError('Failed to load PDF. Please check the file or URL.');
+          hideLoading();
+        });
+    }
+    
+    function renderAllPages() {
+      if (!currentPDF) return;
+      
+      pdfContainer.innerHTML = '';
+      
+      for (let pageNum = 1; pageNum <= currentPDF.numPages; pageNum++) {
+        renderPage(pageNum);
+      }
+    }
+    
+    function renderPage(pageNum) {
+      currentPDF.getPage(pageNum).then(page => {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'pdf-page';
+        const ctx = canvas.getContext('2d');
+        
+        const viewport = page.getViewport({ scale: currentScale });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        
+        page.render(renderContext);
+        pdfContainer.appendChild(canvas);
+      });
+    }
+    
+    function changeZoom(delta) {
+      currentScale = Math.max(0.5, Math.min(3.0, currentScale + delta));
+      zoomLevel.textContent = Math.round(currentScale * 100) + '%';
+      
+      if (currentPDF) {
+        renderAllPages();
+      }
+    }
+    
+    function downloadPDF() {
+      if (currentURL) {
+        const link = document.createElement('a');
+        link.href = currentURL;
+        link.download = 'document.pdf';
+        link.click();
+      }
+    }
+    
+    function showLoading() {
+      loading.style.display = 'block';
+      error.style.display = 'none';
+    }
+    
+    function hideLoading() {
+      loading.style.display = 'none';
+    }
+    
+    function showError(message) {
+      error.textContent = message;
+      error.style.display = 'block';
+      hideLoading();
+    }
+    
+    function hideDropZone() {
+      dropZone.style.display = 'none';
+      pdfContainer.style.display = 'block';
+      pageInfo.style.display = 'block';
+    }
+    
+    function showPageInfo(numPages) {
+      pageInfo.textContent = `PDF loaded successfully • ${numPages} page${numPages > 1 ? 's' : ''}`;
+    }
+    
+    function enableControls() {
+      zoomInBtn.disabled = false;
+      zoomOutBtn.disabled = false;
+      if (currentURL) {
+        downloadBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html> 
