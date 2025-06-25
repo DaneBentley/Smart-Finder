@@ -2,8 +2,14 @@
 // Handles keyboard shortcuts, browser action, and messaging
 
 // Handle extension installation
-chrome.runtime.onInstalled.addListener(() => {
-  // Extension installed
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    // Store installation event to track when analytics is available
+    chrome.storage.local.set({ 
+      extensionInstalled: true,
+      installDate: Date.now() 
+    });
+  }
 });
 
 // Handle extension startup

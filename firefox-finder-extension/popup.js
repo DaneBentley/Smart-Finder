@@ -1,13 +1,14 @@
 // Popup script for Smart Finder - OAuth-only implementation
+// Use browser API for cross-browser compatibility
+const browserAPI = typeof browser !== 'undefined' ? browser : (typeof chrome !== 'undefined' ? chrome : {});
+
 import { AuthManager } from './modules/auth-manager.js';
 import { StorageManager } from './modules/storage-manager.js';
-import { AnalyticsManager } from './modules/analytics-manager.js';
 
 class SmartFinderPopup {
   constructor() {
     this.authManager = new AuthManager();
     this.storageManager = new StorageManager();
-    this.analyticsManager = new AnalyticsManager();
     this.advancedSettingsInitialized = false;
     this.characterCounterTimeout = null;
     this.init();
@@ -15,21 +16,17 @@ class SmartFinderPopup {
 
   async init() {
     await this.authManager.initialize();
-    await this.analyticsManager.initialize();
     this.setupEventListeners();
     await Promise.all([
       this.updateUI(),
       this.initializeTheme()
     ]);
     
-    // Track popup open
-    this.analyticsManager.trackPopupOpen();
-    
     // Platform-specific keyboard shortcut display
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const findKeyElement = document.getElementById('findKey');
     if (findKeyElement) {
-      findKeyElement.textContent = isMac ? 'Cmd+F' : 'Ctrl+F';
+      findKeyElement.textContent = 'Alt+F';
     }
     
     // Auto-refresh token counts every 10 seconds while popup is open
@@ -96,9 +93,6 @@ class SmartFinderPopup {
     
     // Initialize token preview
     this.updateTokenPreview(5);
-    
-    // Analytics toggle
-    document.getElementById('analyticsToggle')?.addEventListener('change', (e) => this.handleAnalyticsToggle(e));
     
     // Account deletion modal event listeners
     this.setupDeleteAccountModal();
@@ -262,7 +256,7 @@ class SmartFinderPopup {
       const tokenCount = this.authManager.getTokenCount();
       
       // Send token badge update to background script
-      chrome.runtime.sendMessage({
+      browserAPI.runtime.sendMessage({
         action: 'updateTokenBadge',
         tokenCount: tokenCount
       });
@@ -303,10 +297,8 @@ class SmartFinderPopup {
       await this.authManager.signInWithGoogle();
       await this.updateUI();
       // Badge will be updated by updateUI -> updateTokenBadge
-      this.analyticsManager.trackAuth('signin');
     } catch (error) {
       // Google sign in failed - silently handle
-      this.analyticsManager.trackError('signin_failed', 'authentication');
     }
   }
 
@@ -316,10 +308,8 @@ class SmartFinderPopup {
       await this.authManager.signOut();
       await this.updateUI();
       // Badge will be updated by updateUI -> updateTokenBadge
-      this.analyticsManager.trackAuth('signout');
     } catch (error) {
       // Sign out failed - silently handle
-      this.analyticsManager.trackError('signout_failed', 'authentication');
     }
   }
 
@@ -394,14 +384,8 @@ class SmartFinderPopup {
       // Pass the exact dollar amount to ensure proper Stripe handling
       const paymentUrl = await this.authManager.getPaymentUrl(tokenAmount, amount);
       
-      // Track purchase attempt
-      this.analyticsManager.trackEvent('purchase', 'initiated', { 
-        amount: amount,
-        tokens: tokenAmount 
-      });
-      
       // Open payment in new tab
-      await chrome.tabs.create({ url: paymentUrl });
+      await browserAPI.tabs.create({ url: paymentUrl });
       
       // Close popup after opening payment page
       window.close();
@@ -540,7 +524,7 @@ class SmartFinderPopup {
 
   async requestAccountDeletion() {
     try {
-      const { jwt } = await chrome.storage.local.get(['jwt']);
+      const { jwt } = await browserAPI.storage.local.get(['jwt']);
       if (!jwt) {
         throw new Error('Not authenticated');
       }
@@ -632,7 +616,7 @@ class SmartFinderPopup {
       // Show processing step
       this.showProcessingStep();
 
-      const { jwt } = await chrome.storage.local.get(['jwt']);
+      const { jwt } = await browserAPI.storage.local.get(['jwt']);
       if (!jwt) {
         throw new Error('Not authenticated');
       }
@@ -704,26 +688,10 @@ class SmartFinderPopup {
         this.updateCharacterCounter(promptTextarea);
         this.advancedSettingsInitialized = true;
       }
-      
-      // Initialize analytics toggle
-      await this.initializeAnalyticsToggle();
     } else {
       document.getElementById('advancedSettingsSection')?.classList.add('hidden');
       this.advancedSettingsInitialized = false;
     }
-  }
-
-  async initializeAnalyticsToggle() {
-    const analyticsToggle = document.getElementById('analyticsToggle');
-    if (analyticsToggle) {
-      const enabled = this.analyticsManager.isEnabled();
-      analyticsToggle.checked = enabled;
-    }
-  }
-
-  async handleAnalyticsToggle(event) {
-    const enabled = event.target.checked;
-    await this.analyticsManager.setAnalyticsEnabled(enabled);
   }
 
   updateCharacterCounter(textarea) {

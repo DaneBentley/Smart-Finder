@@ -1,8 +1,10 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Smart Finder",
   "version": "1.1.0",
   "description": "AI-Powered Find-in-Page Tool. Replaces Ctrl+F with AI-powered search, pattern detection, multi-color highlighting, and more.",
+  "author": "Dane Bentley",
+  "homepage_url": "https://danebentley.github.io/Smart-Finder/",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -10,28 +12,18 @@
   },
   "permissions": [
     "activeTab",
-    "scripting",
     "storage",
-    "identity"
-  ],
-  "host_permissions": [
+    "identity",
     "https://*.vercel.app/*",
     "https://*.supabase.co/*"
   ],
-  "oauth2": {
-    "client_id": "148916188620-l2pn60pdkqr8c0dkbe42g1u1sft7ugg5.apps.googleusercontent.com",
-    "scopes": [
-      "openid",
-      "email",
-      "profile"
-    ]
-  },
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Smart Finder"
   },
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -43,22 +35,21 @@
   "commands": {
     "toggle-find": {
       "suggested_key": {
-        "default": "Ctrl+F",
-        "mac": "Command+F"
+        "default": "Alt+F",
+        "mac": "Alt+F"
       },
       "description": "Toggle Smart Finder search bar"
     }
   },
-
   "web_accessible_resources": [
-    {
-      "resources": [
-        "modules/*.js"
-      ],
-      "matches": ["<all_urls>"]
-    }
+    "modules/*.js",
+    "modules/*"
   ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self'; form-action 'self'; connect-src 'self' https://www.google-analytics.com;"
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
+  "applications": {
+    "gecko": {
+      "id": "smart-finder@danebentley.github.io",
+      "strict_min_version": "109.0"
+    }
   }
 } 

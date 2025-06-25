@@ -3,6 +3,9 @@
  * Orchestrates all modules to provide intelligent find functionality
  */
 
+// Use browser API for cross-browser compatibility
+const browserAPI = typeof browser !== 'undefined' ? browser : (typeof chrome !== 'undefined' ? chrome : {});
+
 import { UIManager } from './ui-manager.js';
 import { SearchEngine } from './search-engine.js';
 import { HighlightManager } from './highlight-manager.js';
@@ -11,7 +14,6 @@ import { EventHandler } from './event-handler.js';
 import { AIService } from './ai-service.js';
 import { PatternDetector } from './pattern-detector.js';
 import { StorageManager } from './storage-manager.js';
-import { AnalyticsManager } from './analytics-manager.js';
 
 export class SmartFinder {
   constructor() {
@@ -23,7 +25,6 @@ export class SmartFinder {
     this.aiService = new AIService();
     this.patternDetector = new PatternDetector();
     this.storageManager = new StorageManager();
-    this.analyticsManager = new AnalyticsManager();
     
     this.aiSearchActive = false;
     this.progressiveMatches = [];
@@ -46,9 +47,6 @@ export class SmartFinder {
     
     // Then load saved settings and last search
     await this.loadStoredData();
-    
-    // Initialize analytics
-    await this.analyticsManager.initialize();
     
     this.bindEvents(closeButton);
     
@@ -150,9 +148,6 @@ export class SmartFinder {
       // Clear any previous AI search results since we're doing regular search
       this.progressiveMatches = [];
       
-      // Track regular search
-      this.analyticsManager.trackSearch('regular');
-      
       // Find matches with progress callback
       this.ui.setSearchProgress('Searching...', true);
       const matches = await this.searchEngine.findMatches(term, this.ui.settings, (count, isComplete) => {
@@ -228,9 +223,6 @@ export class SmartFinder {
   async performAISearch(query) {
     if (!query.trim()) return;
     
-    // Track AI search usage
-    this.analyticsManager.trackAISearch();
-    
     // Show loading state without changing text
     this.ui.setSearchProgress('AI searching...', true);
     
@@ -287,19 +279,6 @@ export class SmartFinder {
       });
       
     } catch (error) {
-      // Track AI search errors for analytics
-      if (error.message.includes('Rate limit exceeded')) {
-        this.analyticsManager.trackError('rate_limit_exceeded', 'ai_search');
-      } else if (error.message.includes('Content too large')) {
-        this.analyticsManager.trackError('content_too_large', 'ai_search');
-      } else if (error.message.includes('No tokens available')) {
-        this.analyticsManager.trackError('no_tokens_available', 'ai_search');
-      } else if (error.message.includes('must be signed in') || error.message.includes('sign in') || error.message.includes('authentication')) {
-        this.analyticsManager.trackError('authentication_required', 'ai_search');
-      } else {
-        this.analyticsManager.trackError('general_ai_search_error', 'ai_search');
-      }
-      
       // AI search failed - silently handle
       
       // Clear search progress first
@@ -714,10 +693,6 @@ export class SmartFinder {
   async toggleAIMode() {
     const aiMode = this.ui.toggleAIMode();
     
-    // Track AI mode toggle
-    this.analyticsManager.trackFeatureUsage('ai_mode_toggle');
-    this.analyticsManager.trackSettingsChange('ai_mode', aiMode);
-    
     // Save the setting
     await this.storageManager.saveSettings(this.ui.settings);
     
@@ -807,9 +782,6 @@ export class SmartFinder {
       
       // Format results cleanly
       const formattedText = results.join('\n');
-      
-      // Track copy feature usage
-      this.analyticsManager.trackFeatureUsage('copy_all_results');
       
       // Copy to clipboard using the modern Clipboard API
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -945,7 +917,7 @@ export class SmartFinder {
       const tokenCount = this.aiService.authManager.getTokenCount();
       
       // Send token badge update to background script
-      chrome.runtime.sendMessage({
+      browserAPI.runtime.sendMessage({
         action: 'updateTokenBadge',
         tokenCount: tokenCount
       });
@@ -1059,4 +1031,7 @@ export class SmartFinder {
       // Incremental search error - silently handle
     }
   }
-} 
+}
+
+// Expose SmartFinder on window for content script access
+window.SmartFinder = SmartFinder; 

@@ -1010,74 +1010,6 @@
       color: var(--text-primary);
     }
 
-    /* Toggle Switch Styles */
-    .setting-toggle {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 8px 0;
-    }
-
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-      cursor: pointer;
-    }
-
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.3s;
-      border-radius: 24px;
-    }
-
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .toggle-slider {
-      background-color: var(--accent-color);
-    }
-
-    input:checked + .toggle-slider:before {
-      transform: translateX(20px);
-    }
-
-    .toggle-label {
-      font-size: 13px;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    [data-theme="dark"] .toggle-slider {
-      background-color: #4a5568;
-    }
-
-    [data-theme="dark"] .toggle-slider:before {
-      background-color: #f7fafc;
-    }
-
     /* Regex Patterns Section Styles */
     .regex-patterns-section {
       margin-top: 20px;
@@ -1224,7 +1156,7 @@
       <div class="section-title">Keyboard Shortcuts</div>
       <div class="shortcut">
         <span>Open find</span>
-        <span class="shortcut-key" id="findKey">Ctrl+F</span>
+                        <span class="shortcut-key" id="findKey">Alt+F</span>
       </div>
       <div class="shortcut">
         <span>Next match</span>
@@ -1261,7 +1193,7 @@
       <div class="compact-item">Use natural language: "main points" or "most important" or "phone" or "email" or "dates" to search for regular expressions</div>
       <div class="compact-item">Click the 0/0 indicator on the toolbar to access settings</div>
       <div class="compact-item">For multiple terms sperate with a space or 'use quotes for phrases'</div>
-      <div class="compact-item">Regular Ctrl+F search is always free and unlimited</div>
+                      <div class="compact-item">Regular Alt+F search is always free and unlimited</div>
       <div class="compact-item">AI searches use one token per query, but more for longer content</div>
       <div class="compact-item">You can still access the chrome find bar at any time via Ctrl/Cmd + G</div>
     </div>
@@ -1379,26 +1311,6 @@
             </div>
             <div class="info-item">
               <strong>Note:</strong> JSON array format is automatically enforced for proper parsing
-            </div>
-          </div>
-        </div>
-        
-        <div class="setting-group">
-          <div class="setting-label">Analytics</div>
-          <div class="setting-description">Help improve Smart Finder by sharing anonymous usage data. No personal information is collected.</div>
-          <div class="setting-toggle">
-            <label class="toggle-switch">
-              <input type="checkbox" id="analyticsToggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-            <span class="toggle-label">Enable analytics</span>
-          </div>
-          <div class="setting-info">
-            <div class="info-item">
-              <strong>What we collect:</strong> Feature usage, search types, error events
-            </div>
-            <div class="info-item">
-              <strong>What we don't collect:</strong> Search queries, personal data, browsing history
             </div>
           </div>
         </div>
