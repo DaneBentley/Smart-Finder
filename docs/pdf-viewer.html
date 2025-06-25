@@ -190,6 +190,10 @@
       -moz-user-select: text;
       -ms-user-select: text;
       user-select: text;
+      /* Critical improvements for text selection accuracy */
+      opacity: 0.2;
+      mix-blend-mode: multiply;
+      pointer-events: auto;
     }
     
     .text-layer > span {
@@ -198,17 +202,53 @@
       white-space: pre;
       cursor: text;
       transform-origin: 0% 0%;
+      /* Enhanced text positioning */
+      font-family: sans-serif;
+      font-style: normal;
+      font-weight: normal;
+      letter-spacing: normal;
+      word-spacing: normal;
+      line-height: 1;
+      text-decoration: none;
+      text-align: left;
+      text-indent: 0;
+      /* Ensure proper text selection */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    
-    /* Highlight styles - for external highlighting tools */
+
+    /* Text layer visibility for debugging (optional) */
+    .text-layer.debug {
+      opacity: 0.8;
+      background: rgba(0, 255, 0, 0.1);
+    }
+
+    .text-layer.debug > span {
+      color: red !important;
+      background: rgba(255, 255, 0, 0.3);
+      border: 1px solid blue;
+    }
+
+    /* Improved highlight styles */
     .text-layer .highlight {
       background-color: rgba(255, 255, 0, 0.3) !important;
       color: transparent !important;
+      border-radius: 2px;
     }
     
     .text-layer .smart-highlight {
       background-color: rgba(255, 165, 0, 0.4) !important;
       color: transparent !important;
+      border-radius: 2px;
+    }
+
+    /* Selection styling */
+    .text-layer::selection {
+      background: rgba(0, 100, 255, 0.3);
+    }
+
+    .text-layer::-moz-selection {
+      background: rgba(0, 100, 255, 0.3);
     }
     
     /* Loading */
@@ -303,6 +343,10 @@
     <div class="drop-zone" id="drop-zone">
       <h3>📄 Open PDF Document</h3>
       <p>Drag and drop a PDF file here, or click to browse</p>
+      <p style="font-size: 12px; color: #666; margin-top: 10px;">
+        Enhanced with Google Chrome-style text selection & highlighting<br>
+        Press Ctrl+Shift+D to toggle debug mode
+      </p>
       <button class="btn primary" onclick="document.getElementById('file-input').click()">Choose PDF File</button>
       <input type="file" class="file-input" id="file-input" accept=".pdf">
     </div>
@@ -490,7 +534,7 @@
         canvas.className = 'pdf-canvas';
         const context = canvas.getContext('2d');
         
-        // High DPI support
+        // High DPI support - critical for text alignment
         const devicePixelRatio = window.devicePixelRatio || 1;
         const scaledViewport = page.getViewport({ scale: this.scale * devicePixelRatio });
         
@@ -509,14 +553,22 @@
         
         await page.render(renderContext).promise;
         
-        // Create text layer
+        // Create text layer with improved positioning
         const textLayerDiv = document.createElement('div');
         textLayerDiv.className = 'text-layer';
+        
+        // Critical: Text layer must match canvas dimensions exactly
         textLayerDiv.style.width = viewport.width + 'px';
         textLayerDiv.style.height = viewport.height + 'px';
         
-        // Get text content
-        const textContent = await page.getTextContent();
+        // Remove manual scaling - let PDF.js handle it properly
+        // The viewport already contains the correct scale
+        
+        // Get text content with enhanced options
+        const textContent = await page.getTextContent({
+          normalizeWhitespace: false,
+          disableCombineTextItems: false
+        });
         
         // Store page data for external access
         this.pages[pageNum - 1] = {
@@ -527,15 +579,34 @@
           pageWrapper
         };
         
-        // Render text layer properly
-        const textLayerRender = pdfjsLib.renderTextLayer({
-          textContent: textContent,
-          container: textLayerDiv,
-          viewport: viewport,
-          textDivs: []
-        });
-        
-        await textLayerRender.promise;
+        // Enhanced text layer rendering with proper parameters
+        try {
+          // Try modern PDF.js text layer factory (v3.0+)
+          const textLayerFactory = new pdfjsLib.DefaultTextLayerFactory();
+          const textLayer = textLayerFactory.createTextLayerBuilder({
+            textLayerDiv: textLayerDiv,
+            viewport: viewport,
+            pageIndex: pageNum - 1,
+            enhanceTextSelection: true
+          });
+          
+          textLayer.setTextContent(textContent);
+          await textLayer.render();
+        } catch (error) {
+          // Fallback to legacy renderTextLayer for older PDF.js versions
+          console.log('Using legacy text layer rendering');
+          const textLayerRender = pdfjsLib.renderTextLayer({
+            textContent: textContent,
+            container: textLayerDiv,
+            viewport: viewport,
+            textDivs: [],
+            textContentItemsStr: [],
+            textContentStream: null,
+            isOffscreenCanvasSupported: false
+          });
+          
+          await textLayerRender.promise;
+        }
         
         pageContainer.appendChild(textLayerDiv);
         pageWrapper.appendChild(pageContainer);
@@ -602,19 +673,90 @@
         
         const spans = textLayer.querySelectorAll('span');
         let currentIndex = 0;
+        let highlightedAny = false;
         
         for (const span of spans) {
-          const text = span.textContent;
+          const text = span.textContent || '';
           const spanEnd = currentIndex + text.length;
           
-          if (currentIndex <= endIndex && spanEnd >= startIndex) {
+          // More precise overlap detection
+          if (startIndex < spanEnd && endIndex > currentIndex) {
             span.classList.add(className);
+            highlightedAny = true;
           }
           
           currentIndex = spanEnd;
         }
         
-        return true;
+        return highlightedAny;
+      }
+
+      // Enhanced function to find and highlight text by string
+      findAndHighlight(pageNum, searchText, className = 'highlight') {
+        const pageData = this.pages[pageNum - 1];
+        if (!pageData || !searchText) return [];
+        
+        const textContent = pageData.textContent;
+        const textLayer = pageData.textLayerDiv;
+        
+        // Build full text string with character positions
+        let fullText = '';
+        const charToSpanMap = [];
+        
+        textContent.items.forEach((item, itemIndex) => {
+          const itemText = item.str || '';
+          for (let i = 0; i < itemText.length; i++) {
+            charToSpanMap.push(itemIndex);
+          }
+          fullText += itemText;
+        });
+        
+        // Find all occurrences
+        const matches = [];
+        const searchLower = searchText.toLowerCase();
+        const fullTextLower = fullText.toLowerCase();
+        
+        let searchIndex = 0;
+        while ((searchIndex = fullTextLower.indexOf(searchLower, searchIndex)) !== -1) {
+          matches.push({
+            start: searchIndex,
+            end: searchIndex + searchText.length,
+            text: fullText.substring(searchIndex, searchIndex + searchText.length)
+          });
+          searchIndex++;
+        }
+        
+        // Highlight matches
+        matches.forEach(match => {
+          this.highlightText(pageNum, match.start, match.end, className);
+        });
+        
+        return matches;
+      }
+
+      // Get selected text with accurate positioning
+      getSelectedText() {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return null;
+        
+        const range = selection.getRangeAt(0);
+        const selectedText = selection.toString();
+        
+        // Find which page and position
+        let pageElement = range.commonAncestorContainer;
+        while (pageElement && !pageElement.classList?.contains('page-wrapper')) {
+          pageElement = pageElement.parentElement;
+        }
+        
+        if (!pageElement) return null;
+        
+        const pageNum = parseInt(pageElement.getAttribute('data-page'));
+        
+        return {
+          text: selectedText,
+          pageNum: pageNum,
+          range: range
+        };
       }
       
       clearHighlights(className = 'highlight') {
@@ -679,6 +821,55 @@
       clearError() {
         this.elements.error.style.display = 'none';
       }
+
+      // Debug mode for text layer visualization
+      toggleDebugMode() {
+        const textLayers = this.getAllTextLayers();
+        textLayers.forEach(layer => {
+          layer.classList.toggle('debug');
+        });
+      }
+
+      // Utility: Get text content as plain string for a page
+      getPageTextString(pageNum) {
+        const pageData = this.pages[pageNum - 1];
+        if (!pageData) return '';
+        
+        return pageData.textContent.items
+          .map(item => item.str || '')
+          .join('');
+      }
+
+      // Utility: Get detailed text information for a page
+      getPageTextDetails(pageNum) {
+        const pageData = this.pages[pageNum - 1];
+        if (!pageData) return null;
+        
+        return {
+          items: pageData.textContent.items,
+          styles: pageData.textContent.styles,
+          fullText: this.getPageTextString(pageNum),
+          page: pageNum
+        };
+      }
+
+      // Enhanced search across all pages
+      searchAllPages(searchText, className = 'highlight') {
+        this.clearHighlights(className);
+        const results = [];
+        
+        for (let pageNum = 1; pageNum <= this.pdfDoc?.numPages || 0; pageNum++) {
+          const matches = this.findAndHighlight(pageNum, searchText, className);
+          if (matches.length > 0) {
+            results.push({
+              pageNum,
+              matches
+            });
+          }
+        }
+        
+        return results;
+      }
     }
     
     // Initialize the PDF viewer and make it globally accessible
@@ -687,6 +878,14 @@
       pdfViewer = new SmartPDFViewer();
       // Make viewer available globally for external tools
       window.smartPDFViewer = pdfViewer;
+      
+      // Add keyboard shortcuts for debugging
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          pdfViewer.toggleDebugMode();
+          e.preventDefault();
+        }
+      });
     });
   </script>
 </body>
