@@ -20,7 +20,6 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #202124;
       background: #525659;
       overflow: hidden;
     }
@@ -69,6 +68,7 @@
       transition: all 0.2s;
       min-width: 36px;
       text-align: center;
+      user-select: none;
     }
     
     .btn:hover:not(:disabled) {
@@ -89,12 +89,6 @@
       background: #1557b0;
     }
     
-    .zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
     .zoom-level {
       color: #e8eaed;
       font-size: 13px;
@@ -109,7 +103,7 @@
       white-space: nowrap;
     }
     
-    /* Main Container */
+    /* Viewer Container */
     .viewer-container {
       position: fixed;
       top: 56px;
@@ -155,7 +149,7 @@
       display: none;
     }
     
-    /* PDF Content */
+    /* PDF Viewer */
     .pdf-viewer {
       display: none;
       padding: 20px 0;
@@ -174,7 +168,6 @@
     
     .page-container {
       position: relative;
-      overflow: hidden;
     }
     
     .pdf-canvas {
@@ -183,7 +176,7 @@
       height: auto;
     }
     
-    /* Text Layer - Critical for search/selection */
+    /* Text Layer - Optimized for highlighting */
     .text-layer {
       position: absolute;
       left: 0;
@@ -191,8 +184,8 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      opacity: 0.2;
       line-height: 1.0;
+      font-size: 1px;
       -webkit-user-select: text;
       -moz-user-select: text;
       -ms-user-select: text;
@@ -207,17 +200,15 @@
       transform-origin: 0% 0%;
     }
     
-    /* Highlight support */
+    /* Highlight styles - for external highlighting tools */
     .text-layer .highlight {
-      background-color: rgba(255, 255, 0, 0.3);
-      border-radius: 2px;
-      margin: -1px;
-      padding: 1px;
+      background-color: rgba(255, 255, 0, 0.3) !important;
+      color: transparent !important;
     }
     
-    .text-layer .search-highlight {
-      background-color: rgba(255, 165, 0, 0.5);
-      border-radius: 2px;
+    .text-layer .smart-highlight {
+      background-color: rgba(255, 165, 0, 0.4) !important;
+      color: transparent !important;
     }
     
     /* Loading */
@@ -262,33 +253,6 @@
       z-index: 500;
     }
     
-    /* Search functionality */
-    .search-controls {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .search-input {
-      padding: 6px 8px;
-      background: #3c4043;
-      border: 1px solid #5f6368;
-      border-radius: 4px;
-      color: #e8eaed;
-      font-size: 13px;
-      width: 200px;
-    }
-    
-    .search-input::placeholder {
-      color: #9aa0a6;
-    }
-    
-    .search-results {
-      color: #9aa0a6;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    
     /* Responsive */
     @media (max-width: 768px) {
       .toolbar {
@@ -302,10 +266,10 @@
       }
       
       .viewer-container {
-        top: 80px;
+        top: 70px;
       }
       
-      .zoom-controls {
+      .toolbar-section:nth-child(2) {
         order: 1;
         width: 100%;
         justify-content: center;
@@ -321,19 +285,12 @@
       <span class="title">Smart Finder PDF Viewer</span>
     </div>
     
-    <div class="toolbar-section zoom-controls">
+    <div class="toolbar-section">
       <button class="btn" id="zoom-out" disabled title="Zoom out">−</button>
       <span class="zoom-level" id="zoom-level">100%</span>
       <button class="btn" id="zoom-in" disabled title="Zoom in">+</button>
       <button class="btn" id="fit-width" disabled title="Fit to width">Fit Width</button>
       <button class="btn" id="actual-size" disabled title="Actual size">100%</button>
-    </div>
-    
-    <div class="toolbar-section search-controls" id="search-controls">
-      <input type="text" class="search-input" id="search-input" placeholder="Search in PDF...">
-      <button class="btn" id="search-prev" disabled title="Previous result">↑</button>
-      <button class="btn" id="search-next" disabled title="Next result">↓</button>
-      <span class="search-results" id="search-results"></span>
     </div>
     
     <div class="toolbar-section">
@@ -369,9 +326,7 @@
         this.pdfDoc = null;
         this.scale = 1.0;
         this.currentURL = null;
-        this.searchMatches = [];
-        this.currentMatch = -1;
-        this.textContent = [];
+        this.pages = [];
         
         this.elements = {
           dropZone: document.getElementById('drop-zone'),
@@ -386,12 +341,7 @@
           zoomLevel: document.getElementById('zoom-level'),
           fitWidth: document.getElementById('fit-width'),
           actualSize: document.getElementById('actual-size'),
-          downloadBtn: document.getElementById('download-btn'),
-          searchControls: document.getElementById('search-controls'),
-          searchInput: document.getElementById('search-input'),
-          searchPrev: document.getElementById('search-prev'),
-          searchNext: document.getElementById('search-next'),
-          searchResults: document.getElementById('search-results')
+          downloadBtn: document.getElementById('download-btn')
         };
         
         this.init();
@@ -431,16 +381,6 @@
         this.elements.fitWidth.addEventListener('click', () => this.fitToWidth());
         this.elements.actualSize.addEventListener('click', () => this.setActualSize());
         
-        // Search
-        this.elements.searchInput.addEventListener('input', () => this.performSearch());
-        this.elements.searchInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.shiftKey ? this.searchPrevious() : this.searchNext();
-          }
-        });
-        this.elements.searchPrev.addEventListener('click', () => this.searchPrevious());
-        this.elements.searchNext.addEventListener('click', () => this.searchNext());
-        
         // Download
         this.elements.downloadBtn.addEventListener('click', () => this.downloadPDF());
         
@@ -448,10 +388,6 @@
         document.addEventListener('keydown', (e) => {
           if (e.ctrlKey || e.metaKey) {
             switch(e.key) {
-              case 'f':
-                e.preventDefault();
-                this.elements.searchInput.focus();
-                break;
               case '=':
               case '+':
                 e.preventDefault();
@@ -527,7 +463,7 @@
       
       async renderAllPages() {
         this.elements.pdfViewer.innerHTML = '';
-        this.textContent = [];
+        this.pages = [];
         
         for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
           await this.renderPage(pageNum);
@@ -574,24 +510,34 @@
         await page.render(renderContext).promise;
         
         // Create text layer
-        const textLayer = document.createElement('div');
-        textLayer.className = 'text-layer';
-        textLayer.style.width = viewport.width + 'px';
-        textLayer.style.height = viewport.height + 'px';
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'text-layer';
+        textLayerDiv.style.width = viewport.width + 'px';
+        textLayerDiv.style.height = viewport.height + 'px';
         
-        // Get text content and render text layer
+        // Get text content
         const textContent = await page.getTextContent();
-        this.textContent[pageNum - 1] = textContent;
         
-        // Use PDF.js built-in text layer renderer
-        pdfjsLib.renderTextLayer({
+        // Store page data for external access
+        this.pages[pageNum - 1] = {
+          page,
+          viewport,
+          textContent,
+          textLayerDiv,
+          pageWrapper
+        };
+        
+        // Render text layer properly
+        const textLayerRender = pdfjsLib.renderTextLayer({
           textContent: textContent,
-          container: textLayer,
+          container: textLayerDiv,
           viewport: viewport,
           textDivs: []
         });
         
-        pageContainer.appendChild(textLayer);
+        await textLayerRender.promise;
+        
+        pageContainer.appendChild(textLayerDiv);
         pageWrapper.appendChild(pageContainer);
         this.elements.pdfViewer.appendChild(pageWrapper);
       }
@@ -600,9 +546,6 @@
         if (!this.pdfDoc) return;
         await this.renderAllPages();
         this.updateZoomLevel();
-        if (this.elements.searchInput.value) {
-          this.performSearch();
-        }
       }
       
       zoomIn() {
@@ -625,120 +568,61 @@
         
         this.pdfDoc.getPage(1).then(page => {
           const viewport = page.getViewport({ scale: 1.0 });
-          const containerWidth = this.elements.viewerContainer.clientWidth - 40; // padding
+          const containerWidth = this.elements.viewerContainer.clientWidth - 40;
           this.scale = containerWidth / viewport.width;
           this.rerenderPages();
         });
       }
       
-      performSearch() {
-        const query = this.elements.searchInput.value.trim();
-        this.clearSearchHighlights();
-        
-        if (!query || !this.pdfDoc) {
-          this.updateSearchResults();
-          return;
-        }
-        
-        this.searchMatches = [];
-        const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        
-        this.textContent.forEach((pageTextContent, pageIndex) => {
-          if (!pageTextContent) return;
-          
-          const textItems = pageTextContent.items;
-          let pageText = '';
-          let textPositions = [];
-          
-          textItems.forEach(item => {
-            const startPos = pageText.length;
-            pageText += item.str;
-            textPositions.push({
-              start: startPos,
-              end: pageText.length,
-              item: item
-            });
-          });
-          
-          let match;
-          while ((match = regex.exec(pageText)) !== null) {
-            this.searchMatches.push({
-              page: pageIndex + 1,
-              text: match[0],
-              index: match.index
-            });
-          }
-        });
-        
-        this.currentMatch = this.searchMatches.length > 0 ? 0 : -1;
-        this.highlightSearchResults();
-        this.updateSearchResults();
+      // Public API for external highlighting tools
+      getPageText(pageNum) {
+        if (!this.pages[pageNum - 1]) return null;
+        return this.pages[pageNum - 1].textContent;
       }
       
-      highlightSearchResults() {
-        const textLayers = document.querySelectorAll('.text-layer');
-        textLayers.forEach((layer, pageIndex) => {
-          const spans = layer.querySelectorAll('span');
-          spans.forEach(span => {
-            const text = span.textContent;
-            if (text && this.elements.searchInput.value) {
-              const regex = new RegExp(`(${this.elements.searchInput.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-              span.innerHTML = text.replace(regex, '<mark class="search-highlight">$1</mark>');
-            }
-          });
-        });
-        
-        if (this.currentMatch >= 0) {
-          this.scrollToMatch(this.currentMatch);
-        }
+      getTextLayer(pageNum) {
+        if (!this.pages[pageNum - 1]) return null;
+        return this.pages[pageNum - 1].textLayerDiv;
       }
       
-      clearSearchHighlights() {
-        const highlights = document.querySelectorAll('.search-highlight');
-        highlights.forEach(highlight => {
-          const parent = highlight.parentNode;
-          parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
-          parent.normalize();
-        });
+      getAllTextLayers() {
+        return this.pages.map(page => page?.textLayerDiv).filter(Boolean);
       }
       
-      searchNext() {
-        if (this.searchMatches.length === 0) return;
-        this.currentMatch = (this.currentMatch + 1) % this.searchMatches.length;
-        this.scrollToMatch(this.currentMatch);
-        this.updateSearchResults();
-      }
-      
-      searchPrevious() {
-        if (this.searchMatches.length === 0) return;
-        this.currentMatch = this.currentMatch === 0 ? this.searchMatches.length - 1 : this.currentMatch - 1;
-        this.scrollToMatch(this.currentMatch);
-        this.updateSearchResults();
-      }
-      
-      scrollToMatch(matchIndex) {
-        if (matchIndex < 0 || matchIndex >= this.searchMatches.length) return;
-        
-        const match = this.searchMatches[matchIndex];
-        const pageWrapper = document.querySelector(`[data-page="${match.page}"]`);
-        
+      scrollToPage(pageNum) {
+        const pageWrapper = document.querySelector(`[data-page="${pageNum}"]`);
         if (pageWrapper) {
           pageWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
       
-      updateSearchResults() {
-        const hasResults = this.searchMatches.length > 0;
-        this.elements.searchPrev.disabled = !hasResults;
-        this.elements.searchNext.disabled = !hasResults;
+      highlightText(pageNum, startIndex, endIndex, className = 'highlight') {
+        const textLayer = this.getTextLayer(pageNum);
+        if (!textLayer) return false;
         
-        if (hasResults) {
-          this.elements.searchResults.textContent = `${this.currentMatch + 1} of ${this.searchMatches.length}`;
-        } else if (this.elements.searchInput.value) {
-          this.elements.searchResults.textContent = 'No results';
-        } else {
-          this.elements.searchResults.textContent = '';
+        const spans = textLayer.querySelectorAll('span');
+        let currentIndex = 0;
+        
+        for (const span of spans) {
+          const text = span.textContent;
+          const spanEnd = currentIndex + text.length;
+          
+          if (currentIndex <= endIndex && spanEnd >= startIndex) {
+            span.classList.add(className);
+          }
+          
+          currentIndex = spanEnd;
         }
+        
+        return true;
+      }
+      
+      clearHighlights(className = 'highlight') {
+        const textLayers = this.getAllTextLayers();
+        textLayers.forEach(layer => {
+          const highlights = layer.querySelectorAll(`.${className}`);
+          highlights.forEach(highlight => highlight.classList.remove(className));
+        });
       }
       
       downloadPDF() {
@@ -765,7 +649,6 @@
         this.elements.zoomOut.disabled = false;
         this.elements.fitWidth.disabled = false;
         this.elements.actualSize.disabled = false;
-        this.elements.searchControls.style.display = 'flex';
         
         if (this.currentURL) {
           this.elements.downloadBtn.disabled = false;
@@ -798,9 +681,12 @@
       }
     }
     
-    // Initialize the PDF viewer
+    // Initialize the PDF viewer and make it globally accessible
+    let pdfViewer;
     document.addEventListener('DOMContentLoaded', () => {
-      new SmartPDFViewer();
+      pdfViewer = new SmartPDFViewer();
+      // Make viewer available globally for external tools
+      window.smartPDFViewer = pdfViewer;
     });
   </script>
 </body>
