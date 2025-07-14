@@ -1,0 +1,32 @@
+title: Smart Finder Legal Documents
+description: Privacy Policy, Terms & Conditions, and Help documentation for the Smart Finder Chrome Extension
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# GitHub Pages settings
+github:
+  repository_name: Smart-Finder
+  repository_url: https://github.com/DaneBentley/Smart-Finder
+
+# Site settings
+url: "https://danebentley.github.io"
+baseurl: "/Smart-Finder"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Exclude files from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .bundle
+  - .sass-cache
+  - .jekyll-cache
+  - .jekyll-metadata 

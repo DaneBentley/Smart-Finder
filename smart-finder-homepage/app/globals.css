@@ -1,0 +1,357 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+    font-family: 'Saira', sans-serif;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s ease-out forwards;
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 0.6s;
+  }
+
+  .animation-delay-800 {
+    animation-delay: 0.8s;
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Single Magnifying Glass Animation */
+.magnifying-glass-single {
+  position: absolute;
+  will-change: transform;
+  transition: all 3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.magnifying-glass-svg {
+  opacity: 0.25;
+  transition: all 1.5s ease-in-out;
+}
+
+/* Target different elements based on scroll and time */
+.magnifying-glass-target-0 {
+  top: 20%;
+  left: 20%;
+  animation: focusElement1 8s ease-in-out infinite;
+}
+
+.magnifying-glass-target-1 {
+  top: 45%;
+  right: 25%;
+  animation: focusElement2 8s ease-in-out infinite;
+}
+
+.magnifying-glass-target-2 {
+  bottom: 35%;
+  left: 30%;
+  animation: focusElement3 8s ease-in-out infinite;
+}
+
+.magnifying-glass-target-3 {
+  top: 60%;
+  right: 35%;
+  animation: focusElement4 8s ease-in-out infinite;
+}
+
+@keyframes focusElement1 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: blur(0px);
+  }
+  25% {
+    transform: translate(100px, -30px) rotate(5deg) scale(1.2);
+    filter: blur(1px);
+  }
+  50% {
+    transform: translate(50px, 50px) rotate(-3deg) scale(1.4);
+    filter: blur(2px);
+  }
+  75% {
+    transform: translate(-50px, 20px) rotate(8deg) scale(1.1);
+    filter: blur(0.5px);
+  }
+}
+
+@keyframes focusElement2 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: blur(0px);
+  }
+  20% {
+    transform: translate(-80px, -40px) rotate(-5deg) scale(1.3);
+    filter: blur(1.5px);
+  }
+  40% {
+    transform: translate(60px, -60px) rotate(4deg) scale(1.5);
+    filter: blur(2.5px);
+  }
+  60% {
+    transform: translate(-40px, 30px) rotate(-6deg) scale(1.2);
+    filter: blur(1px);
+  }
+  80% {
+    transform: translate(70px, 20px) rotate(3deg) scale(1.1);
+    filter: blur(0.5px);
+  }
+}
+
+@keyframes focusElement3 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: blur(0px);
+  }
+  30% {
+    transform: translate(-120px, -50px) rotate(6deg) scale(1.4);
+    filter: blur(2px);
+  }
+  60% {
+    transform: translate(90px, -40px) rotate(-4deg) scale(1.3);
+    filter: blur(1.5px);
+  }
+  90% {
+    transform: translate(-30px, 60px) rotate(3deg) scale(1.1);
+    filter: blur(0.5px);
+  }
+}
+
+@keyframes focusElement4 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: blur(0px);
+  }
+  25% {
+    transform: translate(-70px, -35px) rotate(-4deg) scale(1.2);
+    filter: blur(1px);
+  }
+  50% {
+    transform: translate(40px, 70px) rotate(5deg) scale(1.5);
+    filter: blur(2.5px);
+  }
+  75% {
+    transform: translate(80px, -20px) rotate(-7deg) scale(1.3);
+    filter: blur(1.5px);
+  }
+}
+
+
+
+/* Hero Background - Clean */
+.hero-animated-bg {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(248, 211, 217, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(222, 181, 227, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(196, 242, 189, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 60% 80%, rgba(188, 223, 240, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 90% 60%, rgba(252, 236, 163, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.9) 100%);
+  
+  position: relative;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .magnifying-glass-1 {
+    top: 15%;
+    left: 10%;
+  }
+  
+  .magnifying-glass-2 {
+    top: 65%;
+    right: 15%;
+  }
+  
+  .magnifying-glass-3 {
+    bottom: 25%;
+    left: 65%;
+  }
+  
+  .search-term {
+    font-size: 0.75rem;
+  }
+  
+  @keyframes searchFloat1 {
+    0%, 100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    25% {
+      transform: translate(100px, -30px) rotate(10deg);
+    }
+    50% {
+      transform: translate(50px, 60px) rotate(-5deg);
+    }
+    75% {
+      transform: translate(-50px, 30px) rotate(15deg);
+    }
+  }
+  
+  @keyframes searchFloat2 {
+    0%, 100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    20% {
+      transform: translate(-80px, -50px) rotate(-10deg);
+    }
+    40% {
+      transform: translate(60px, -80px) rotate(8deg);
+    }
+    60% {
+      transform: translate(-50px, 40px) rotate(-12deg);
+    }
+    80% {
+      transform: translate(80px, 25px) rotate(5deg);
+    }
+  }
+  
+  @keyframes searchFloat3 {
+    0%, 100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    30% {
+      transform: translate(-120px, -60px) rotate(12deg);
+    }
+    60% {
+      transform: translate(90px, -50px) rotate(-8deg);
+    }
+    90% {
+      transform: translate(-30px, 80px) rotate(6deg);
+    }
+  }
+}

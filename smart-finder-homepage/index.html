@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Finder - AI-Powered Chrome Extension</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="icon16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon16.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icon48.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="icon128.png">
+  <meta name="description" content="Smart Finder Chrome Extension - AI-powered find-in-page tool with pattern detection, multi-color highlighting, and natural language search.">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f8f9fa;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Header Section */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e8eaed;
+      margin-bottom: 40px;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 0;
+      text-align: center;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-right: 20px;
+      border-radius: 16px;
+    }
+    
+    .header-text h1 {
+      color: #1a73e8;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .header-text .tagline {
+      color: #5f6368;
+      font-size: 1.2rem;
+      font-weight: 400;
+    }
+    
+    /* Main Content */
+    .main-content {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e8eaed;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: #1a73e8;
+      color: white;
+      padding: 50px 40px;
+      text-align: center;
+    }
+    
+    .hero h2 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    
+    .hero p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .cta-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .cta-button.primary {
+      background: white;
+      color: #1a73e8;
+      border: none;
+    }
+    
+    .cta-button.primary:hover {
+      background: #f8f9fa;
+    }
+    
+    /* Features Section */
+    .features {
+      padding: 50px 40px;
+    }
+    
+    .features h3 {
+      text-align: center;
+      color: #1a73e8;
+      font-size: 1.8rem;
+      margin-bottom: 40px;
+      font-weight: 600;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    
+    .feature-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 24px;
+      border-left: 4px solid #1a73e8;
+      transition: transform 0.2s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-2px);
+    }
+    
+
+    
+    .feature-title {
+      color: #1a73e8;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .feature-description {
+      color: #5f6368;
+      line-height: 1.5;
+    }
+    
+    /* Stats Section */
+    .stats {
+      background: #f8f9fa;
+      padding: 30px 40px;
+      border-top: 1px solid #e8eaed;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      text-align: center;
+    }
+    
+    .stat-item {
+      color: #5f6368;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a73e8;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Footer */
+    .footer {
+      background: white;
+      border-top: 1px solid #e8eaed;
+      padding: 40px 0;
+    }
+    
+    .footer-main {
+      margin-bottom: 30px;
+    }
+    
+    .footer-content {
+      text-align: center;
+      color: #5f6368;
+      margin-bottom: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    
+    .footer-link {
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+    
+    .footer-link:hover {
+      opacity: 0.7;
+    }
+    
+    /* Legal Documents in Footer */
+    .legal-section {
+      border-top: 1px solid #e8eaed;
+      padding-top: 30px;
+    }
+    
+    .legal-title {
+      text-align: center;
+      color: #1a73e8;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    
+    .legal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .legal-card {
+      background: #f8f9fa;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s ease;
+    }
+    
+    .legal-card:hover {
+      border-color: #1a73e8;
+    }
+    
+
+    
+    .legal-card-title {
+      color: #1a73e8;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .legal-description {
+      color: #5f6368;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .logo {
+        margin-right: 0;
+        margin-bottom: 16px;
+      }
+      
+      .header-text h1 {
+        font-size: 2rem;
+      }
+      
+      .hero, .features {
+        padding: 30px 20px;
+      }
+      
+      .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .features-grid, .legal-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <div class="header-content">
+        <img src="icon128.png" alt="Smart Finder Logo" class="logo">
+        <div class="header-text">
+          <h1>Smart Finder</h1>
+          <p class="tagline">AI-Powered Chrome Extension</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="main-content">
+      <!-- Hero Section -->
+      <div class="hero">
+        <h2>Revolutionize How You Search Web Pages</h2>
+        <p>Smart Finder replaces traditional Ctrl+F with AI-powered search, intelligent pattern detection, and multi-color highlighting. Find anything on any webpage using natural language.</p>
+        <div class="cta-buttons">
+          <a href="https://chrome.google.com/webstore" class="cta-button primary" target="_blank">
+            Install Extension
+          </a>
+          <a href="help.html" class="cta-button">
+            View Documentation
+          </a>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features">
+        <h3>Powerful Features</h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">AI-Powered Search</div>
+            <div class="feature-description">Ask questions in natural language like "find contact information" or "show me prices" and get intelligent results powered by Groq Llama 3.1.</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-title">Smart Pattern Detection</div>
+            <div class="feature-description">Automatically detects emails, phone numbers, URLs, dates, addresses, and more. Just type "email" to find all email addresses instantly.</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-title">Multi-Color Highlighting</div>
+            <div class="feature-description">Highlight up to 5 different search terms simultaneously with distinct colors. Perfect for comparing information or tracking multiple data points.</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-title">Fast Performance</div>
+            <div class="feature-description">Instant search results with real-time highlighting. Works on dynamic content and single-page applications seamlessly.</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-title">Privacy Focused</div>
+            <div class="feature-description">Traditional searches are processed locally. AI searches are processed securely with no permanent data storage.</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-title">Non-Intrusive UI</div>
+            <div class="feature-description">Shadow DOM isolation ensures the search interface never conflicts with website styling or functionality.</div>
+          </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">3</span>
+              <span class="stat-label">Search Modes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">12+</span>
+              <span class="stat-label">Pattern Types</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">5</span>
+              <span class="stat-label">Highlight Colors</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Free Core Features</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-content">
+          <p><strong>Smart Finder Chrome Extension</strong> - Making web search intelligent and intuitive</p>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/DaneBentley/Smart-Finder" class="footer-link" target="_blank">GitHub Repository</a>
+          <a href="https://chrome.google.com/webstore" class="footer-link" target="_blank">Chrome Web Store</a>
+        </div>
+      </div>
+      
+      <!-- Legal Documents Section -->
+      <div class="legal-section">
+        <h3 class="legal-title">Documentation & Legal</h3>
+        <div class="legal-grid">
+          <a href="help.html" class="legal-card">
+            <div class="legal-card-title">Help & Support</div>
+            <div class="legal-description">
+              Complete user guide with instructions, troubleshooting, and FAQ.
+            </div>
+          </a>
+          
+          <a href="privacy-policy.html" class="legal-card">
+            <div class="legal-card-title">Privacy Policy</div>
+            <div class="legal-description">
+              How we collect, use, and protect your information.
+            </div>
+          </a>
+          
+          <a href="terms-conditions.html" class="legal-card">
+            <div class="legal-card-title">Terms & Conditions</div>
+            <div class="legal-description">
+              Legal terms governing your use of Smart Finder.
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 
